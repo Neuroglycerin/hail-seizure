@@ -52,3 +52,16 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# MATLAB temp files
+*~
+*.asv
+
+# Windows/Mac OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
