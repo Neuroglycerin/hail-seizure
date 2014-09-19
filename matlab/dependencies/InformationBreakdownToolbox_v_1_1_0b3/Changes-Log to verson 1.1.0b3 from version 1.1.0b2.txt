@@ -1,0 +1,19 @@
+---------------------------
+MAJOR CHANGES AND ADDITIONS
+---------------------------
+
+Changes to TRANSFERENTROPY
+--------------------------
+    - function INTSHIFT4TRANSFERENTROPY (previously INTSHIFT) is      now included in the package;
+    - function INTSHIFT4TRANSFERENTROPY is several times faster (compared to version INTSHIFT);
+    - Fixed a bug when user specified both BTSP and TRPERM equal to zero (thanks to Joachim Gross for pointing it out)
+- Fixed a bug that caused useless computation of TE even when not invoked
+- Fixed a bug that caused TRANSFERENTROPY to crash if specifying a tau for y more negative than for x
+
+Changes to GAUSSIAN METHOD
+--------------------------
+    - Reverted the gaussian method function to GAUSSIAN_METHOD_v7_1_0. Version 11 based on FASTCOV_V2 turned out to be numerically much more unstable for large response dimensionality.
+
+Other changes
+-------------
+Removed spaces, dashes and dots from folder names for compatibility with Linux.
