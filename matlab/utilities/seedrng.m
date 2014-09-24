@@ -1,13 +1,14 @@
 % SEEDRNG Seeds the MATLAB random number generator, and Shuffle.m
-%    Seeds using the clock milliseconds, so seeding is unpredictable
+%    Seeds using the clock, so seeding is unpredictable
 %    and will be different on each run.
+%    Be careful when using this with parallel processing - make sure
+%    each worker gets a different seed!
 %    Outputs the seeds used, incase you need to save them for posterity.
 
 function [rgnseed shuffleseed] = seedrng()
 
-% Seed MATLAB random number generator with clock millisecond time
-c = clock;
-rgnseed = round(2^20*rem(c(end),1));
+% Seed MATLAB random number generator with clock time
+rgnseed = sum(100*clock);
 rng(rgnseed);
 
 % Use MATLAB random number generator, to make a seed for Shuffle
