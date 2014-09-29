@@ -47,26 +47,38 @@ function featM = feat_psd(subj, typ, window, bins)
     
     % Initialise holding variable
     featM = []; 
-    %nan(nSeg, nChn*length(fieldnames(bins)));
 
     % Loop over each segment, computing feature
     for iSeg=1:nSeg
+        
         % Load this segment
         Dat = loadSegFile(fullfile(mydir, fnames{iSeg}));
-    
+        
+        % Initialise PIB holding variable
+        segment_PIBs = [];
+        
+        % Iterating over each channel
         for channel=1:nChn
+            
+            % Use pwelch to calculate spectra and frequency for each
+            % channel
             [Pxx, f] = pwelch(Dat.data(channel,:), ...
                               window, ...
                               overlap, ...
                               Nfft, ...
                               Dat.fs);
-            
+             
+             % Integrate frequency bands on spectra and append to output
+             % matrix of Power-In-Band values
              for i = fieldnames(bins)'
                 freq_bin = bins.(i{1});
                 idx = find(f>=freq_bin(1) & f<=freq_bin(2));
                 density = trapz(f(idx), Pxx(idx));
-                featM = [featM, density];
+                segment_PIBs = [segment_PIBs, density];
              end
         end
+        % Append PIBs to feature matrix so each segment has a separate PIB
+        % row
+        featM = [featM; segment_PIBs];
     end
 end
