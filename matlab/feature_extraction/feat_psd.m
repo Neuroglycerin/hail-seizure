@@ -5,7 +5,8 @@
 %       : [float window] - window length (seconds) to use within segment 
 %                        (need add code handling the frequency of that seg)                        
 %       : [struct bins]  - floats of the freq bins to use (Hz)
-% Output: vec featm      - floats of 
+% Output: vec featm      - segment X (bins*nChn) matrix holding the power-in-band values
+%                          for each segment
 
 function featM = feat_psd(subj, typ, window, bins)
     
