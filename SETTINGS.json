@@ -3,5 +3,5 @@
     "MODEL_PATH": "model", 
     "TEST_DATA_PATH": "test", 
     "SUBMISSION_PATH": "output",
-    "VERSION": "_v2",
+    "VERSION": "_v1"
 }
