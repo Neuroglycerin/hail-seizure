@@ -6,7 +6,7 @@
 %    Be careful when using this with parallel processing - make sure
 %    each worker gets a different seed!
 %    
-%    Outputs the seeds used, incase you need to save them for posterity.
+%    Outputs the seeds used, so you can save them for posterity.
 
 function [rgnseed shuffleseed] = seedrng()
 
@@ -20,5 +20,8 @@ rng(rgnseed);
 % Use MATLAB random number generator, to make a seed for Shuffle
 shuffleseed = randi(2^32,[1 4])-1; % Generate a seed for Shuffle
 Shuffle(shuffleseed, 'seed');  % Seed Shuffle
+
+% Reset the MATLAB random number seed to be the one we are returning
+rng(rgnseed);
 
 end
