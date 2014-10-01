@@ -10,7 +10,7 @@ subjects = subjnames();
 types = {'preictal'; 'interictal'; 'test'};
 feature_funcs = {@feat_corrcoef; ...
                  @feat_cov; ...
-                 @feat_psd};
+                 @feat_pib};
             
 % for each subject create and h5 file in train
 % within each h5 file create 3 groups for each type
