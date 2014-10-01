@@ -3,5 +3,8 @@
     "MODEL_PATH": "model", 
     "TEST_DATA_PATH": "test", 
     "SUBMISSION_PATH": "output",
-    "VERSION": "_v1"
+    "VERSION": "_v4",
+    "RAW_DATA_DIRS": ["/media/SPARROWHAWK/hail-seizure-data/",
+                      "/media/scott/SPARROWHAWK/hail-seizure-data/",
+                      "/home/fin/Documents/kaggle/hail-seizure/train/sample_data/"]
 }
