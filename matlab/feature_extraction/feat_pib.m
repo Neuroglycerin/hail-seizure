@@ -58,7 +58,7 @@ function featM = feat_pib(subj, typ, window, bands)
         % Initialise PIB holding variable
         segment_PIBs = [];
         
-        % Iterating over each iChn
+        % Iterating over each channel
         for iChn=1:nChn
             
             % Use pwelch to calculate spectra and frequency for each
