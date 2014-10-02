@@ -36,6 +36,7 @@ fleSrtIdx = nan(1,nFle+1);
 fleSrtIdx(1) = 1;
 if dbgmde; fprintf('Loading %d raw data files\n',nFle); end
 for iFle=1:nFle
+    if dbgmde; fprintf('Loading file %3d/%3d\n',iFle,nFle); end
     % Load the saved matfile
     Dat = load(fnamelist{iFle});
     % Matfile contains a structure named the same as the file
