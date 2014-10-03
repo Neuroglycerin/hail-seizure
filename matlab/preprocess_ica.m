@@ -1,5 +1,10 @@
 function W = preprocess_ica(subj, dbgmde, safemode)
 
+% =========================================================================
+% Initialise random number generator
+rng(7);
+
+% =========================================================================
 % Default inputs ----------------------------------------------------------
 if nargin<3;
     safemode = false; % Whether to prevent overwritting files
