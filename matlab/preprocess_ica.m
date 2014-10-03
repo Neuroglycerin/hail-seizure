@@ -306,12 +306,17 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Remove the mean
         
-        % [mixedsig, mixedmean] = remmean(mixedsig);
         
         if b_verbose; disp('Removing mean'); end;
         % Remove mean (remmean.m)
-        mixedmean = mean(mixedsig,2);
-        mixedsig = mixedsig - mixedmean * ones(1, size(mixedsig,2));
+        % [mixedsig, mixedmean] = remmean(mixedsig);
+        % mixedmean = mean(mixedsig,2);
+        mixedmean = sum(mixedsig,2)/size(mixedsig,2);
+        % mixedsig = mixedsig - mixedmean * ones(1, size(mixedsig,2));
+        %for iPnt=1:size(mixedsig,2) % Less memory, but a bit slow
+        %    mixedsig(:,iPnt) = mixedsig(:,iPnt) - mixedmean;
+        %end
+        mixedsig = bsxfun(@minus, mixedsig, mixedmean); % More memory, but a bit faster
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Calculate PCA
@@ -346,7 +351,10 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         % Project to the eigenvectors of the covariance matrix.
         % Whiten the samples and reduce dimension simultaneously.
         if b_verbose, fprintf ('Whitening...\n'); end
-        mixedsig =  whiteningMatrix * mixedsig;
+        mixedsig =  whiteningMatrix * mixedsig; % More memory, but much fast
+        %for iPnt=1:size(mixedsig,2) % Less memory, but much slower
+        %    mixedsig(:,iPnt) =  whiteningMatrix * mixedsig(:,iPnt);
+        %end
         
         % ========================================================
         % Just some security...
