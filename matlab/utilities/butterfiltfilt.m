@@ -114,7 +114,8 @@ elseif strcmp(type,'stop')
     
 elseif (fc(1)==0) && (isinf(fc(2)))
     % No filter required
-    [B,A] = NaN;
+    B = NaN;
+    A = NaN;
     return;
     
 elseif fc(1)==0
