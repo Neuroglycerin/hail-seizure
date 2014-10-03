@@ -1,4 +1,4 @@
-function W = preprocess_ica(subj, dbgmde, safemode)
+function W = preprocess_ica(subj, dbgmde, do_icafiles)
 
 % =========================================================================
 % Initialise random number generator
@@ -7,7 +7,7 @@ rng(7);
 % =========================================================================
 % Default inputs ----------------------------------------------------------
 if nargin<3;
-    safemode = false; % Whether to prevent overwritting files
+    do_icafiles = false; % Whether to prevent overwritting files
 end
 if nargin<2;
     dbgmde   = true; % Whether to write progress to screen
@@ -74,13 +74,16 @@ if dbgmde; fprintf('Performing ICA\n'); end
 clear mixedsig;
 % =========================================================================
 
-% Quit if we are not writing any files
-if safemode; return; end;
-
 % Write the ICA matrix to file --------------------------------------------
-Wfname = getWfname(subj);
+[Wfname,Wfnamefull_log] = getWfname(subj);
 if dbgmde; fprintf('Writing weight matrix to file\n  %s\n',Wfname); end
-save(Wfname,'W');
+if ~exist(fileparts(Wfname),'dir'); mkdir(fileparts(Wfname)); end;
+save(Wfname,'W'); % Overwrite the copy to be used in transformations
+if ~exist(fileparts(Wfnamefull_log),'dir'); mkdir(fileparts(Wfnamefull_log)); end;
+save(Wfnamefull_log,'W'); % Save a dated copy for posterity
+
+% Quit if we are not writing any files
+if ~do_icafiles; return; end;
 
 % Process each file -------------------------------------------------------
 % Get a list of all the filenames in all the ictypes ----------------------
@@ -306,17 +309,16 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Remove the mean
         
-        
         if b_verbose; disp('Removing mean'); end;
         % Remove mean (remmean.m)
         % [mixedsig, mixedmean] = remmean(mixedsig);
         % mixedmean = mean(mixedsig,2);
         mixedmean = sum(mixedsig,2)/size(mixedsig,2);
         % mixedsig = mixedsig - mixedmean * ones(1, size(mixedsig,2));
-        %for iPnt=1:size(mixedsig,2) % Less memory, but a bit slow
-        %    mixedsig(:,iPnt) = mixedsig(:,iPnt) - mixedmean;
-        %end
-        mixedsig = bsxfun(@minus, mixedsig, mixedmean); % More memory, but a bit faster
+        % mixedsig = bsxfun(@minus, mixedsig, mixedmean); % More memory, but a bit faster
+        for iPnt=1:size(mixedsig,2) % Less memory, but a bit slow
+            mixedsig(:,iPnt) = mixedsig(:,iPnt) - mixedmean;
+        end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Calculate PCA
@@ -1516,7 +1518,7 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Wfnamefull = getWfname(subj)
+function [Wfnamefull,Wfnamefull_log] = getWfname(subj)
 
 % Declarations
 settingsfname = 'SETTINGS.json';
@@ -1529,9 +1531,10 @@ settings = json.read(settingsfname);
 distrodir = fileparts(which(settingsfname));
 
 mydir = fullfile(distrodir,settings.MODEL_PATH);
-Wfname = ['ica_weights_' subj '_' datestr(now,29)];
+Wfname = ['ica_weights_' subj];
 
 Wfnamefull = fullfile(mydir,Wfname);
+Wfnamefull_log = fullfile(mydir,'log',[Wfname '_' datestr(now,30)]);
 
 end
 
