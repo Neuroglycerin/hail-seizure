@@ -1,24 +1,41 @@
-% Correlation Coefficient feature
-% Return a feature vector for each segment of certain type
-function featM = feat_corrcoef(subj, typ)
+% Cross-channel Correlation coefficient feature
+% Return a feature vector
+function [featV,outparams] = feat_corrcoef(Dat, inparams)
 
-% Get a list of files
-[fnames, mydir, segIDs] = subjtyp2dirs(subj,typ);
-nSeg = length(fnames);
+% Default inputs ----------------------------------------------------------
+if nargin<2;
+    inparams = struct([]);
+end
+% No paramters needed
+if ~isempty(inparams)
+    error('Correlation coefficient feature does not need any parameters. Dont provide any.');
+end
+% Empty params output
+outparams = struct([]);
 
+% Main --------------------------------------------------------------------
 % Check number of channels in this dataset
-Dat = loadSegFile(fullfile(mydir,fnames{1}));
 nChn = size(Dat.data,1);
 
-% Initialise holding variable
-featM = nan(nSeg,nChn^2);
+% Compute the covariance
+C = corrcoef(Dat.data');
 
-% Loop over each segment, computing feature
-for iSeg=1:nSeg
-    % Load this segment
-    Dat = loadSegFile(fullfile(mydir,fnames{iSeg}));
-    % Compute covariance between channels
-    featM(iSeg,:) = reshape(corrcoef(Dat.data'),1,[]);
+% Extract the upper triangle (excluding diagonal: use feat_var if you want
+% the variance of each channel)
+nPairs = nChn*(nChn-1)/2;
+
+% Initialise holding variable
+featV = nan(1,nPairs);
+
+% Initialise pair counter
+paircount = 0;
+for iChn1=1:nChn
+    for iChn2=(iChn1+1):nChn
+        % Track how many pairs we have done
+        paircount = paircount + 1;
+        % Insert into feature vector
+        featV(1,paircount) = C(iChn1,iChn2);
+    end
 end
 
 end

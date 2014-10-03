@@ -20,9 +20,9 @@ mydir = getDataDir();
 switch modtyp
     case 'raw'
         fname_format = [subj '_' ictyp '_*.mat'];
-    case 'ica'
-        mydir = fullfile(mydir,modtyp);
-        fname_format = [modtyp '_' subj '_' ictyp '_*.mat'];
+%     case 'ica'
+%         mydir = fullfile(mydir,modtyp);
+%         fname_format = [modtyp '_' subj '_' ictyp '_*.mat'];
     otherwise
         error('Unfamiliar data modifier: %s',modtyp);
 end
