@@ -70,7 +70,7 @@ end
 % =========================================================================
 % Perform ICA on the enormous dataset -------------------------------------
 if dbgmde; fprintf('Performing ICA\n'); end
-[~, ~, W] = fastica('displayMode', pltmde);
+[~, A, W] = fastica('displayMode', pltmde);
 clear mixedsig;
 % =========================================================================
 
@@ -78,9 +78,9 @@ clear mixedsig;
 [Wfname,Wfnamefull_log] = getWfname(subj);
 if dbgmde; fprintf('Writing weight matrix to file\n  %s\n',Wfname); end
 if ~exist(fileparts(Wfname),'dir'); mkdir(fileparts(Wfname)); end;
-save(Wfname,'W'); % Overwrite the copy to be used in transformations
+save(Wfname,'W','A'); % Overwrite the copy to be used in transformations
 if ~exist(fileparts(Wfnamefull_log),'dir'); mkdir(fileparts(Wfnamefull_log)); end;
-save(Wfnamefull_log,'W'); % Save a dated copy for posterity
+save(Wfnamefull_log,'W','A'); % Save a dated copy for posterity
 
 % Quit if we are not writing any files
 if ~do_icafiles; return; end;
