@@ -1,5 +1,11 @@
 % Single channel Variance feature
-% Return a feature vector
+% Inputs : struct Dat       - structure loaded from segment file
+%        :[struct inparams] - structure with fields listing requested parameters
+%
+% Outputs: vec featV        - feature vector
+%                             1 X (nChn) vector variance of each channel
+%        :[struct outparams]- structure with fields listing parameters used
+
 function [featV,outparams] = feat_var(Dat, inparams)
 
 % Default inputs ----------------------------------------------------------

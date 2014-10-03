@@ -1,5 +1,15 @@
 % Cross-channel Covariance feature
-% Return a feature vector
+% Inputs : struct Dat       - structure loaded from segment file
+%        :[struct inparams] - structure with fields listing requested parameters
+%
+% Outputs: vec featV        - feature vector
+%                             1 X (nChn*(nChn-1)/2) vector covariance of
+%                             each pair of channels
+%        :[struct outparams]- structure with fields listing parameters used
+%
+% NB: Excludes the variance terms. Use feat_var for single channel
+% variance.
+
 function [featV,outparams] = feat_cov(Dat, inparams)
 
 % Default inputs ----------------------------------------------------------
