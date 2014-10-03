@@ -1,5 +1,12 @@
 % Cross-channel Correlation coefficient feature
-% Return a feature vector
+% Inputs : struct Dat       - structure loaded from segment file
+%        :[struct inparams] - structure with fields listing requested parameters
+%
+% Outputs: vec featV        - feature vector
+%                             1 X (nChn*(nChn-1)/2) vector correlation
+%                             coefficient of each non-trivial pair of channels
+%        :[struct outparams]- structure with fields listing parameters used
+
 function [featV,outparams] = feat_corrcoef(Dat, inparams)
 
 % Default inputs ----------------------------------------------------------
