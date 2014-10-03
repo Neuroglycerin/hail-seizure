@@ -141,14 +141,6 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % Remove the mean and check the data
-        
-        % [mixedsig, mixedmean] = remmean(mixedsig);
-        
-        if b_verbose; disp('Removing mean'); end;
-        % Remove mean (remmean.m)
-        mixedmean = mean(mixedsig,2);
-        mixedsig = bsxfun(@minus, mixedsig, mixedmean);
         
         [Dim, NumOfSampl] = size(mixedsig);
         
@@ -306,6 +298,15 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
             end
         end
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Remove the mean
+        
+        % [mixedsig, mixedmean] = remmean(mixedsig);
+        
+        if b_verbose; disp('Removing mean'); end;
+        % Remove mean (remmean.m)
+        mixedmean = mean(mixedsig,2);
+        mixedsig = mixedsig - mixedmean * ones(1, size(mixedsig,2));
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Calculate PCA
