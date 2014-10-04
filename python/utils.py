@@ -14,17 +14,16 @@ def parse_matlab_HDF5(subj, settings=json_settings):
            settings - parsed json settings in dict format (json.load)
     output: subject_dict containing data in hierarchial format
                     e.g. Dog_1 = {'interictal':
-                                       {'feat1': {'segment_file_name':featvector (np.array),
-                                                  ...  
-                                                }
-                                        'feat2 : {'segment_file_name':featvector (np.array),
-                                                  ...  
-                                        ...},
-                                   'preictal':
-                                       {'feat1': {'segment_file_name':featvector (np.array),
-                                                  ...  
-                                        ...},
-                                   'test': ...}
+                                           {'raw_feat1': {segment_fname1: featvector,
+                                                          segment_fname2: featvector
+                                            'raw_feat2 : {...}
+                                            'ica_feat1 : {...}
+                                             ...
+                                           },
+                                  'preictal': { ... },
+                                  'test': { ... }
+                                  }
+    '''
 
 
     feature_location = settings['TRAIN_DATA_PATH']
@@ -37,13 +36,12 @@ def parse_matlab_HDF5(subj, settings=json_settings):
 
     # parse h5 object into dict using nested comprehensions (see docstring
     # for struct)
-    subject_dict = {modtyp:
-            {typ:
-                {feature:
-                    h5_from_matlab[modtyp][typ][feature].value
-                    for feature in h5_from_matlab[modtyp][typ]}
-                for typ in h5_from_matlab[modtyp]}
-            for modtyp in h5_from_matlab}
+    subject_dict = {typ:
+                        {feat:
+                            {segment: h5_from_matlab[typ][feat][segment].value
+                             for segment in h5_from_matlab[typ][feat]}
+                        for feat in h5_from_matlab[typ]}
+                    for typ in h5_from_matlab}
 
     # make sure h5 object is closed
     h5_from_matlab.close()
