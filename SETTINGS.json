@@ -1,12 +1,16 @@
 {
     "TRAIN_DATA_PATH": "train", 
     "MODEL_PATH": "model", 
-    "SUBJECTS": ["Dog_5"],
+    "SUBJECTS": ["Dog_1",
+                 "Dog_2",
+                 "Dog_3",
+                 "Dog_4",
+                 "Dog_5",
+                 "Patient_1",
+                 "Patient_2"],
     "TEST_DATA_PATH": "test", 
     "SUBMISSION_PATH": "output",
-    "VERSION": "_v4",
+    "VERSION": "_v1",
     "RAW_DATA_DIRS": ["/disk/data2/neuroglycerin/hail-seizure-data/",
                       "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
-                      "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
-                      "/home/fin/Documents/learning/kaggle/hail-seizure/train/sample_data/"]
-}
+                      "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
