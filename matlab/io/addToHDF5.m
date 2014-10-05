@@ -27,8 +27,7 @@ function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
 
     % Main --------------------------------------------------------------------
     settings = json.read(settingsfname);
-    distrodir = fileparts(which(settingsfname));
-    h5fnme = fullfile(distrodir, settings.TRAIN_DATA_PATH, [subj, settings.VERSION, '.h5']);
+    h5fnme = fullfile(getRepoDir(), settings.TRAIN_DATA_PATH, [subj, settings.VERSION, '.h5']);
 
     nFle = size(featM, 1);
 
