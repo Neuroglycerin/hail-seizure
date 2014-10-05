@@ -1526,11 +1526,7 @@ settingsfname = 'SETTINGS.json';
 % Load the settings file
 settings = json.read(settingsfname);
 
-% Look up where the settings file is: that is the root directory and
-% paths inside it are relative to its locations
-distrodir = fileparts(which(settingsfname));
-
-mydir = fullfile(distrodir,settings.MODEL_PATH);
+mydir = fullfile(getRepoDir(), settings.MODEL_PATH);
 Wfname = ['ica_weights_' subj];
 
 Wfnamefull = fullfile(mydir,Wfname);

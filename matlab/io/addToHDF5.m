@@ -27,8 +27,8 @@ settingsfname = 'SETTINGS.json';
 
 % Main --------------------------------------------------------------------
 settings = json.read(settingsfname);
-distrodir = fileparts(which(settingsfname));
-h5fnme = fullfile(distrodir, settings.TRAIN_DATA_PATH, [subj, settings.VERSION, '.h5']);
+repodir = getRepoDir();
+h5fnme = fullfile(repodir, settings.TRAIN_DATA_PATH, [subj, settings.VERSION, '.h5']);
 dataset = strcat('/', modtyp, '/', ictyp, '/', feat_name);
 
 % h5create will throw an error if the dataset already exists
