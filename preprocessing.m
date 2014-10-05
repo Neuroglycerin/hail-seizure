@@ -15,9 +15,13 @@ feature_funcs = {...
     @feat_psd_logf;
     @feat_coher;
     @feat_coher_logf};
-           
-for i = 1:numel(ictypes)
-    for j = 1:numel(feature_funcs)
-        getFeatAddToHDF5(feature_funcs{j}, subj{1}, ictypes{i}, 'raw')
+
+
+for iFun = 1:numel(feature_funcs)
+    for iSub=1:numel(subj)
+        for iIct = 1:numel(ictypes)
+            fprintf('Running feature %s on raw %s %s\n',func2str(feature_funcs{iFun}), subj{iSub}, ictypes{iIct});
+            getFeatAddToHDF5(feature_funcs{iFun}, subj{iSub}, ictypes{iIct}, 'raw')
+        end
     end
 end

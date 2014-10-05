@@ -37,7 +37,7 @@ nFle = length(fnames);
 
 featM = cell(nFle, 2);
 
-for iFle=1:nFle
+parfor iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
     % Apply the preprocessing model
