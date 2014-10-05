@@ -42,7 +42,9 @@ fleSrtIdx = nan(1,nFle+1);
 fleSrtIdx(1) = 1;
 if dbgmde; fprintf('Loading %d raw data files\n',nFle); end
 for iFle=1:nFle
-    if dbgmde && mod(iFle,100)==0; fprintf('Loading file %3d/%3d\n',iFle,nFle); end
+    if dbgmde && (mod(iFle,50)==0 || iFle==1 || iFle==2);
+        fprintf('Loading file %3d/%3d\n',iFle,nFle);
+    end
     % Load the saved matfile
     Dat = load(fnamelist{iFle});
     % Matfile contains a structure named the same as the file
@@ -69,7 +71,7 @@ end
 
 % =========================================================================
 % Perform ICA on the enormous dataset -------------------------------------
-if dbgmde; fprintf('Performing ICA\n'); end
+if dbgmde; fprintf('Running FastICA\n'); end
 [~, A, W] = fastica('displayMode', pltmde);
 clear mixedsig;
 % =========================================================================
@@ -309,7 +311,7 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Remove the mean
         
-        if b_verbose; disp('Removing mean'); end;
+        if b_verbose; disp('Removing mean...'); end;
         % Remove mean (remmean.m)
         % [mixedsig, mixedmean] = remmean(mixedsig);
         % mixedmean = mean(mixedsig,2);
@@ -400,9 +402,9 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
         % Check for valid return
         if ~isempty(W)
             % Add the mean back in.
-            if b_verbose
-                fprintf('Adding the mean back to the data.\n');
-            end
+            %if b_verbose
+            %    fprintf('Adding the mean back to the data.\n');
+            %end
             %icasig = W * mixedsig + (W * mixedmean) * ones(1, NumOfSampl);
             icasig = [];
             %icasig = W * mixedsig;
@@ -499,10 +501,23 @@ if dbgmde; fprintf('Finished ICA processing for subject %s\n',subj); end
             if b_verbose, fprintf ('Calculating covariance...\n'); end
             % covarianceMatrix = cov(mixedsig', 1);
             % (Already removed the mean, so no need to repeat this step)
-            covarianceMatrix = (mixedsig * mixedsig') / size(mixedsig,2);
+            %covarianceMatrix = (mixedsig * mixedsig') / size(mixedsig,2);
+            [nX,nY] = size(mixedsig);
+            covarianceMatrix = nan(nX,nX);
+            for x2=1:nX
+                if b_verbose, fprintf('... %d/%d\n',x2,nX); end
+                covarianceMatrix(:,x2) = (mixedsig * mixedsig(x2,:)') / nY;
+            end
+            %covarianceMatrix = zeros(nX,nX);
+            %for y=1:nY
+            %    if b_verbose, fprintf('... %d/%d\n',y,nY); end
+            %    covarianceMatrix = covarianceMatrix + (mixedsig(:,y) * mixedsig(:,y)');
+            %end
+            %covarianceMatrix = covarianceMatrix / nY;
             
             % Calculate the eigenvalues and eigenvectors of covariance
             % matrix.
+            if b_verbose, fprintf ('Calculating eigenvalues of covariance matrix...\n'); end
             [E, D] = eig (covarianceMatrix);
             
             % The rank is determined from the eigenvalues - and not directly by
