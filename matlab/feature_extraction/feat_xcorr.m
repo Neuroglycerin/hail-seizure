@@ -17,7 +17,7 @@ end
 
 % Default parameters ------------------------------------------------------
 defparams = struct(...
-    'maxlagdur'      , 2         , ... % maximum lag duration in seconds
+    'maxlagdur'      , 3         , ... % maximum lag duration in seconds
     'band'           , [0 Inf]   , ... % Filtering band (default: none)
     'signalattribute', 'none'    );    % Signal processing
 
