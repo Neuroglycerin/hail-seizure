@@ -5,7 +5,7 @@ function names = subjnames()
 % DECLARATIONS ------------------------------------------------------------
 % Declare list of existant subject names
 settings = json.read('SETTINGS.json');
-names = settings.SUBJECTS
+names = settings.SUBJECTS;
 
 % names = {...
 %     'Dog_1', ...
