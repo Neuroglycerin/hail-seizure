@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X (bands*nChn) vector holding the
+%                             1 X numbands X numchannels vector holding the
 %                             power-in-band values
 %        :[struct outparams]- structure with fields listing parameters used
 
@@ -61,7 +61,7 @@ bandnames = fieldnames(param.bands);
 nBnd = length(bandnames);
 
 % Initialise holding variable
-featV = nan(1,nChn*nBnd);
+featV = nan(1,nChn,nBnd);
 bandsused = struct([]);
 
 % Iterating over each channel
@@ -78,7 +78,7 @@ for iChn=1:nChn
         bandfreq = param.bands.(bandnames{iBnd});
         idx = (f>=(bandfreq(1)-frqintv/2) & f<=(bandfreq(2)+frqintv/2));
         bandpwr = trapz(f(idx), Pxx(idx));
-        featV(1,nBnd*(iChn-1)+iBnd) = bandpwr;
+        featV(1,iChn,iBnd) = bandpwr;
         bandsused(1).(bandnames{iBnd}) = f([find(idx,1,'first'),find(idx,1,'last')]);
     end
 end

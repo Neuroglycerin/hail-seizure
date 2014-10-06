@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X (nChn*(nChn-1)/2*nFrq) vector holding the
+%                             1 X nChn*(nChn-1)/2 X nFrq vector holding the
 %                             coherence values
 %                             where nFrq is round(1+samplingfreq/2)
 %        :[struct outparams]- structure with fields listing parameters used
@@ -57,7 +57,7 @@ Nfft = wndw_size;
 nFrq = floor(Nfft/2)+1;
 
 % Initialise holding variable
-featV = nan(1, nChn*(nChn-1)/2*nFrq);
+featV = nan(1, nChn*(nChn-1)/2, nFrq);
 
 % ------------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ for iChn1=1:nChn
             wndw, param.overlap, Nfft, Dat.fs, 'coher');
         
         % Set correct part of feature row
-        featV(1,(paircount-1)*nFrq+(1:nFrq)) = coher;
+        featV(1,paircount,:) = coher;
     end
 end
 
