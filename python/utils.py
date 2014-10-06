@@ -7,21 +7,20 @@ from sklearn.externals import joblib #pickle w/ optimisation for np arrays
 with open('SETTINGS.json') as settings_fh:
     json_settings = json.load(settings_fh)
 
-def parse_matlab_HDF5(subj, settings=json_settings):
+def parse_matlab_HDF5(feat, settings=json_settings):
     '''
     Parse h5 file from matlab into hierarchial dict containing np arrays
-    input: subj - subject name (e.g. Dog_1),
+    input: feat - feature name (e.g. Dog_1),
            settings - parsed json settings in dict format (json.load)
-    output: subject_dict containing data in hierarchial format
-                    e.g. Dog_1 = {'interictal':
-                                           {'raw_feat1': {segment_fname1: featvector,
-                                                          segment_fname2: featvector
-                                            'raw_feat2 : {...}
-                                            'ica_feat1 : {...}
-                                             ...
-                                           },
-                                  'preictal': { ... },
-                                  'test': { ... }
+    output: feat_dict containing data in hierarchial format
+                    e.g. raw_feat_cov= {'Dog_1': {
+                                            'interictal': {segment_fname1: featvector,
+                                                           segment_fname2: featvector}
+
+                                             'preictal': { ... },
+                                             'test': { ... }
+                                             }
+                                        'Dog_2': { ... { ... } }}
                                   }
     '''
 
@@ -31,22 +30,26 @@ def parse_matlab_HDF5(subj, settings=json_settings):
 
     # open h5 read-only file for correct subj and version number
 
-    h5_file_name = "{0}/{1}{2}.h5".format(feature_location, subj, version)
+    h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
     h5_from_matlab = h5py.File(h5_file_name, 'r')
 
     # parse h5 object into dict using nested comprehensions (see docstring
     # for struct)
-    subject_dict = {typ:
-                        {feat:
-                            {segment: h5_from_matlab[typ][feat][segment].value
-                             for segment in h5_from_matlab[typ][feat]}
-                        for feat in h5_from_matlab[typ]}
-                    for typ in h5_from_matlab}
+    feature_dict = {subj:
+                        {typ:
+                            {segment: h5_from_matlab[subj][typ][segment].value
+                             for segment in h5_from_matlab[subj][typ]}
+                        for typ in h5_from_matlab[subj]}
+                    for subj in h5_from_matlab}
 
     # make sure h5 object is closed
     h5_from_matlab.close()
 
-    return subject_dict
+    return feature_dict
+
+def reformat_features(subject_dict, typ):
+    pass
+
 
 def serialise_trained_model(model, model_name, settings=json_settings):
     '''
