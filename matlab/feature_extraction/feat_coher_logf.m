@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X (nChn*(nChn-1)/2*nBnd) vector holding the 
+%                             1 X nChn*(nChn-1)/2 X nBnd vector holding the 
 %                             coherence values
 %        :[struct outparams]- structure with fields listing parameters used
 %
@@ -102,7 +102,7 @@ x(end+1) = length(f);
 nBnd = length(x)-1;
 
 % Initialise holding variable
-featV = nan(1, nChn*(nChn-1)/2*nBnd);
+featV = nan(1, nChn*(nChn-1)/2, nBnd);
 
 % ------------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ for iChn1=1:nChn
             crspwr(1,iBnd) = sum(abs(Pxy(x(iBnd):x(iBnd+1)-1)));
         end
         
-        featV(1,(paircount-1)*nBnd+(1:nBnd)) = abs(crspwr).^2 ./ (bndpwr(iChn1,:).*bndpwr(iChn2,:));
+        featV(1,paircount,:) = abs(crspwr).^2 ./ (bndpwr(iChn1,:).*bndpwr(iChn2,:));
     end
 end
 

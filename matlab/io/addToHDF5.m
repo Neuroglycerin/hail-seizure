@@ -27,13 +27,14 @@ function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
 
     % Main --------------------------------------------------------------------
     settings = json.read(settingsfname);
-    h5fnme = fullfile(getRepoDir(), settings.TRAIN_DATA_PATH, [subj, settings.VERSION, '.h5']);
-
+    h5fnme = [modtyp '_' feat_name '_' settings.VERSION '.h5'];
+    h5fnme = fullfile(getRepoDir(), settings.TRAIN_DATA_PATH, h5fnme);
+    
     nFle = size(featM, 1);
-
+    
     for i=1:nFle
         seg_name = featM{i, 1};
-        dataset = strcat('/', ictyp, '/', modtyp, '_', feat_name, '/', seg_name);
+        dataset = strcat('/', subj, '/', ictyp, '/', seg_name);
         data = featM{i, 2};
         % h5create will throw an error if the dataset already exists
         try

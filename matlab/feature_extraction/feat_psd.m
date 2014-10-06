@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X (nChn*nFrq) vector holding the PSD
+%                             1 X nChn X nFrq vector holding the PSD
 %                             estimates in decibels
 %                             where nFrq is round(1+samplingfreq/2)
 %        :[struct outparams]- structure with fields listing parameters used
@@ -56,7 +56,7 @@ Nfft = wndw_size;
 nFrq = floor(Nfft/2)+1;
 
 % Initialise holding variable
-featV = nan(1,nChn*nFrq);
+featV = nan(1,nChn,nFrq);
 
 % ------------------------------------------------------------------------
 % Iterate over each iChn
@@ -65,7 +65,7 @@ for iChn=1:nChn
     [Pxx, f] = pwelch(Dat.data(iChn,:), ...
         wndw, param.overlap, Nfft, Dat.fs);
     % Convert to dB and add PSD to feature matrix
-    featV(1,(iChn-1)*nFrq+(1:nFrq)) = 10*log10(Pxx);
+    featV(1,iChn,:) = 10*log10(Pxx);
 end
 
 % ------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X (nChn*nBnd) vector holding the PSD
+%                             1 X nChn X nBnd matrix holding the PSD
 %                             estimates in decibels
 %        :[struct outparams]- structure with fields listing parameters used
 %
@@ -106,7 +106,7 @@ x(end+1) = length(f);
 nBnd = length(x)-1;
 
 % Initialise holding variable
-featV = nan(1,nChn*nBnd);
+featV = nan(1,nChn,nBnd);
 
 % ------------------------------------------------------------------------
 % Iterate over each channel
@@ -117,7 +117,7 @@ for iChn=1:nChn
     % Sum over each band
     for iBnd=1:nBnd
         bndpwr = sum(Pxx(x(iBnd):x(iBnd+1)-1));
-        featV(1,(iChn-1)*nBnd+iBnd) = 10*log10(bndpwr);
+        featV(1,iChn,iBnd) = 10*log10(bndpwr);
     end
 end
 bandEdges = nan(2,nBnd);
