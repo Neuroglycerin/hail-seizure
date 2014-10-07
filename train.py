@@ -4,11 +4,11 @@ import python.utils as utils #contains mainly parsers
 import json
 from sklearn.pipeline import Pipeline
 
-def get_data(subjects):
-    return [utils.parse_matlab_HDF5(subj_dataset) for subj_dataset in subjects]
+def get_data(features):
+    return [utils.parse_matlab_HDF5(feat_name) for feat_name in features]
 
 if __name__=='__main__':
 
     settings = json.load(open('SETTINGS.json', 'r'))
-
-    data = get_data(settings['SUBJECTS'])
+    features = ['raw_' + feat_name + '_' for feat_name in settings['FEATURES']]
+    data = get_data(features)
