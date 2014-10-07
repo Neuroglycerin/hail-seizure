@@ -73,3 +73,43 @@ def read_trained_model(model_name, settings=json_settings):
     '''
 
     return joblib.load(settings['MODEL_PATH']+'/'+model_name)
+
+def buildtraining(subject,features,data):
+    """Function to build data structures for ML:
+    
+    * __Input__: subject, features
+    * __Output___: X feature matrix, y target vector
+    
+    It will not tell you which feature is which."""
+    # hacking this for later
+    first = features[0]
+    for feature in features:
+        Xf = np.array([])
+        # enumerate to get numbers for target vector:
+        #     0 is interictal
+        #     1 is preictal
+        for i,ictal in enumerate(['interictal','preictal']):
+            for segment in data[feature][subject][ictal].keys():
+                # now stack up the feature vectors
+                try:
+                    Xf = np.vstack([Xf,np.ndarray.flatten(data[feature][subject][ictal][segment].T)])
+                except ValueError:
+                    Xf = np.ndarray.flatten(data[feature][subject][ictal][segment].T)
+                # and stack up the target vector
+                # but only for the first feature (will be the same for the rest)
+                if feature == first:
+                    try:
+                        y.append(i)
+                    except NameError:
+                        y = [i]
+        # stick the X arrays together
+        try:
+            X = np.hstack([X,Xf])
+        except NameError:
+            X = Xf
+        except ValueError:
+            print(feature)
+            print(X.shape,Xf.shape)
+    # turn y into an array
+    y = np.array(y)
+    return X,y
