@@ -5,7 +5,7 @@ import json
 from sklearn.pipeline import Pipeline
 
 def get_data(features):
-    return [utils.parse_matlab_HDF5(feat_name) for feat_name in features]
+    return {feat_name: utils.parse_matlab_HDF5(feat_name) for feat_name in features}
 
 if __name__=='__main__':
 
