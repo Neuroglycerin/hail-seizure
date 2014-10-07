@@ -31,7 +31,10 @@ def parse_matlab_HDF5(feat, settings=json_settings):
     # open h5 read-only file for correct subj and version number
 
     h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
-    h5_from_matlab = h5py.File(h5_file_name, 'r')
+    try:
+        h5_from_matlab = h5py.File(h5_file_name, 'r')
+    except:
+        assert False, "File: {0} does not exist".format(h5_file_name)
 
     # parse h5 object into dict using nested comprehensions (see docstring
     # for struct)
