@@ -74,7 +74,7 @@ featV = nan(1, nChn*(nChn-1)/2, 3);
 
 % Initialise pair counter
 paircount = 0;
-figure;
+
 for iChn1=1:nChn
     for iChn2=(iChn1+1):nChn
         % Track how many pairs we have done
@@ -86,7 +86,7 @@ for iChn1=1:nChn
         % Find minima or maxima
         [~,Imax] = max(abs(C));
         Cmax = C(Imax);
-        plot(lagvec,C); pause(0.2);
+        
         % Take out the min/max cross-correlation and its lag
         featV(1,paircount,1) = Cmax;
         featV(1,paircount,2) = lagvec(Imax);
