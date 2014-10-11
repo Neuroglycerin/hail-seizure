@@ -120,11 +120,11 @@ elseif (fc(1)==0) && (isinf(fc(2)))
     
 elseif fc(1)==0
     % Lower bound is 0: design lowpass filter
-    [B,A] = butter(order, fc, 'low');
+    [B,A] = butter(order, fc(2), 'low');
     
 elseif isinf(fc(2)) || fc(2)==1
     % Upper bound is Inf or Nyquist freq: design highpass filter
-    [B,A] = butter(order, fc, 'high');
+    [B,A] = butter(order, fc(1), 'high');
     
 else
     [B,A] = butter(order, fc);
