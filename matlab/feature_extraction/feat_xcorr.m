@@ -19,19 +19,19 @@ end
 
 % Default parameters ------------------------------------------------------
 defparams = struct(...
-    'maxlagdur'      , 3         , ... % maximum lag duration in seconds
+    'maxlagdur'      , 5         , ... % maximum lag duration in seconds
     'band'           , []        , ... % Filtering band (default: below)
     'signalattribute', 'none'    , ... % Signal processing
     'scaleopt'       , 'coeff'   , ... % How to scale cross-correlation
-    'widthmag'       , exp(-1)   );    % 
+    'widthmag'       , exp(-1)   );    % Realative height at which to find width
 
 % Overwrite default parameters with input parameters
 param = parammerge(defparams, inparams);
 
-% By default, eliminate slow frequencies below the duration we are
+% By default, eliminate low frequencies below the duration we are
 % considering
 if isempty(param.band)
-    param.band = [1/param.maxlagdur Inf];
+    param.band = [2/param.maxlagdur Inf];
 end
 
 % ------------------------------------------------------------------------
@@ -99,13 +99,28 @@ for iChn1=1:nChn
             % Negative cross-correlation
             ind = find(C >= Cmax * param.widthmag);
         end
+        % If this is empty then the baseline is too far from zero
+        if isempty(ind) 
+            fprintf('Warning: xcor baseline readjusted for Dat.filename\n');
+            if Cmax>0
+                % Positive cross-correlation
+                ind = find(C <= Cmax * param.widthmag + median(C));
+            else
+                % Negative cross-correlation
+                ind = find(C >= Cmax * param.widthmag + median(C));
+            end
+        end
         % Find left and right distances in sampling indices from peak
         ind = ind - Imax;
         lft = ind(find(ind<0,1,'last'));
         rgt = ind(find(ind>0,1,'first'));
-        % Sum left and right distances from peak
+        % Use max possible if decay never occurs over this time period
+        if isempty(lft); lft = 1+Imax; end
+        if isempty(rgt); rgt = 1+maxlagidx-Imax; end
+        % Sum left and right distances from peak for width
         wdth = (abs(lft)+abs(rgt)) / Dat.fs;
         
+        % Allocate width to feature vector
         featV(1,paircount,3) = wdth;
     end
 end
