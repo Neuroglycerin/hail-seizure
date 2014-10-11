@@ -13,7 +13,7 @@ distrodir = fileparts(which(settingsfname));
 
 % This is the path we expect the weights to be saved at
 mydir = fullfile(distrodir,settings.MODEL_PATH);
-Wfname = ['ica_weights_' subj];
+Wfname = ['ica_weights_' subj '.mat'];
 Wfnamefull = fullfile(mydir,Wfname);
 
 % Check the file exists
