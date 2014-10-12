@@ -115,7 +115,7 @@ for iChn1=1:nChn
             % Linearly interpolate
             rgt = interp1(C(rgt+[-1 0]), rgt+[-1 0], Cmax*param.widthmag);
             % Take distance from peak
-            rgt = maxlagidx*2+1-rgt;
+            rgt = rgt - Imax;
         end
         
         % Fill in blanks as best as possible
