@@ -10,21 +10,22 @@
 %        : str  modtyp       - which preprocessing model was used
 %        
 % Outputs: void
-%
 
 function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
-
+    
     % Default inputs ----------------------------------------------------------
     if nargin<6
         inparams = [];
     end
-
+    
     % Input handling ----------------------------------------------------------
     if ~isempty(inparams); error('Cant handle input parameters'); end;
-
+    
+    ictyp = ictyp2ictyp(ictyp); % Cannonicalise
+    
     % Declarations ------------------------------------------------------------
     settingsfname = 'SETTINGS.json';
-
+    
     % Main --------------------------------------------------------------------
     settings = json.read(settingsfname);
     h5fnme = [modtyp '_' feat_name '_' settings.VERSION '.h5'];
@@ -54,4 +55,5 @@ function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
             end
         end
     end
+    
 end
