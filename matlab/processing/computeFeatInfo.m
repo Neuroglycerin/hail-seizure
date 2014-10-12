@@ -52,7 +52,7 @@ for iElm = 1:prod(siz(2:end))
     % Bin the responses with a histogram ----------------------------------
     % Check the number of possible responses for this element of the
     % feature vector
-    nUnq = length(unique(R_raw));
+    nUnq = length(unique(R_raw(~isnan(R_raw))));
     % If this element is always the same, it contains no information
     if nUnq<2
         I(1,iElm) = 0;
