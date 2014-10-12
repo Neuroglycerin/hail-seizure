@@ -1,4 +1,8 @@
-function W = preprocess_ica(subj, dbgmde, do_icafiles)
+% Computes and saves the ICA weights for a subject
+% Uses all datapoints in all datafiles for the subject
+% FastICA functions were taken and copied here as nested functions with
+% shared variables to reduce memory consumption.
+function W = computeSubjICAW(subj, dbgmde, do_icafiles)
 
 % =========================================================================
 % Initialise random number generator

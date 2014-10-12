@@ -3,19 +3,27 @@
 %        : str  subj         - which subject e.g. Dog_[1-5], Patient_[1-2]
 %        : str  ictyp        - which datasegment type e.g. preictal, ictal, test
 %        : str  modtyp       - which preprocessing model was used e.g. raw, ica
+%        : [str featversion] - which version of the feature to use
+%                              (default: current version ID in settings file)
 %        
 % Outputs: array featM       - matrix of features, concatenated along first dim
 
-function featM = getFeatFromHDF5(featname, subj, ictyp, modtyp)
+function featM = getFeatFromHDF5(featname, subj, ictyp, modtyp, featversion)
+
+% Default inputs
+if nargin<5; featversion = ''; end;
 
 % Declarations ------------------------------------------------------------
 settingsfname = 'SETTINGS.json';
 
 % Main --------------------------------------------------------------------
+% Use current version by default
+if isempty(featversion)
+    settings = json.read(settingsfname);
+    featversion = settings.VERSION;
+end
 % Work out h5 filename
-settings = json.read(settingsfname);
-h5fnme = [modtyp '_' featname '_' settings.VERSION '.h5'];
-h5fnme = fullfile(getRepoDir(), settings.TRAIN_DATA_PATH, h5fnme);
+h5fnme = getFeatH5fname(featname, modtyp, featversion);
 
 if ~exist(h5fnme,'file');
     error('HDF5 file does not exist');
@@ -30,6 +38,10 @@ nSeg = numel(fnames);
 
 % Check the size of the feature vector
 featVsiz = Info.Groups(jSub).Groups(jIct).Datasets(1).Dataspace.Size;
+% Warn if the data is non-singleton in dimension 1
+if featVsiz(1)>1;
+    warning('Feature vectors have non-singleton first dimension.\nMerging along non-singleton dimension!');
+end;
 % Make a feature matrix to house all the feature vectors
 featMsiz = featVsiz;
 featMsiz(1) = featMsiz(1)*nSeg;

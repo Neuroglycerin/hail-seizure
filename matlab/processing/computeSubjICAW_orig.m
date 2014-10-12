@@ -1,7 +1,9 @@
-% Version which is very memory intensive
+% Computes and saves the ICA weights for a subject
+% Uses all datapoints in all datafiles for the subject
+% Calls FastICA, but is very memory intensive
 % Can be used on smaller subject datasets as a sanity check to make sure
 % I didn't break the FastICA code when moving it here
-function W = preprocess_ica_orig(subj, dbgmde, do_icafiles)
+function W = computeSubjICAW_orig(subj, dbgmde, do_icafiles)
 
 % =========================================================================
 % Initialise random number generator

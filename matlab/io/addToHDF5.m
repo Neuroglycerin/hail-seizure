@@ -6,12 +6,15 @@
 % Inputs : cell featM        - feature_vector you want to add
 %        : str  subj         - which subject e.g. Dog_[1-5], Patient_[1-2]
 %        : str  ictyp        - which datasegment type e.g. preictal, ictal, test
-%        : str  feat_name    - feature_name e.g. 'feat_cov'
+%        : str  featname    - feature_name e.g. 'feat_cov'
 %        : str  modtyp       - which preprocessing model was used
 %        
 % Outputs: void
 
-function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
+function addToHDF5(featM, subj, ictyp, featname, modtyp, inparams)
+    
+    % Declarations ------------------------------------------------------------
+    settingsfname = 'SETTINGS.json';
     
     % Default inputs ----------------------------------------------------------
     if nargin<6
@@ -21,15 +24,13 @@ function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
     % Input handling ----------------------------------------------------------
     if ~isempty(inparams); error('Cant handle input parameters'); end;
     
-    ictyp = ictyp2ictyp(ictyp); % Cannonicalise
-    
-    % Declarations ------------------------------------------------------------
-    settingsfname = 'SETTINGS.json';
+    % Cannonicalise ictal type
+    ictyp = ictyp2ictyp(ictyp);
     
     % Main --------------------------------------------------------------------
     settings = json.read(settingsfname);
-    h5fnme = [modtyp '_' feat_name '_' settings.VERSION '.h5'];
-    h5fnme = fullfile(getRepoDir(), settings.TRAIN_DATA_PATH, h5fnme);
+    % Use the version ID currently in the settings file
+    h5fnme = getFeatH5fname(featname, modtyp, settings.VERSION);
     
     nFle = size(featM, 1);
     
@@ -37,23 +38,9 @@ function addToHDF5(featM, subj, ictyp, feat_name, modtyp, inparams)
         seg_name = featM{i, 1};
         dataset = strcat('/', subj, '/', ictyp, '/', seg_name);
         data = featM{i, 2};
-        % h5create will throw an error if the dataset already exists
-        try
-            h5create(h5fnme, dataset, ...
-                size(data), ...
-                'Datatype', class(data));
-            h5write(h5fnme, dataset, data);
-        catch ME
-            % if the dataset does exist and the try throws an exception then we
-            % can just call h5write by itself to overwrite the dataset
-            try
-                h5write(h5fnme, dataset, featM);
-            catch ME
-                % Unfortunately if the dataset has changed type or size this
-                % will fail
-                error('datasize or type has changed');
-            end
-        end
+        
+        h5writePlus(h5fnme, dataset, data);
+        
     end
     
 end

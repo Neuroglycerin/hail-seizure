@@ -54,6 +54,10 @@ for iFun = 1:numel(feature_funcs)
     fclose(fid);
 end
 
-% Close workers
-myCluster = parcluster('local');
-delete(myCluster.Jobs);
+% % Close workers
+% myCluster = parcluster('local');
+% delete(myCluster.Jobs);
+
+% Close pool
+poolobj = gcp('nocreate');
+delete(poolobj);
