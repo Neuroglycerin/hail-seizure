@@ -1,4 +1,8 @@
 
+% Recursively add all of matlab folder to matlab path
+addpath(genpath('matlab'));
+
+% Load the current feature version
 settingsfname = 'SETTINGS.json';
 settings = json.read(settingsfname);
 featversion = settings.VERSION;
