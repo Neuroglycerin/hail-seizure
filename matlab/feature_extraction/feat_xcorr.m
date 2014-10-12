@@ -94,29 +94,42 @@ for iChn1=1:nChn
         % Find the width of the peak
         if Cmax>0
             % Positive cross-correlation
-            ind = find(C <= Cmax * param.widthmag);
+            li = (C <= Cmax * param.widthmag);
         else
             % Negative cross-correlation
-            ind = find(C >= Cmax * param.widthmag);
+            li = (C >= Cmax * param.widthmag);
         end
-        % If this is empty then the baseline is too far from zero
-        if isempty(ind) 
-            fprintf('Warning: xcor baseline readjusted for Dat.filename\n');
-            if Cmax>0
-                % Positive cross-correlation
-                ind = find(C <= Cmax * param.widthmag + median(C));
-            else
-                % Negative cross-correlation
-                ind = find(C >= Cmax * param.widthmag + median(C));
-            end
+        
+        % Find left and right cut locations
+        lft = find(li(1:Imax-1),1,'last');
+        rgt = Imax + find(li(Imax+1:end),1,'first');
+        
+        if ~isempty(lft);
+            % Linearly interpolate
+            lft = interp1(C(lft+[0 1]), lft+[0 1], Cmax*param.widthmag);
+            % Take distance from peak
+            lft = Imax - lft;
         end
-        % Find left and right distances in sampling indices from peak
-        ind = ind - Imax;
-        lft = ind(find(ind<0,1,'last'));
-        rgt = ind(find(ind>0,1,'first'));
-        % Use max possible if decay never occurs over this time period
-        if isempty(lft); lft = 1+Imax; end
-        if isempty(rgt); rgt = 1+maxlagidx-Imax; end
+        
+        if ~isempty(rgt);
+            % Linearly interpolate
+            rgt = interp1(C(rgt+[-1 0]), rgt+[-1 0], Cmax*param.widthmag);
+            % Take distance from peak
+            rgt = maxlagidx*2+1-rgt;
+        end
+        
+        % Fill in blanks as best as possible
+        if isempty(lft) && isempty(rgt)
+            % Assume width is just slightly bigger than range considered
+            lft = maxlagidx+1;
+            rgt = maxlagidx+1;
+        elseif isempty(lft)
+            % Double up or extend to left edge
+            lft = max(rgt, Imax);
+        elseif isempty(rgt)
+            % Double up or extend to right edge
+            rgt = max(lft, maxlagidx*2+2-Imax);
+        end
         % Sum left and right distances from peak for width
         wdth = (abs(lft)+abs(rgt)) / Dat.fs;
         
