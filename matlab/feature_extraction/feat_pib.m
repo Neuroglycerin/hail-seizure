@@ -3,7 +3,7 @@
 %        :[struct inparams] - structure with fields listing requested parameters
 %
 % Outputs: vec featV        - feature vector
-%                             1 X numbands X numchannels vector holding the
+%                             1 x numchannels x numbands vector holding the
 %                             power-in-band values
 %        :[struct outparams]- structure with fields listing parameters used
 
