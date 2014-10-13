@@ -48,6 +48,6 @@ if size(featV,3)~=length(fieldnames(param.bands))
 end
 
 % Divide by broadband power
-featV = bsxfun(@divide, featV(1,:,1:end-1), featV(1,:,end));
+featV = bsxfun(@rdivide, featV(1,:,1:end-1), featV(1,:,end));
 
 end

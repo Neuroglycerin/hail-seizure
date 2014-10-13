@@ -14,9 +14,6 @@ if nargin<2;
     inparams = struct([]);
 end
 % No paramters needed
-if ~isempty(inparams)
-    error('Correlation coefficient eigenvalue feature does not need any parameters. Dont provide any.');
-end
 % Empty params output
 outparams = struct([]);
 

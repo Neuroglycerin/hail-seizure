@@ -15,23 +15,33 @@ end
 
 % Default parameters ------------------------------------------------------
 defparams = struct(...
-    'outlength', 250); % Number of points to use
+    'slice', [1 250]); % Number of points to use
 
 % Overwrite default parameters with input parameters
 param = parammerge(defparams, inparams);
 
 % Main --------------------------------------------------------------------
+
+% Check number of channels and num_samples in this dataset
+nChn = size(Dat.data,1);
+
 % Take fast-fourier transform
 Dat.data = fft(Dat.data,[],2);
 
 % Take first N values
-featV = Dat.data(:, 1:param.outlength);
+Dat.data = Dat.data(:, param.slice(1):param.slice(2));
 
-% Permute so correct shape for output
-featV = permute(featV,[3 1 2]);
+% Initialise output
+featV = nan(1, nChn, diff(param.slice)+1, 2);
+
+% Store real and imaginary parts separately
+featV(1,:,:,1) = real(Dat.data);
+featV(1,:,:,2) = imag(Dat.data);
 
 % ------------------------------------------------------------------------
 % Determine output parameter structure
 outparams = param;
+outparams.window_dur = size(Dat.data,2)/Dat.fs;
+outparams.f          = (param.slice(1):param.slice(2))/outparams.window_dur;
 
 end
