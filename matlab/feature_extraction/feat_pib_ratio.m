@@ -56,8 +56,8 @@ featV = nan(nPrt, nChn, nPairs);
 
 % Initialise pair counter
 paircount = 0;
-for nBnd1=1:nBnd
-    for nBnd2=(iBnd1+1):nBnd
+for iBnd1=1:nBnd
+    for iBnd2=(iBnd1+1):nBnd
         % Track how many pairs we have done
         paircount = paircount + 1;
         % Take ratio between these bands
