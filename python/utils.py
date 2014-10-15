@@ -145,7 +145,7 @@ def build_test(subject, features, data):
     X = np.vstack(X)
     return X, segments
 
-def output_csv(prediction_dict, settings=settings):
+def output_csv(prediction_dict, settings=json_settings):
     '''
     Parse the predictions and output them in the correct format
     for submission to the output directory
