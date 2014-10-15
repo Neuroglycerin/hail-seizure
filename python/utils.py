@@ -27,6 +27,8 @@ def parse_matlab_HDF5(feat, settings=json_settings):
 
     feature_location = settings['TRAIN_DATA_PATH']
     version = settings['VERSION']
+    subjects = settings['SUBJECTS']
+    types = settings['DATA_TYPES']
 
     # open h5 read-only file for correct subj and version number
 
@@ -36,14 +38,27 @@ def parse_matlab_HDF5(feat, settings=json_settings):
     except:
         assert False, "File: {0} does not exist".format(h5_file_name)
 
-    # parse h5 object into dict using nested comprehensions (see docstring
-    # for struct)
-    feature_dict = {subj:
-                        {typ:
-                            {segment: h5_from_matlab[subj][typ][segment].value
-                             for segment in h5_from_matlab[subj][typ]}
-                        for typ in h5_from_matlab[subj]}
-                    for subj in h5_from_matlab}
+    # parse h5 object into dict (see docstring for struct)
+
+    feature_dict = {}
+
+    for subj in subjects:
+        #loop through subjects and initialise the outer subj dict
+        feature_dict.update({subj: {}})
+        for typ in types:
+            #loop through desired types and initialise typ dict for each subj
+            feature_dict[subj].update({typ: {}})
+
+            #because not all of next level have multiple values need
+            #need to check whether it is a list of segs or just a value
+            dataformat = type(h5_from_matlab[subj][typ])
+            if dataformat is h5py._hl.group.Group:
+                #if it is a list of segments just iterate over them and add to dict
+                for seg in h5_from_matlab[subj][typ]:
+                    feature_dict[subj][typ].update({seg: h5_from_matlab[subj][typ][seg].value})
+            elif dataformat is h5py._hl.dataset.Dataset:
+                #if it isn't a list of segements just add value directly under the typ dict
+                    feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
 
     # make sure h5 object is closed
     h5_from_matlab.close()
