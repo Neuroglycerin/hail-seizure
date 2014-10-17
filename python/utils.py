@@ -38,7 +38,7 @@ def parse_matlab_HDF5(feat, settings=json_settings):
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except IOError:
-        print "WARNING: {0} does not exist (or is not readable)".format(h5_file_name)
+        print("WARNING: {0} does not exist (or is not readable)".format(h5_file_name))
         return None
 
     # parse h5 object into dict (see docstring for struct)
@@ -63,7 +63,7 @@ def parse_matlab_HDF5(feat, settings=json_settings):
                     #if it isn't a list of segements just add value directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
-        print "WARNING: Unable to parse {0}".format(h5_file_name)
+        print("WARNING: Unable to parse {0}".format(h5_file_name))
 
 
     # make sure h5 object is closed
