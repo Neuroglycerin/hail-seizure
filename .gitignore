@@ -69,3 +69,6 @@ docs/_build/
 Icon?
 ehthumbs.db
 Thumbs.db
+
+#ipython notebook checkpoints
+*-checkpoint.ipynb
