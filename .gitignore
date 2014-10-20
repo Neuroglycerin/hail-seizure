@@ -72,3 +72,6 @@ Thumbs.db
 
 #ipython notebook checkpoints
 *-checkpoint.ipynb
+
+#vim swap files
+*.swp
