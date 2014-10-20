@@ -3,6 +3,11 @@ import numpy as np
 import os
 import h5py
 from sklearn.externals import joblib #pickle w/ optimisation for np arrays
+import sklearn.feature_selection
+import sklearn.preprocessing
+import sklearn.cross_validation
+import sklearn.pipeline
+import sklearn.ensemble
 
 with open('SETTINGS.json') as settings_fh:
     json_settings = json.load(settings_fh)
@@ -181,3 +186,87 @@ def output_csv(prediction_dict, settings=json_settings):
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
             csv_output.writerow.keys([segment, str(prediction_dict[segment])])
+
+def get_cross_validation_set(y, *params):
+    '''
+    Return the cross_validation dataset
+    input: y (target vector as np.array)
+          *params
+    output: cv (cross validation set)
+    '''
+    if params is None:
+        cv = sklearn.cross_validation.StratifiedSuffleSplit(y)
+        return cv
+
+    cv = sklearn.cross_validation.StratifiedShuffleSplit(y, *params)
+
+    return cv
+
+def get_selector(**kwargs):
+    '''
+    Return a sklearn selector object
+    input: **kwargs for selector params e.g. k
+    output: sklearn.feature_selection object
+    '''
+    selector = sklearn.feature_selection.SelectKBest(sklearn.feature_selection.f_classif,
+                                                     **kwargs)
+    return selector
+
+def get_scaler(**kwargs):
+    '''
+    Return a sklearn scaler object
+    input: **kwargs for scaler params
+    output sklearn.preprocessing scaler object
+    '''
+    scaler = sklearn.preprocessing.StandardScaler(**kwargs)
+    return scaler
+
+def get_classifier(**kwargs):
+    '''
+    Return the classifier object
+    input: **kwargs for classifier params
+    output: sklearn.ensemble classifier object
+    '''
+    classifier = sklearn.ensemble.RandomForestClassifier(**kwargs)
+    return classifier
+
+
+def get_model(selector, scaler, classifier):
+    '''
+    Assemble the pipeline for classification
+    input: selectior - sklearn.feature_selection obj optionally None
+           scaler - sklearn.preprocessing scaler obj
+           classifier - sklearn classifier object
+    output model - sklearn.pipeline object model
+    '''
+
+    # allow optional non-use of selector
+    if selector is None:
+        model = sklearn.pipeline.Pipeline([('scl', scaler),
+                                           ('clf'. classifier)])
+        return model
+
+
+
+    model = sklearn.pipeline.Pipeline([('sel', selector),
+                                       ('scl', scaler),
+                                       ('clf'. classifier)])
+    return model
+
+def fit_model(model_pipe, X, y, cv, **kwargs):
+    '''
+    Fit provided model using pipeline and data
+    input: model_pipe - sklearn.pipeline pipe
+           X - feature vector
+           y - target vector
+           cv - cross validation set
+           **kwargs - for the fitting
+    output: fitted_model - model fitted to the dataset
+    '''
+    model.fit(X, y, **kwargs)
+
+    return model
+
+
+
+
