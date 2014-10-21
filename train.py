@@ -79,5 +79,6 @@ if __name__=='__main__':
     predictions,labels,weights = map(utils.np.hstack, zip(*list(subject_predictions.values())))
 
     # calculate the total AUC score over all subjects
-    auc = utils.sklearn.metrics.roc_auc_score(labels,predictions,sample_weight=weights)
+    # not using sample_weight here due to error, should probably be fixed
+    auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
     print("predicted AUC score over all subjects: {0}".format(auc))
