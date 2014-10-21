@@ -29,7 +29,7 @@ if __name__=='__main__':
 
     classifier = utils.get_classifier()
 
-    model_pipe = utils.get_model(selector, scaler, classifier)
+    model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
 
     model_index = 0
 
