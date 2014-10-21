@@ -16,22 +16,23 @@ if __name__=='__main__':
 
     subjects = settings['SUBJECTS']
 
-    X,y = utils.build_training(subjects, features, data)
+    X,y = utils.build_training(subjects[0], features, data)
 
     # this cross-val is broken at the moment, for reasons discussed in the meeting
     cv = utils.get_cross_validation_set(y)
 
-    thresh = utils.get_thresh()
+    #thresh = utils.get_thresh()
 
-    selector = utils.get_selector(k=3000)
+    #selector = utils.get_selector(k=3000)
 
     scaler = utils.get_scaler()
 
     classifier = utils.get_classifier()
 
-    model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
+    #model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
+    model_pipe = utils.get_model([('scl',scaler),('cls',classifier)])
 
-    for train, test,subject in zip(cv,subjects):
+    for (train, test) ,subject in zip(cv,subjects):
         fitted_model = utils.fit_model(model_pipe,
                                   X[train],
                                   y[train],
