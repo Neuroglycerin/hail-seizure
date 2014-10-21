@@ -233,26 +233,15 @@ def get_classifier(**kwargs):
     return classifier
 
 
-def get_model(selector, scaler, classifier):
+def get_model(elements):
     '''
     Assemble the pipeline for classification
-    input: selectior - sklearn.feature_selection obj optionally None
-           scaler - sklearn.preprocessing scaler obj
-           classifier - sklearn classifier object
+    
+    input: elements in the following structure: 
+            [('scl',scaler), ..., ('clf',classifier)]
     output model - sklearn.pipeline object model
     '''
-
-    # allow optional non-use of selector
-    if selector is None:
-        model = sklearn.pipeline.Pipeline([('scl', scaler),
-                                           ('clf'. classifier)])
-        return model
-
-
-
-    model = sklearn.pipeline.Pipeline([('sel', selector),
-                                       ('scl', scaler),
-                                       ('clf'. classifier)])
+    model = sklearn.pipeline.Pipeline(elements)
     return model
 
 def fit_model(model_pipe, X, y, cv, **kwargs):
