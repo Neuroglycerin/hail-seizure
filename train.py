@@ -14,7 +14,7 @@ if __name__=='__main__':
 
     data = get_data(features)
 
-    subjects = list(settings['SUBJECTS'].keys())
+    subjects = settings['SUBJECTS']
 
     X,y = utils.build_training(subjects, features, data)
 
