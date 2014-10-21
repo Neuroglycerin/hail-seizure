@@ -46,7 +46,7 @@ if __name__=='__main__':
             # fit the model to the training data
             model_pipe.fit(X[train],y[train],clf__sample_weight=weights)
             # append new predictions
-            predictions.append(model.predict_proba(X[test]))
+            predictions.append(model_pipe.predict_proba(X[test]))
             # append test weights to store (why?)
             weights = utils.get_weights(y[test])
             allweights.append(weights)
