@@ -10,7 +10,7 @@ if __name__=='__main__':
 
     settings = json.load(open('SETTINGS.json', 'r'))
 
-    features = [feat_name + '_' for feat_name in settings['FEATURES']]
+    features = settings['FEATURES']
 
     data = get_data(features)
 
