@@ -43,7 +43,7 @@ if __name__=='__main__':
         allweights = []
 
         # run cross validation and report results
-        for (train, test), subject in zip(cv,subjects):
+        for train, test in cv:
             # calculate the weights
             weights = utils.get_weights(y[train])
             # fit the model to the training data
