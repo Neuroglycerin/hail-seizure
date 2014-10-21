@@ -101,6 +101,7 @@ def build_training(subject, features, data):
     Build labelled data set for training
     input : subject  (subject name string)
             features (features to use)
+            data (data structure produced by get_data)
     output: X (feature matrix as np.array)
             y (target vector as np.array)
 
@@ -205,6 +206,7 @@ def get_cross_validation_set(y, *params):
 def get_selector(**kwargs):
     '''
     Return a sklearn selector object
+    will __always__ use ANOVA f-values for selection
     input: **kwargs for selector params e.g. k
     output: sklearn.feature_selection object
     '''
@@ -267,6 +269,10 @@ def fit_model(model_pipe, X, y, cv, **kwargs):
 
     return model
 
-
-
-
+def get_thresh(**kwargs):
+    '''
+    Make a sklearn variance thresholder
+    input: kwargs
+    output: sklearn variance threshold object
+    '''
+    return sklearn.feature_selection.VarianceTheshold(**kwargs)

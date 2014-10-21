@@ -10,16 +10,18 @@ if __name__=='__main__':
 
     settings = json.load(open('SETTINGS.json', 'r'))
 
-
     features = ['raw_' + feat_name + '_' for feat_name in settings['FEATURES']]
     for feat in ['ica_' + feat_name + '_' for feat_name in settings['FEATURES']]:
         features.append(feat)
 
     data = get_data(features)
 
-    X,y = utils.build_training(settings['SUBJECTS'], features, data)
+    X,y = utils.build_training(list(settings['SUBJECTS'].keys()), features, data)
 
+    # this cross-val is broken at the moment, for reasons discussed in the meeting
     cv = utils.get_cross_validation_set(y)
+
+    thresh = utils.get_thresh()
 
     selector = utils.get_selector(k=3000)
 
