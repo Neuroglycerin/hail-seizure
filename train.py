@@ -27,6 +27,9 @@ if __name__=='__main__':
     #model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
     model_pipe = utils.get_model([('scl',scaler),('clf',classifier)])
 
+    #dictionary to store results
+    subject_predictions = {}
+
     for subject in subjects:
 
         X,y = utils.build_training(subject, features, data)
@@ -68,3 +71,13 @@ if __name__=='__main__':
         # save it
         model_pipe.fit(X,y,clf__sample_weight=weights)
         utils.serialise_trained_model(model_pipe, "model_{0}_{1}".format(subject,setting["VERSION"]))
+
+        #store results from each subject
+        subject_predictions[subject] = (predictions,labels,weights)
+
+    #stack subject results (don't worrry about this line)
+    predictions,labels,weights = map(utils.np.hstack, zip(*list(subject_predictions.values())))
+
+    # calculate the total AUC score over all subjects
+    auc = utils.sklearn.metrics.roc_auc_score(labels,predictions,sample_weight=weights)
+    print("predicted AUC score over all subjects: {0}".format(auc))
