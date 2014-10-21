@@ -60,7 +60,7 @@ if __name__=='__main__':
 
         # calculate the total AUC score
         auc = utils.sklearn.metrics.roc_auc_score(labels,predictions,sample_weight=weights)
-        print("predicted AUC score: {0}".format(auc))
+        print("predicted AUC score for {1}: {0}".format(auc,subject))
 
         # fit the final model
         weights = utils.get_weights(y)
