@@ -16,7 +16,9 @@ if __name__=='__main__':
 
     data = get_data(features)
 
-    X,y = utils.build_training(list(settings['SUBJECTS'].keys()), features, data)
+    subjects = list(settings['SUBJECTS'].keys())
+
+    X,y = utils.build_training(subjects, features, data)
 
     # this cross-val is broken at the moment, for reasons discussed in the meeting
     cv = utils.get_cross_validation_set(y)
@@ -31,14 +33,12 @@ if __name__=='__main__':
 
     model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
 
-    model_index = 0
-
-    for train, test in cv:
-        model_index +=1
+    for train, test,subject in zip(cv,subjects):
         fitted_model = utils.fit_model(model_pipe,
                                   X[train],
                                   y[train],
                                   cv,
                                   clf__sample_weight=weights)
 
-        serialise_trained_model(fitted_model, "model_{0}".format(str(model_index)))
+        serialise_trained_model(fitted_model, "model_{0}_{1}".format(subject,setting["VERSION"]))
+
