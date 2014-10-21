@@ -63,7 +63,7 @@ if __name__=='__main__':
 
         # calculate the total AUC score
         auc = utils.sklearn.metrics.roc_auc_score(labels,predictions,sample_weight=weights)
-        print("predicted AUC score for {1}: {0}".format(auc,subject))
+        print("predicted AUC score for {1}: {0:.2f}".format(auc,subject))
 
         # fit the final model
         weights = utils.get_weights(y)
@@ -81,4 +81,4 @@ if __name__=='__main__':
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
     auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
-    print("predicted AUC score over all subjects: {0}".format(auc))
+    print("predicted AUC score over all subjects: {0:.2f}".format(auc))
