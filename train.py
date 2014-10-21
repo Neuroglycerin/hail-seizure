@@ -16,9 +16,6 @@ if __name__=='__main__':
 
     subjects = settings['SUBJECTS']
 
-    # this cross-val is broken at the moment, for reasons discussed in the meeting
-    cv = utils.get_cross_validation_set(y)
-
     #thresh = utils.get_thresh()
 
     #selector = utils.get_selector(k=3000)
@@ -33,6 +30,9 @@ if __name__=='__main__':
     for subject in subjects:
 
         X,y = utils.build_training(subjects[0], features, data)
+
+        # this cross-val is broken at the moment, for reasons discussed in the meeting
+        cv = utils.get_cross_validation_set(y)
 
         # initialise lists for cross-val results
         predictions = []
