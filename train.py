@@ -70,7 +70,7 @@ if __name__=='__main__':
 
         # save it
         model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(model_pipe, "model_{0}_{1}".format(subject,setting["VERSION"]))
+        utils.serialise_trained_model(model_pipe, "model_{0}_{1}".format(subject,settings["VERSION"]))
 
         #store results from each subject
         subject_predictions[subject] = (predictions,labels,weights)
