@@ -37,6 +37,25 @@ feature_funcs = {
     @feat_FFTcorrcoefeig;
     };
 
+feature_funcs = {
+    @feat_pib;
+    @feat_pib_ratioBB;
+    @feat_pib_ratio;
+    @feat_psd_logf;
+    @feat_coher_logf;
+    @feat_act;
+    @feat_xcorr;
+	@feat_PSDlogfcorrcoef;
+	@feat_PSDlogfcorrcoefeig
+    @feat_psd;
+    @feat_coher;
+	@feat_PSDcorrcoef;
+	@feat_PSDcorrcoefeig;
+    @feat_FFT;
+    @feat_FFTcorrcoef;
+    @feat_FFTcorrcoefeig;
+    };
+
 matlabpool('local',12);
 
 for iMod = 1:numel(modtyps)
@@ -60,7 +79,7 @@ for iFun = 1:numel(feature_funcs)
             fprintf('took %d h %d m %d s \n',hrs,mins,secs);
         end
 	% Add mutual information to HDF5 as well
-	computeInfoAddToHDF5(func2str(feature_funcs{iFun}), subj{iSub}, modtyp);
+	computeInfoAddToHDF5([num2str(nSplits) func2str(feature_funcs{iFun})], subj{iSub}, modtyp);
     end
     tme = toc(tic2);
     tme = tme/60/60;

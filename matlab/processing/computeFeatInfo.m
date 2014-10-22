@@ -1,7 +1,7 @@
 % Computes the mutual information between each element of the feature
 % vector and the label of the ictal period
 
-function [I,Ierr] = computeFeatInfo(feat0, feat1)
+function [I,Ierr] = computeFeatInfo(feat0, feat1, haspseudo)
 
 % Declarations ------------------------------------------------------------
 % Information options:
@@ -12,6 +12,9 @@ InfoOpt = struct(...
     'binf'    , 'eqpop');
 
 % Input handling ----------------------------------------------------------
+if nargin<3
+    haspseudo = false;
+end
 if iscell(feat0)
     feat0 = handleCellInput(feat0);
 end
@@ -61,7 +64,13 @@ for iElm = 1:prod(siz(2:end))
     end
     % The number of bins to use should be no more than a quarter of the
     % least populous experimental paradigm to ensure accuracy
-    nBin = floor(min(InfoOpt.nt)/4);
+    if haspseudo
+        % Psuedo data only count for half, then divide by 4
+        nBin = floor(min(InfoOpt.nt)/16*3);
+    else
+        % Should be okay with a divide by 5 and round 
+        nBin = round(min(InfoOpt.nt)/5);
+    end
     % However, we cannot have more bins than possible responses
     nBin = min(nUnq, nBin);
     
