@@ -11,7 +11,7 @@ try
     feat0p = getFeatFromHDF5(featname, subj, 'pseudointerictal', modtyp, featversion);
     feat1p = getFeatFromHDF5(featname, subj, 'pseudopreictal', modtyp, featversion);
     % Merge real and pseudo training data
-    if iscell()
+    if iscell(feat0)
         % Cell merge
         feat0 = {feat0; feat0p};
         feat1 = {feat1; feat1p};
