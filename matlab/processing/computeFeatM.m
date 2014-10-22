@@ -36,7 +36,7 @@ nFle = length(fnames);
 featM = cell(nFle, 2);
 fleIsDoable = false(nFle, 1);
 
-parfor iFle=1:nFle
+for iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
     % Check how long segment parts should be
@@ -98,11 +98,15 @@ parfor iFle=1:nFle
     % Make holding variable for all the parts
     feat_siz = [part_siz(1)*mynPrt part_siz(2:end)];
     feat_vec = nan(feat_siz);
+    cln = cell(length(feat_siz)-1,1);
+    for iCln=1:length(cln)
+        cln{iCln} = ':';
+    end
     % Add the first part now
-    feat_vec(1:part_siz(1), :) = part_vec;
+    feat_vec(1:part_siz(1), cln{:}) = part_vec;
     % Do the remaining parts
     for iPrt=2:mynPrt
-        feat_vec(part_siz(1)*(iPrt-1)+1:part_siz(1)*(iPrt),:) = ...
+        feat_vec(part_siz(1)*(iPrt-1)+1:part_siz(1)*(iPrt), cln{:}) = ...
             featfunc(splitPart(Dat,iPrt,prtlen), inparams);
     end
     % Add to the cell
