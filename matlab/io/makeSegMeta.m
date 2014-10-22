@@ -2,6 +2,7 @@
 % Loads each file and works out which hour of recording it is from
 function [fnames, listSegID, listHourID, listSequence] = makeSegMeta(subj, ictyp)
 
+% Check if we are generating pseudo training data
 if strcmp('pseudopreictal',ictyp)
     ictyp = 'preictal';
     ispseudo = true;

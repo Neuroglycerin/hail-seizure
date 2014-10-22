@@ -7,39 +7,35 @@ logfname = fullfile('train','featureprocessinglog.txt');
 
 subj = subjnames();
 
-%modtyps = {'raw','ica'};
-modtyps = {'ica'};
+modtyps = {'raw','ica'};
 
-ictypes = {'preictal'; 'interictal'; 'test'};
-feature_funcs = {...
-    @feat_var; ...
-    @feat_cov; ...
-    @feat_corrcoef; ...
-    @feat_pib; ...
-    @feat_psd; ...
+% ictypes = {'preictal'; 'interictal'; 'test'};
+ictypes = {'pseudopreictal'; 'pseudointerictal';};
+
+nSplits = 1;
+
+feature_funcs = {
+    @feat_var;
+    @feat_cov;
+    @feat_corrcoef;
+	@feat_corrcoefeig;
+    @feat_pib;
+    @feat_pib_ratioBB;
+    @feat_pib_ratio;
     @feat_psd_logf;
-    @feat_coher;
     @feat_coher_logf;
-    @feat_xcorr;
     @feat_act;
-	@feat_corrcoefeig;
-        @feat_FFT;
-        @feat_FFTcorrcoef;
-        @feat_FFTcorrcoefeig;
-        @feat_pib_ratioBB;
-        @feat_pib_ratio;};
-
-feature_funcs = {...
-	@feat_corrcoefeig;
-	@feat_FFT;
-	@feat_FFTcorrcoef;
-	@feat_FFTcorrcoefeig;
-	@feat_pib_ratioBB;
-	@feat_pib_ratio;
+    @feat_xcorr;
+	@feat_PSDlogfcorrcoef;
+	@feat_PSDlogfcorrcoefeig
+    @feat_psd;
+    @feat_coher;
 	@feat_PSDcorrcoef;
 	@feat_PSDcorrcoefeig;
-	@feat_PSDlogfcorrcoef;
-	@feat_PSDlogfcorrcoefeig};
+    @feat_FFT;
+    @feat_FFTcorrcoef;
+    @feat_FFTcorrcoefeig;
+    };
 
 matlabpool('local',12);
 
@@ -54,7 +50,7 @@ for iFun = 1:numel(feature_funcs)
         for iIct = 1:numel(ictypes)
             fprintf('%s %s: Running feature %s on %s %s %s\n', getComputerName(), datestr(now,30), func2str(feature_funcs{iFun}), modtyp, subj{iSub}, ictypes{iIct});
             tic1 = tic;
-            getFeatAddToHDF5(feature_funcs{iFun}, subj{iSub}, ictypes{iIct}, modtyp)
+            getFeatAddToHDF5(feature_funcs{iFun}, subj{iSub}, ictypes{iIct}, modtyp, nSplits)
             tme = toc(tic1);
             tme = tme/60/60;
             hrs = floor(tme);
