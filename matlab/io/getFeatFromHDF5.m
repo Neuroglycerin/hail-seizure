@@ -26,7 +26,7 @@ end
 h5fnme = getFeatH5fname(featname, modtyp, featversion);
 
 if ~exist(h5fnme,'file');
-    error('getFeatFromHDF5:NoFile','HDF5 file does not exist');
+    error('getFeatFromHDF5:NoFile','HDF5 file %s does not exist',h5fnme);
 end
 
 % Get metadata structure
