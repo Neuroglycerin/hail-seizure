@@ -56,9 +56,19 @@ end
 % Load all the data from the HDF5
 for iSeg=1:nSeg
     lft = allcell;
-    lft{1} = featVsiz(1)*(iSeg-1) + (1:featVsiz(1));
-    featM(lft{:}) = h5read(h5fnme, ['/' subj '/' ictyp '/' fnames{iSeg}]);
+    featV = h5read(h5fnme, ['/' subj '/' ictyp '/' fnames{iSeg}]);
+    lft{1} = featVsiz(1)*(iSeg-1) + (1:size(featV,1));
+    featM(lft{:}) = featV;
 end
+
+% Cut out rows with are left as all NaN
+badRows = isnan(featM);
+for dim=2:length(featMsiz)
+    badRows = all(badRows,dim);
+end
+rgt = allcell;
+rgt{1} = ~badRows;
+featM = featM(rgt{:});
 
 end
 
