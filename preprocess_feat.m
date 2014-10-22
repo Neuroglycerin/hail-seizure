@@ -7,7 +7,8 @@ logfname = fullfile('train','featureprocessinglog.txt');
 
 subj = subjnames();
 
-modtyp = 'ica';
+%modtyps = {'raw','ica'};
+modtyps = {'ica'};
 
 ictypes = {'preictal'; 'interictal'; 'test'};
 feature_funcs = {...
@@ -19,10 +20,31 @@ feature_funcs = {...
     @feat_psd_logf;
     @feat_coher;
     @feat_coher_logf;
-    @feat_xcorr;};
+    @feat_xcorr;
+    @feat_act;
+	@feat_corrcoefeig;
+        @feat_FFT;
+        @feat_FFTcorrcoef;
+        @feat_FFTcorrcoefeig;
+        @feat_pib_ratioBB;
+        @feat_pib_ratio;};
+
+feature_funcs = {...
+	@feat_corrcoefeig;
+	@feat_FFT;
+	@feat_FFTcorrcoef;
+	@feat_FFTcorrcoefeig;
+	@feat_pib_ratioBB;
+	@feat_pib_ratio;
+	@feat_PSDcorrcoef;
+	@feat_PSDcorrcoefeig;
+	@feat_PSDlogfcorrcoef;
+	@feat_PSDlogfcorrcoefeig};
 
 matlabpool('local',12);
 
+for iMod = 1:numel(modtyps)
+modtyp = modtyps{iMod};
 for iFun = 1:numel(feature_funcs)
     tic2 = tic;
     fid = fopen(logfname,'a');
@@ -41,6 +63,8 @@ for iFun = 1:numel(feature_funcs)
             mins = floor(mins);
             fprintf('took %d h %d m %d s \n',hrs,mins,secs);
         end
+	% Add mutual information to HDF5 as well
+	computeInfoAddToHDF5(func2str(feature_funcs{iFun}), subj{iSub}, modtyp);
     end
     tme = toc(tic2);
     tme = tme/60/60;
@@ -52,6 +76,7 @@ for iFun = 1:numel(feature_funcs)
     fid = fopen(logfname,'a');
     fprintf(fid,'%s %s: %s %s took %.1f seconds\n',datestr(now,30),getComputerName(),func2str(feature_funcs{iFun}), modtyp, toc(tic2));
     fclose(fid);
+end
 end
 
 % % Close workers
