@@ -36,6 +36,7 @@ nFle = length(fnames);
 featM = cell(nFle, 2);
 fleIsDoable = false(nFle, 1);
 
+% parfor iFle=1:nFle
 parfor iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
@@ -72,7 +73,7 @@ parfor iFle=1:nFle
             continue;
         else
             % Crop off the start and end half segments
-            Dat.data = Dat.data(:,k+1:end-k+2);
+            Dat.data = Dat.data(:,k+1:end-k+1);
             % We will be able to get one fewer segpart out of this segment
             mynPrt = nPrt-1;
         end
@@ -85,8 +86,11 @@ parfor iFle=1:nFle
         % Regular filename
         myfname = fnames{iFle};
     end
+    
     % Apply the preprocessing model
     Dat = ppfunc(Dat);
+    % THIS MIGHT CHANGE THE DATA LENGTH!
+    
     % Compute the feature for each part of the recording
     % Do the first part now
     part_vec = featfunc(splitPart(Dat,1,prtlen), inparams);
