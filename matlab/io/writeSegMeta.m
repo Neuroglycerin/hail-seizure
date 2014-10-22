@@ -6,7 +6,7 @@ function writeSegMeta()
 metafname = fullfile(getRepoDir(), 'segmentMetadata.json');
 
 subjLst  = subjnames();
-ictypLst = {'preictal','interictal'};
+ictypLst = {'preictal','interictal','pseudopreictal','pseudointerictal'};
 
 fid = fopen(metafname,'w+');
 fprintf(fid,'{\n');
@@ -17,7 +17,7 @@ for iSub=1:length(subjLst)
         ictyp = ictypLst{iIct};
         [fnames, listSegID, listHourID, listSequence] = makeSegMeta(subj, ictyp);
         for iFle=1:length(fnames)
-            fprintf(fid,'\t"%s": {"subject": "%s", "ictyp": "%s", "segID": %d, "hourID": %d, "seqence": %d},\n',...
+            fprintf(fid,'\t"%s": {"subject": "%s", "ictyp": "%s", "segID": %.1f, "hourID": %d, "seqence": %.1f},\n',...
                 fnames{iFle}(1:end-4), subj, ictyp, listSegID(iFle), listHourID(iFle), listSequence(iFle));
         end
     end

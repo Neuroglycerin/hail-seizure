@@ -2,6 +2,15 @@
 % Loads each file and works out which hour of recording it is from
 function [fnames, listSegID, listHourID, listSequence] = makeSegMeta(subj, ictyp)
 
+if strcmp('pseudopreictal',ictyp)
+    ictyp = 'preictal';
+    ispseudo = true;
+elseif strcmp('pseudointerictal',ictyp)
+    ictyp = 'interictal';
+    ispseudo = true;
+else
+    ispseudo = false;
+end
 % Get a list of the files for this ictal type
 [fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp);
 nFle = numel(fnames);
@@ -34,6 +43,12 @@ for iFle=1:nFle
     % Remember for next time
     lastSegID = Dat.segID;
     lastSeqnc = Dat.sequence;
+    % PseudoData
+    if ispseudo
+        fnames{iFle} = strrep(fnames{iFle},ictyp,['pseudo' ictyp]);
+        listSegID(iFle) = listSegID(iFle) + 0.5;
+        listSequence(iFle) = listSequence(iFle) + 0.5;
+    end
 end
 
 end
