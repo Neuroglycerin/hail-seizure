@@ -265,3 +265,15 @@ def get_thresh(**kwargs):
     output: sklearn variance threshold object
     '''
     return sklearn.feature_selection.VarianceTheshold(**kwargs)
+
+def get_weights(y):
+    '''
+    Take the y (target) vector and produce weights:
+    input: y (target vector)
+    output: weights vector
+    '''
+    # calculate correct weighting for unbalanced classes
+    weight = len(y)/sum(y)
+    # generate vector for this weighting
+    weights = np.array([weight if i == 1 else 1 for i in y])
+    return weights
