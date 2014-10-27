@@ -8132,5 +8132,5 @@
 	"Patient_2_pseudointerictal_segment_0039": {"subject": "Patient_2", "ictyp": "pseudointerictal", "segID": 39.5, "hourID": 7, "seqence": 3.5},
 	"Patient_2_pseudointerictal_segment_0040": {"subject": "Patient_2", "ictyp": "pseudointerictal", "segID": 40.5, "hourID": 7, "seqence": 4.5},
 	"Patient_2_pseudointerictal_segment_0041": {"subject": "Patient_2", "ictyp": "pseudointerictal", "segID": 41.5, "hourID": 7, "seqence": 5.5},
-	"Patient_2_pseudointerictal_segment_0042": {"subject": "Patient_2", "ictyp": "pseudointerictal", "segID": 42.5, "hourID": 7, "seqence": 6.5},
+	"Patient_2_pseudointerictal_segment_0042": {"subject": "Patient_2", "ictyp": "pseudointerictal", "segID": 42.5, "hourID": 7, "seqence": 6.5}
 }
