@@ -26,7 +26,7 @@ end
 h5fnme = getFeatH5fname(featname, modtyp, featversion);
 
 if ~exist(h5fnme,'file');
-    error('HDF5 file does not exist');
+    error('getFeatFromHDF5:NoFile','HDF5 file %s does not exist',h5fnme);
 end
 
 % Get metadata structure
@@ -39,9 +39,9 @@ nSeg = numel(fnames);
 % Check the size of the feature vector
 featVsiz = Info.Groups(jSub).Groups(jIct).Datasets(1).Dataspace.Size;
 % Warn if the data is non-singleton in dimension 1
-if featVsiz(1)>1;
-    warning('Feature vectors have non-singleton first dimension.\nMerging along non-singleton dimension!');
-end;
+% if featVsiz(1)>1;
+%     warning('Feature vectors have non-singleton first dimension.\nMerging along non-singleton dimension!');
+% end
 % Make a feature matrix to house all the feature vectors
 featMsiz = featVsiz;
 featMsiz(1) = featMsiz(1)*nSeg;
@@ -56,9 +56,19 @@ end
 % Load all the data from the HDF5
 for iSeg=1:nSeg
     lft = allcell;
-    lft{1} = featVsiz(1)*(iSeg-1) + (1:featVsiz(1));
-    featM(lft{:}) = h5read(h5fnme, ['/' subj '/' ictyp '/' fnames{iSeg}]);
+    featV = h5read(h5fnme, ['/' subj '/' ictyp '/' fnames{iSeg}]);
+    lft{1} = featVsiz(1)*(iSeg-1) + (1:size(featV,1));
+    featM(lft{:}) = featV;
 end
+
+% Cut out rows with are left as all NaN
+badRows = isnan(featM);
+for dim=2:length(featMsiz)
+    badRows = all(badRows,dim);
+end
+rgt = allcell;
+rgt{1} = ~badRows;
+featM = featM(rgt{:});
 
 end
 
@@ -76,7 +86,7 @@ for iSub=1:nSub
     end
 end
 if isempty(jSub)
-    error('Subject %s is not in the HDF5 file',subj);
+    error('getFeatFromHDF5:missingSubject','Subject %s is not in the HDF5 file',subj);
 end
 
 % Pool through second level of groups to find which is our ictal type
@@ -89,7 +99,7 @@ for iIct=1:nIct
     end
 end
 if isempty(jIct)
-    error('Ictal type %s is not in the HDF5 file',ictyp);
+    error('getFeatFromHDF5:missingIctal','Ictal type %s is not in the HDF5 file',ictyp);
 end
 
 % Pool through names of all the datasets and list them

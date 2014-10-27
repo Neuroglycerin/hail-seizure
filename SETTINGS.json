@@ -1,5 +1,5 @@
 {
-    "TRAIN_DATA_PATH": "/home/gavin/drive/neuroglycerin-data/train", 
+    "TRAIN_DATA_PATH": "train", 
     "MODEL_PATH": "model", 
     "SUBJECTS": ["Dog_1",
                  "Dog_2",

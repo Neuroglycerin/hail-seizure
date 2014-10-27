@@ -18,7 +18,7 @@ end
 
 % Bands used in Howbert et al., 2014
 defaultbands = struct(...
-    'delta',      [ 0.1    4.0],  ...
+    'delta',      [ 1.0    4.0],  ...
     'theta',      [ 4.0    8.0],  ...
     'alpha',      [ 8.0   12.0],  ...
     'beta',       [12.0   30.0],  ...
@@ -28,7 +28,7 @@ defaultbands = struct(...
 defparams = struct(...
     'overlap', 0.5 ,...
     'bands'  , defaultbands,...
-    'window' , []);
+    'frqintv', 1   );
 
 % Overwrite default parameters with input parameters
 param = parammerge(defparams, inparams);
@@ -40,16 +40,22 @@ param = parammerge(defparams, inparams);
 
 % ------------------------------------------------------------------------
 
-% Window size (hanning) for pwelch unless specified otherwise
-% Sqrt of number of samples rounded up to nearest int
-if isempty(param.window)
-    wndw_size  = floor(sqrt(num_samples));
-    param.window = hanning(wndw_size);
-end
+% Window length in seconds should be reciprocal of frequency interval
+window_dur = 1/param.frqintv;
+
+% Number of datapoints in window
+wndw_size = window_dur*Dat.fs;
+
+% Round to nearest even number
+wndw_size = round(wndw_size/2)*2;
+
+% Use hanning windowing
+wndw = hanning(wndw_size);
 
 % Check what the interval between frequency samples will be
 % Total duration of windowed segement
 window_dur = wndw_size/Dat.fs;
+
 % Frequencies are (1:N) times per window, so in Hz we have
 frqintv = 1/window_dur;
 
@@ -69,7 +75,7 @@ for iChn=1:nChn
     
     % Use pwelch to calculate spectra and frequency for each channel
     [Pxx, f] = pwelch(Dat.data(iChn,:), ...
-        param.window, param.overlap, Nfft, Dat.fs);
+        wndw, param.overlap, Nfft, Dat.fs);
     
     % For 
     % Integrate frequency bands on spectra and append to output
@@ -87,6 +93,7 @@ end
 % Determine output parameter structure
 outparams = param;
 outparams.window_dur = window_dur;
+outparams.window     = wndw;
 outparams.frqintv    = frqintv;
 outparams.nfft       = Nfft;
 outparams.f          = f;

@@ -12,8 +12,14 @@ switch typ
     case {1,'p','pre','preictal'}
         typ = 'preictal';
         
+    case {'pp','pseudopre','pseudopreictal'}
+        typ = 'pseudopreictal';
+        
     case {0,'i','inter','interictal'}
         typ = 'interictal';
+        
+    case {'pi','pseudointer','pseudointerictal'}
+        typ = 'pseudointerictal';
         
     case {'?','t','test'}
         typ = 'test';
