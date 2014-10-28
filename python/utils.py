@@ -104,10 +104,16 @@ def build_training(subject, features, data):
             data (data structure produced by get_data)
     output: X (feature matrix as np.array)
             y (target vector as np.array)
+            cross-validation iterator
 
     Does not preserve feature names
     '''
+    # start by loading the metadata about the sequences
+    with open('segmentMetadata.json') as metafile:
+        metadata = json.load(metafile)
 
+    # initialise list of segments
+    segments = []
     # hacking this for later
     first = features[0]
     for feature in features:
@@ -118,6 +124,8 @@ def build_training(subject, features, data):
         #     1 is preictal
         for i,ictal in enumerate(['interictal','preictal']):
             for segment in data[feature][subject][ictal].keys():
+                # keep track of the name and order of segments processed
+                segments.append(segment)
                 # now stack up the feature vectors
                 try:
                     Xf = np.vstack([Xf,
@@ -140,9 +148,45 @@ def build_training(subject, features, data):
             print(feature)
             print(X.shape, Xf.shape)
 
+    # create CV iterator
+    cv = Sequence_LOO_CV(segments,metadata)
+
     # turn y into an array
     y = np.array(y)
     return X, y
+
+class Sequence_LOO_CV:
+    def __init__(self,segments,metadata):
+        """Takes a list of the segments ordered as they are in the array.
+        Yield train,test tuples in the style of a sklearn iterator"""
+        # put together the iterator
+        # first make a dictionary mapping from the segments to which sequence each is found in
+        self.segments = map(lambda segment: segment.split(".")[0], segments)
+        segtoseq = {}
+        for segment in self.segments:
+            # doubling and converting to int here because comparing floats is problematic
+            # have to double due to x.5 sequence numbers for pseudo-data
+            segtoseq[segment] = int(2*metadata[segment]['seqence'])
+        # find what sequences we're working with
+        self.sequences = np.array(list(set(segtoseq.values())))
+        self.cv = sklearn.cross_validation.LeaveOneOut(len(self.sequences))
+        return None
+
+    def __iter__(self):
+        for train,test in self.cv:
+            # map these back to the indices of the segments in each sequence
+            trainsequences = self.sequences[train]
+            testsequences = self.sequences[test]
+            train,test = [],[]
+            for i,segment in enumerate(self.segments):
+                sequence = segtoseq[segment]
+                if sequence in trainseq:
+                    train.append(i)
+                elif sequence in testseq:
+                    test.append(i)
+                else:
+                    print("Warning, unable to match {0} to train or test.".format(segment))
+            yield train,test       
 
 def build_test(subject, features, data):
     '''
