@@ -153,7 +153,7 @@ def build_training(subject, features, data):
 
     # turn y into an array
     y = np.array(y)
-    return X, y
+    return X,y,cv
 
 class Sequence_LOO_CV:
     def __init__(self,segments,metadata):
@@ -161,14 +161,14 @@ class Sequence_LOO_CV:
         Yield train,test tuples in the style of a sklearn iterator"""
         # put together the iterator
         # first make a dictionary mapping from the segments to which sequence each is found in
-        self.segments = map(lambda segment: segment.split(".")[0], segments)
-        segtoseq = {}
+        self.segments = list(map(lambda segment: segment.split(".")[0], segments))
+        self.segtoseq = {}
         for segment in self.segments:
             # doubling and converting to int here because comparing floats is problematic
             # have to double due to x.5 sequence numbers for pseudo-data
-            segtoseq[segment] = int(2*metadata[segment]['seqence'])
+            self.segtoseq[segment] = int(2*metadata[segment]['seqence'])
         # find what sequences we're working with
-        self.sequences = np.array(list(set(segtoseq.values())))
+        self.sequences = np.array(list(set(self.segtoseq.values())))
         self.cv = sklearn.cross_validation.LeaveOneOut(len(self.sequences))
         return None
 
@@ -179,10 +179,10 @@ class Sequence_LOO_CV:
             testsequences = self.sequences[test]
             train,test = [],[]
             for i,segment in enumerate(self.segments):
-                sequence = segtoseq[segment]
-                if sequence in trainseq:
+                sequence = self.segtoseq[segment]
+                if sequence in trainsequences:
                     train.append(i)
-                elif sequence in testseq:
+                elif sequence in testsequences:
                     test.append(i)
                 else:
                     print("Warning, unable to match {0} to train or test.".format(segment))
