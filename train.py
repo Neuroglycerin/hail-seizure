@@ -32,7 +32,7 @@ if __name__=='__main__':
 
     for subject in subjects:
 
-        X,y,cv = utils.build_training(subject, features, data)
+        X,y,cv,segments = utils.build_training(subject, features, data)
 
         # initialise lists for cross-val results
         predictions = []

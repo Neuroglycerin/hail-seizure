@@ -105,6 +105,7 @@ def build_training(subject, features, data):
     output: X (feature matrix as np.array)
             y (target vector as np.array)
             cross-validation iterator
+            segments in the order of the X and y array
 
     Does not preserve feature names
     '''
