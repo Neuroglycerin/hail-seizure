@@ -112,8 +112,7 @@ def build_training(subject, features, data):
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
 
-    # initialise list of segments
-    segments = []
+    segments = 'empty'
     # hacking this for later
     first = features[0]
     for feature in features:
@@ -123,9 +122,12 @@ def build_training(subject, features, data):
         #     0 is interictal
         #     1 is preictal
         for i,ictal in enumerate(['interictal','preictal']):
-            for segment in data[feature][subject][ictal].keys():
-                # keep track of the name and order of segments processed
-                segments.append(segment)
+            # this is bona fide programming
+            if segments == 'empty':
+                segments = [np.array(list(data[feature][subject][ictal].keys())),[]]
+            elif segments[1] == []:
+                segments[1] = np.array(list(data[feature][subject][ictal].keys()))
+            for segment in segments[i]:
                 # now stack up the feature vectors
                 try:
                     Xf = np.vstack([Xf,
@@ -148,8 +150,14 @@ def build_training(subject, features, data):
             print(feature)
             print(X.shape, Xf.shape)
 
+    # stick together the segments
+    segments = np.hstack(segments)
+    
     # create CV iterator
     cv = Sequence_LOO_CV(segments,metadata)
+
+    print(len(segments))
+    print(len(y))
 
     # turn y into an array
     y = np.array(y)
@@ -197,10 +205,13 @@ def build_test(subject, features, data):
     output: X (feature matrix as np.array)
             y (labels as np.array)
     '''
-
+    
+    segments =  'empty'
     Xd = {}
     for feature in features:
-        for segment in data[feature][subject]['test'].keys():
+        if segments == 'empty':
+            segments = data[feature][subject]['test'].keys()
+        for segment in segments:
             fvector = np.ndarray.flatten(data[feature][subject]['test'][segment])
             try:
                 Xd[segment] = np.hstack([Xd[segment], fvector])
@@ -208,10 +219,8 @@ def build_test(subject, features, data):
                 Xd[segment] = fvector
 
     # make the X array and corresponding labels
-    segments = []
     X = []
-    for segment in Xd.keys():
-        segments.append(segment)
+    for segment in segments:
         X.append(Xd[segment])
     X = np.vstack(X)
     return X, segments
