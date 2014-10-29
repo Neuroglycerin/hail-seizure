@@ -158,7 +158,7 @@ def build_training(subject, features, data):
 
     # turn y into an array
     y = np.array(y)
-    return X,y,cv
+    return X,y,cv,segments
 
 class Sequence_LOO_CV:
     def __init__(self,segments,metadata):
