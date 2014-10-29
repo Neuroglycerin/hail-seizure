@@ -156,9 +156,6 @@ def build_training(subject, features, data):
     # create CV iterator
     cv = Sequence_LOO_CV(segments,metadata)
 
-    print(len(segments))
-    print(len(y))
-
     # turn y into an array
     y = np.array(y)
     return X,y,cv
