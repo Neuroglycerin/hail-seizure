@@ -141,5 +141,9 @@ end
 % ------------------------------------------------------------------------
 % Determine output parameter structure
 outparams = param;
+outparams.featnames = cell(1,1,3);
+outparams.featnames{1} = 'ypeak';
+outparams.featnames{2} = 'tpeak';
+outparams.featnames{3} = 'twidth';
 
 end
