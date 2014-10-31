@@ -24,13 +24,43 @@ if ischar(featfunc)
     featfunc = str2func(featfunc);
 end
 
-featM = computeFeatM(featfunc, subj, ictyp, modtyp, nPrt, inparams);
+% Compute the
+[featM,outparams] = computeFeatM(featfunc, subj, ictyp, modtyp, nPrt, inparams);
 
+% Get our function name from its handle
 func_str = func2str(featfunc);
 if nPrt~=1
     func_str = [num2str(nPrt) func_str];
 end
 
-addToHDF5(featM, subj, ictyp, func_str, modtyp, inparams);
+% Check if multiple feature names are present
+if ~isfield(outparams,'featnames') || isempty(outparams.featnames)
+    dim = [];
+else
+    % If it is, find which dimension is across multiple subfeatures
+    siz = size(outparams.featnames);
+    dim = find(siz~=1);
+end
+if isempty(dim)
+    % Only one feature, so write to regular name
+    addToHDF5(featM, subj, ictyp, func_str, modtyp, inparams);
+else
+    % Make a cell to take everything from the array
+    allcell = cell(size(siz));
+    for iDim=1:length(siz)
+        allcell{iDim} = ':';
+    end
+    % Separate out the subfeatures and save in separate files
+    for iCut=1:length(outparams.featnames);
+        pp = allcell;
+        pp{dim} = iCut;
+        subfeatM = cell(size(featM));
+        subfeatM(:,1) = featM(:,1);
+        for iFle=1:size(featM,1)
+            subfeatM{iFle,2} = featM{iFle,2}(pp{:});
+        end
+        addToHDF5(subfeatM, subj, ictyp, [func_str '-' outparams.featnames{iCut}], modtyp, inparams);
+    end
+end
 
 end

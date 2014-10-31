@@ -1,7 +1,7 @@
 % func should be a handle to a feature function which accepts two inputs
 % the datastructure, Dat, and a structure of input parameters
 
-function [featM] = computeFeatM(featfunc, subj, ictyp, modtyp, nPrt, inparams)
+function [featM,outparams] = computeFeatM(featfunc, subj, ictyp, modtyp, nPrt, inparams)
 
 % Input handling ----------------------------------------------------------
 if nargin<6
@@ -35,6 +35,7 @@ nFle = length(fnames);
 
 featM = cell(nFle, 2);
 fleIsDoable = false(nFle, 1);
+alloutparams = cell(nFle, 1);
 
 % parfor iFle=1:nFle
 parfor iFle=1:nFle
@@ -93,7 +94,7 @@ parfor iFle=1:nFle
     
     % Compute the feature for each part of the recording
     % Do the first part now
-    part_vec = featfunc(splitPart(Dat,1,prtlen), inparams);
+    [part_vec,alloutparams{iFle}] = featfunc(splitPart(Dat,1,prtlen), inparams);
     % Check size of the part
     part_siz = size(part_vec);
     if part_siz(1)>1;
@@ -121,6 +122,9 @@ end
 
 % Cut out the empty data
 featM = featM(fleIsDoable,:);
+
+% Assume always the same output parameters
+outparams = alloutparams{1};
 
 end
 
