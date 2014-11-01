@@ -41,7 +41,25 @@ else
     siz = size(outparams.featnames);
     dim = find(siz~=1);
 end
-if isempty(dim)
+if iscell(featM{1,2})
+    if isempty(dim)
+        outparams.featnames = cell(numel(featM{1,2}),1);
+        for iSbf=1:numel(featM{1,2})
+            outparams.featnames{iSbf} = num2str(iSbf);
+        end
+    end
+    if numel(outparams.featnames)~=numel(featM{1,2})
+        error('Inconsistent subfeature lengths');
+    end
+    for iSbf=1:numel(featM{1,2})
+        subfeatM = cell(size(featM));
+        subfeatM(:,1) = featM(:,1);
+        for iFle=1:size(featM,1)
+            subfeatM{iFle,2} = featM{iFle,2}{iSbf};
+        end
+        addToHDF5(subfeatM, subj, ictyp, [func_str '-' outparams.featnames{iSbf}], modtyp, inparams);
+    end
+elseif isempty(dim)
     % Only one feature, so write to regular name
     addToHDF5(featM, subj, ictyp, func_str, modtyp, inparams);
 else
@@ -51,15 +69,15 @@ else
         allcell{iDim} = ':';
     end
     % Separate out the subfeatures and save in separate files
-    for iCut=1:length(outparams.featnames);
+    for iSbf=1:length(outparams.featnames);
         pp = allcell;
-        pp{dim} = iCut;
+        pp{dim} = iSbf;
         subfeatM = cell(size(featM));
         subfeatM(:,1) = featM(:,1);
         for iFle=1:size(featM,1)
             subfeatM{iFle,2} = featM{iFle,2}(pp{:});
         end
-        addToHDF5(subfeatM, subj, ictyp, [func_str '-' outparams.featnames{iCut}], modtyp, inparams);
+        addToHDF5(subfeatM, subj, ictyp, [func_str '-' outparams.featnames{iSbf}], modtyp, inparams);
     end
 end
 

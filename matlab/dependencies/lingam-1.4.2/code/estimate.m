@@ -38,7 +38,7 @@ end
 
 % Call the FastICA algorithm
 [icasig, A, W] = fastica( X, 'approach', 'symm', 'g', 'tanh', ...
-			  'epsilon', 1e-14, 'displayMode', 'off');    
+			  'epsilon', 1e-8, 'displayMode', 'off');    
 
 if exist('OCTAVE_VERSION'),
     LOADPATH = savedLoadPath;

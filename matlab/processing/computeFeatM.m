@@ -38,7 +38,7 @@ fleIsDoable = false(nFle, 1);
 alloutparams = cell(nFle, 1);
 
 % parfor iFle=1:nFle
-parfor iFle=1:nFle
+for iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
     % Check how long segment parts should be
@@ -97,22 +97,52 @@ parfor iFle=1:nFle
     [part_vec,alloutparams{iFle}] = featfunc(splitPart(Dat,1,prtlen), inparams);
     % Check size of the part
     part_siz = size(part_vec);
-    if part_siz(1)>1;
-        warning('Features should have singleton first dimension');
-    end;
-    % Make holding variable for all the parts
-    feat_siz = [part_siz(1)*mynPrt part_siz(2:end)];
-    feat_vec = nan(feat_siz);
-    cln = cell(length(feat_siz)-1,1);
-    for iCln=1:length(cln)
-        cln{iCln} = ':';
-    end
-    % Add the first part now
-    feat_vec(1:part_siz(1), cln{:}) = part_vec;
-    % Do the remaining parts
-    for iPrt=2:mynPrt
-        feat_vec(part_siz(1)*(iPrt-1)+1:part_siz(1)*(iPrt), cln{:}) = ...
-            featfunc(splitPart(Dat,iPrt,prtlen), inparams);
+    if iscell(part_vec)
+        feat_vec = cell(part_siz);
+        sbf_siz = cell(part_siz);
+        maxndim = 0;
+        for iSbf=1:numel(feat_vec)
+            sbf_siz{iSbf} = size(part_vec{iSbf});
+            feat_vec{iSbf} = nan([sbf_siz{iSbf}(1)*mynPrt sbf_siz{iSbf}(2:end)]);
+            maxndim = max(maxndim,length(sbf_siz{iSbf}));
+        end
+        % Make a cell to extract every dimension
+        cln = cell(maxndim-1,1);
+        for iCln=1:length(cln)
+            cln{iCln} = ':';
+        end
+        for iSbf=1:numel(feat_vec)
+            % Add the first part now
+            feat_vec{iSbf}(1:sbf_siz{iSbf}(1), cln{:}) = part_vec{iSbf};
+        end
+        % Do the remaining parts
+        for iPrt=2:mynPrt
+            prt_cell = featfunc(splitPart(Dat,iPrt,prtlen), inparams);
+            for iSbf=1:numel(feat_vec)
+                feat_vec{iSbf}(sbf_siz{iSbf}(1)*(iPrt-1)+(1:sbf_siz{iSbf}(1)), cln{:}) = ...
+                    prt_cell{iSbf};
+            end
+        end
+    else
+        if part_siz(1)>1;
+            warning('Features should have singleton first dimension');
+        end;
+        % Make holding variable for all the parts
+        feat_siz = [part_siz(1)*mynPrt part_siz(2:end)];
+        feat_vec = nan(feat_siz);
+        maxndim = length(feat_siz);
+        % Make a cell to extract every dimension
+        cln = cell(maxndim-1,1);
+        for iCln=1:length(cln)
+            cln{iCln} = ':';
+        end
+        % Add the first part now
+        feat_vec(1:part_siz(1), cln{:}) = part_vec;
+        % Do the remaining parts
+        for iPrt=2:mynPrt
+            feat_vec(part_siz(1)*(iPrt-1)+(1:part_siz(1)), cln{:}) = ...
+                featfunc(splitPart(Dat,iPrt,prtlen), inparams);
+        end
     end
     % Add to the cell
     featM(iFle, :) = {myfname, feat_vec};
