@@ -29,7 +29,7 @@ nChn = size(Dat.data,1);
 
 % Take Z-score of each variable
 Dat.data = bsxfun(@minus, Dat.data, mean(Dat.data,2));
-Dat.data = bsxfun(@rdivide, Dat.data, std(Dat.data,2)+eps);
+Dat.data = bsxfun(@rdivide, Dat.data, std(Dat.data,[],2)+eps);
 
 %Compute covariance matrix
 C = cov(Dat.data');
