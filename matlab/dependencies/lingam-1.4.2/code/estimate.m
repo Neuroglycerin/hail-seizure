@@ -28,23 +28,23 @@ function [B, stde, ci, k, Wout] = estimate(X)
 %
 % See also PRUNE, MODELFIT, LINGAM.
 
-% For Octave compatibility
-if exist('OCTAVE_VERSION'),
-    savedLoadPath = LOADPATH;
-    LOADPATH = ['../FastICA_21_octave:', LOADPATH];
-else
-    addpath('../FastICA_23');
-end
+% % % For Octave compatibility
+% % if exist('OCTAVE_VERSION'),
+% %     savedLoadPath = LOADPATH;
+% %     LOADPATH = ['../FastICA_21_octave:', LOADPATH];
+% % else
+% %     addpath('../FastICA_23');
+% % end
 
 % Call the FastICA algorithm
 [icasig, A, W] = fastica( X, 'approach', 'symm', 'g', 'tanh', ...
 			  'epsilon', 1e-8, 'displayMode', 'off');    
 
-if exist('OCTAVE_VERSION'),
-    LOADPATH = savedLoadPath;
-else
-    rmpath('../FastICA_23');
-end
+% % if exist('OCTAVE_VERSION'),
+% %     LOADPATH = savedLoadPath;
+% % else
+% %     rmpath('../FastICA_23');
+% % end
 
 % [Here, we really should perform some tests to see if the 'icasig' 
 %  really are independent. If they are not very independent, we should
