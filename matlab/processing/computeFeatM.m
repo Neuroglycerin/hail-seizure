@@ -37,8 +37,7 @@ featM = cell(nFle, 2);
 fleIsDoable = false(nFle, 1);
 alloutparams = cell(nFle, 1);
 
-% parfor iFle=1:nFle
-for iFle=1:nFle
+parfor iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
     % Check how long segment parts should be
