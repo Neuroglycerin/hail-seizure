@@ -11,6 +11,8 @@ switch lower(modtyp)
         func = @(x)x;
     case 'ica'
         func = @(x) raw2ica(x, subj);
+    case 'csp'
+        func = @(x) raw2csp(x, subj);
     otherwise
         error('Unfamiliar model preprocessing: %s',modtyp);
 end
