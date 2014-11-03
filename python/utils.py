@@ -169,13 +169,23 @@ class Sequence_LOO_CV:
         # first make a dictionary mapping from the segments to which sequence each is found in
         self.segments = list(map(lambda segment: segment.split(".")[0], segments))
         self.segtoseq = {}
+        self.seqclass = {}
         for segment in self.segments:
             # doubling and converting to int here because comparing floats is problematic
             # have to double due to x.5 sequence numbers for pseudo-data
-            self.segtoseq[segment] = int(2*metadata[segment]['seqence'])
+            sequence = int(2*metadata[segment]['seqence'])
+            self.segtoseq[segment] = sequence
+            # dictionary identifying which class each sequence should be in:
+            if metadata[segment]['ictyp'] == 'preictal':
+                self.seqclass[sequence] = 1
+            else:
+                self.seqclass[sequence] = 0
         # find what sequences we're working with
         self.sequences = np.array(list(set(self.segtoseq.values())))
-        self.cv = sklearn.cross_validation.LeaveOneOut(len(self.sequences))
+        # need to build a y vector for these sequences
+        y = [self.seqclass[sequence] for sequence in self.sequences]
+        # switching this to a stratified shuffle split
+        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, test_size=0.7)
         return None
 
     def __iter__(self):

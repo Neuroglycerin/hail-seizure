@@ -27,6 +27,9 @@ if __name__=='__main__':
     #model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
     model_pipe = utils.get_model([('scl',scaler),('clf',classifier)])
 
+    # set depth to something lower
+    model_pipe.set_params(clf__max_depth=3)
+
     #dictionary to store results
     subject_predictions = {}
 
