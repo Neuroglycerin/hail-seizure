@@ -6,9 +6,6 @@
 %                             1 X (nChn*(nChn-1)/2) vector covariance of
 %                             each pair of channels
 %        :[struct outparams]- structure with fields listing parameters used
-%
-% NB: Excludes the variance terms. Use feat_var for single channel
-% variance.
 
 function [featV,outparams] = feat_ilingam(Dat, inparams)
 
@@ -20,6 +17,9 @@ end
 if ~isempty(inparams)
     error('LiNGAM feature does not need any parameters. Dont provide any.');
 end
+
+% Initialise seed ---------------------------------------------------------
+seedrng();
 
 % Main --------------------------------------------------------------------
 % Check number of channels in this dataset
