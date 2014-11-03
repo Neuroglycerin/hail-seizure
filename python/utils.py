@@ -184,8 +184,8 @@ class Sequence_LOO_CV:
         self.sequences = np.array(list(set(self.segtoseq.values())))
         # need to build a y vector for these sequences
         y = [self.seqclass[sequence] for sequence in self.sequences]
-        # switching this to a stratified shuffle split
-        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, test_size=0.7)
+        # switching this to a stratified shuffle split; test_size is hand-set for good results
+        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, test_size=0.8)
         return None
 
     def __iter__(self):
