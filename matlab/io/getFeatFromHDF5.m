@@ -8,10 +8,11 @@
 %        
 % Outputs: array featM       - matrix of features, concatenated along first dim
 
-function featM = getFeatFromHDF5(featname, subj, ictyp, modtyp, featversion)
+function featM = getFeatFromHDF5(featname, subj, ictyp, modtyp, featversion, loadascell)
 
 % Default inputs
 if nargin<5; featversion = ''; end;
+if nargin<6; loadascell = false; end;
 
 % Declarations ------------------------------------------------------------
 settingsfname = 'SETTINGS.json';
@@ -35,6 +36,15 @@ Info = h5info(h5fnme);
 % Need to get a list of all the datasets
 [fnames, jSub, jIct] = scrapeH5datasets(Info, subj, ictyp);
 nSeg = numel(fnames);
+
+if loadascell
+    featM = cell(nSeg,2);
+    for iSeg=1:nSeg
+        featM{iSeg,1} = fnames{iSeg};
+        featM{iSeg,2} = h5read(h5fnme, ['/' subj '/' ictyp '/' fnames{iSeg}]);
+    end
+    return;
+end
 
 % Check the size of the feature vector
 featVsiz = Info.Groups(jSub).Groups(jIct).Datasets(1).Dataspace.Size;
@@ -61,7 +71,7 @@ for iSeg=1:nSeg
     featM(lft{:}) = featV;
 end
 
-% Cut out rows with are left as all NaN
+% Cut out rows which are left as all NaN
 badRows = isnan(featM);
 for dim=2:length(featMsiz)
     badRows = all(badRows,dim);
