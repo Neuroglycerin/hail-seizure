@@ -96,12 +96,13 @@ def read_trained_model(model_name, settings=json_settings):
 
     return joblib.load(settings['MODEL_PATH']+'/'+model_name)
 
-def build_training(subject, features, data):
+def build_training(subject, features, data, flagpseudo=false):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
             features (features to use)
             data (data structure produced by get_data)
+            flagpseudo (bool: whether to include pseudodata)
     output: X (feature matrix as np.array)
             y (target vector as np.array)
             cross-validation iterator
@@ -112,7 +113,14 @@ def build_training(subject, features, data):
     # start by loading the metadata about the sequences
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
-
+    
+    if flagpseudo:
+        ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
+        classlst = [0,1,0,1]
+    else:
+        ictyplst = ['interictal','preictal']
+        classlst = [0,1]
+    
     segments = 'empty'
     # hacking this for later
     first = features[0]
@@ -122,7 +130,7 @@ def build_training(subject, features, data):
         # enumerate to get numbers for target vector:
         #     0 is interictal
         #     1 is preictal
-        for i,ictal in enumerate(['interictal','preictal']):
+        for i,ictal in enumerate(ictyplst):
             # this is bona fide programming
             if segments == 'empty':
                 segments = [np.array(list(data[feature][subject][ictal].keys())),[]]
@@ -139,9 +147,9 @@ def build_training(subject, features, data):
                 # but only for the first feature (will be the same for the rest)
                 if feature == first:
                     try:
-                        y.append(i)
+                        y.append(classlst[i])
                     except NameError:
-                        y = [i]
+                        y = [classlst[i]]
         # stick the X arrays together
         try:
             X = np.hstack([X, Xf])
@@ -205,7 +213,7 @@ class Sequence_LOO_CV:
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, n_iter=10, test_size=0.2, random_state=7)
         # Some of the datasets only have 3 hours of preictal recordings.
-        # This will provied 10 stratified shuffles, each using 1 of the preictal hours
+        # This will provie 10 stratified shuffles, each using 1 of the preictal hours
         # Doesn't guarantee actually using each hour at least once though!
         # We fix the random number generator so we will always use the same split
         # for this subject across multiple CV tests for a fairer comparison.
@@ -217,9 +225,14 @@ class Sequence_LOO_CV:
             trainhourIDs = self.hourIDs[train]
             testhourIDs = self.hourIDs[test]
             train,test = [],[]
+            # Loop over all segments
             for i,segment in enumerate(self.segments):
+                # Check if the hourID string is in the train or test partition
                 hourID = self.seg2hour[segment]
                 if hourID in trainhourIDs:
+                    # I do not know generators, but this looks REALLY WRONG to me
+                    # Surely this is adding each segment index to the list of
+                    # hour indices which is the value of train as provided by self.cv?!
                     train.append(i)
                 elif hourID in testhourIDs:
                     test.append(i)
