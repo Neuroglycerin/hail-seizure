@@ -1,13 +1,17 @@
-function W = saveCSPweights(subj)
+function W = saveCSPweights(subj, modtyp)
 % You should pre-multiply by W
+
+if nargin<2 || isempty(modtyp)
+    modtyp = '';
+end
 
 dbgmde = true;
 
 % Compute CSP weights for this subject
-W = computeCSP(subj);
+W = computeCSP(subj, modtyp);
 
 % Write the CSP weights matrix to file ------------------------------------
-[Wfname,Wfnamefull_log] = getWfname(subj);
+[Wfname,Wfnamefull_log] = getWfname(subj, modtyp);
 if dbgmde; fprintf('Writing weight matrix to file\n  %s\n',Wfname); end
 if ~exist(fileparts(Wfname),'dir'); mkdir(fileparts(Wfname)); end;
 save(Wfname,'W'); % Overwrite the copy to be used in transformations
@@ -16,7 +20,7 @@ save(Wfnamefull_log,'W'); % Save a dated copy for posterity
 
 end
 
-function [Wfnamefull,Wfnamefull_log] = getWfname(subj)
+function [Wfnamefull,Wfnamefull_log] = getWfname(subj, modtyp)
 
 % Declarations
 settingsfname = 'SETTINGS.json';
@@ -24,15 +28,26 @@ settingsfname = 'SETTINGS.json';
 % Load the settings file
 settings = json.read(settingsfname);
 
+if isempty(modtyp) || strcmp(modtyp,'raw')
+    modtyp = '';
+else
+    modtyp = ['_' modtyp];
+end
+
 mydir = fullfile(getRepoDir(), settings.MODEL_PATH);
-Wfname = ['csp_weights_' subj];
+Wfname = ['csp_weights_' subj modtyp];
 
 Wfnamefull = fullfile(mydir,Wfname);
 Wfnamefull_log = fullfile(mydir,'log',[Wfname '_' datestr(now,30)]);
 
 end
 
-function W = computeCSP(subj)
+function W = computeCSP(subj, modtyp)
+
+if isempty(modtyp) || strcmp(modtyp,'raw')
+    modtyp = 'raw';
+end
+ppfunc = getPreprocFunc(modtyp, subj);
 
 [fnames1, mydir1] = subjtyp2dirs(subj, 'preictal', 'raw');
 [fnames0, mydir0] = subjtyp2dirs(subj, 'interictal', 'raw');
@@ -51,6 +66,8 @@ nHour = 1;
 for iFle=1:length(fnames1)
     % Load this segment
     Dat = loadSegFile(fullfile(mydir1,fnames1{iFle}));
+    % Apply the preprocessing function
+    Dat = ppfunc(Dat);
     % Check the files are incremental!
     if Dat.segID ~= lastSegID+1
         error('Non-incremental segment IDs');
