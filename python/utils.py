@@ -206,6 +206,9 @@ def build_training(subject, features, data, flagpseudo=False):
             for segment in segments[i]:
                 # now stack up the feature vectors
                 try:
+                    # Needs to NOT flatten first dimension, since if this is not
+                    # singleton, this is where the 10 minute segment is further
+                    # divided into parts (of 1 minute long each, say)
                     Xf = np.vstack([Xf, np.ndarray.flatten(\
                             data[feature][subject][ictal][segment].T)])
                 except ValueError:
@@ -311,6 +314,7 @@ class Sequence_CV:
                           "to train or test.".format(segment))
             yield train, test
 
+
 def build_test(subject, features, data):
     '''
     Function to build data structures for submission
@@ -340,6 +344,26 @@ def build_test(subject, features, data):
         X.append(Xd[segment])
     X = np.vstack(X)
     return X, segments
+    
+
+def subjsortprediction(prediction_dict):
+    '''
+    Take the predictions and organise them so they are normalised for the number
+    of preictal and interictal segments in the test data
+    '''
+    # Loop over all segments
+    #for segment in prediction_dict.keys():
+        # Look at segment and take out the subject name
+        # Use this to split predictions by subject name
+    # Within each subject, sort the segments by prediction value
+    
+    # Using prior knowledge about how many preictal and interictal segments we
+    # expect to see, intersperse segments from each subject.
+    # Allow prediction values to control local order, but maintain the
+    # appropriate interspersion at the larger scale.
+    
+    # Replace prediciton values with (index within the sort)/(numsegments-1)
+    return None
 
 def output_csv(prediction_dict, settings):
     '''
@@ -356,6 +380,7 @@ def output_csv(prediction_dict, settings):
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
             csv_output.writerow.keys([segment, str(prediction_dict[segment])])
+
 
 def get_cross_validation_set(y, *params):
     '''
