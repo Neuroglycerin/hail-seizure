@@ -8,24 +8,85 @@ import sklearn.preprocessing
 import sklearn.cross_validation
 import sklearn.pipeline
 import sklearn.ensemble
+import optparse
 
-with open('SETTINGS.json') as settings_fh:
-    json_settings = json.load(settings_fh)
+def get_parser():
+    '''
+    Generate optparse parser object
+    with the relevant options
+    input:  void
+    output: optparse parser
+    '''
+    parser = optparse.OptionParser()
 
-def parse_matlab_HDF5(feat, settings=json_settings):
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="Print verbose output")
+
+    parser.add_option("-s", "--settings",
+                      action="store",
+                      dest="settings",
+                      default="SETTINGS.json",
+                      help="Settings file to use in JSON format (default="
+                            "SETTINGS.json)")
+
+    parser.add_option("-k", "--selector_k",
+                      action="store",
+                      dest="selector_k",
+                      type=int,
+                      default="3000",
+                      help="Number of best features to select"\
+                           " via ANOVA f-scores (default=3000)")
+
+    parser.add_option("-d", "--max_depth",
+                      action="store",
+                      dest="max_depth",
+                      type=int,
+                      default="3",
+                      help="Max tree depth in random forest classifier"
+                           "(default=3)")
+
+    return parser
+
+def get_settings(settings_file):
+    '''
+    Small wrapped for json.load to parse settings file
+    input:  settings_file - string filename for settings file
+    output: settings - dict containing parsed settings values
+    '''
+    with open(settings_file, 'r') as sett_fh:
+        settings = json.load(sett_fh)
+    return settings
+
+def get_data(features, settings):
+    '''
+    Iterate through Feature HDF5s and parse input using
+    parse_matlab_HDF5 into a dict
+    input:  features - list of feature to parse
+            settings - parsed settings file
+    output: data - dict of {feature name: respective parsed HDF5}
+    '''
+    data = {feat_name:\
+            parse_matlab_HDF5(feat_name, settings)\
+            for feat_name in features}
+
+    return data
+
+def parse_matlab_HDF5(feat, settings):
     '''
     Parse h5 file from matlab into hierarchial dict containing np arrays
     input: feat - feature name (e.g. Dog_1),
            settings - parsed json settings in dict format (json.load)
     output: feat_dict containing data in hierarchial format
-                    e.g. raw_feat_cov= {'Dog_1': {
-                                            'interictal': {segment_fname1: featvector,
-                                                           segment_fname2: featvector}
-
-                                             'preictal': { ... },
-                                             'test': { ... }
-                                             }
-                                        'Dog_2': { ... { ... } }}
+              e.g. raw_feat_cov= {'Dog_1': {
+                                     'interictal': {segment_fname1: featvector,
+                                                    segment_fname2: featvector}
+                                      'preictal': { ... },
+                                      'test': { ... }
+                                      }
+                                  'Dog_2': { ... { ... } }}
                                   }
     '''
 
@@ -43,7 +104,8 @@ def parse_matlab_HDF5(feat, settings=json_settings):
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except IOError:
-        print("WARNING: {0} does not exist (or is not readable)".format(h5_file_name))
+        print("WARNING: {0} does not exist (or is not readable)".format(\
+                h5_file_name))
         return None
 
     # parse h5 object into dict (see docstring for struct)
@@ -51,21 +113,24 @@ def parse_matlab_HDF5(feat, settings=json_settings):
     feature_dict = {}
     try:
         for subj in subjects:
-            #loop through subjects and initialise the outer subj dict
+            # loop through subjects and initialise the outer subj dict
             feature_dict.update({subj: {}})
             for typ in types:
-                #loop through desired types and initialise typ dict for each subj
+                # loop through desired types and initialise typ dict
+                # for each subj
                 feature_dict[subj].update({typ: {}})
-
-                #because not all of next level have multiple values need
-                #need to check whether it is a list of segs or just a value
+                # because not all of next level have multiple values need
+                # need to check whether it is a list of segs or just a value
                 dataformat = type(h5_from_matlab[subj][typ])
                 if dataformat is h5py._hl.group.Group:
-                    #if it is a list of segments just iterate over them and add to dict
+                    # if it is a list of segments just iterate over them and
+                    # add to dict
                     for seg in h5_from_matlab[subj][typ]:
-                        feature_dict[subj][typ].update({seg: h5_from_matlab[subj][typ][seg].value})
+                        feature_dict[subj][typ].update(\
+                                {seg: h5_from_matlab[subj][typ][seg].value})
                 elif dataformat is h5py._hl.dataset.Dataset:
-                    #if it isn't a list of segements just add value directly under the typ dict
+                    # if it isn't a list of segements just add value
+                    # directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
         print("WARNING: Unable to parse {0}".format(h5_file_name))
@@ -76,7 +141,7 @@ def parse_matlab_HDF5(feat, settings=json_settings):
 
     return feature_dict
 
-def serialise_trained_model(model, model_name, settings=json_settings):
+def serialise_trained_model(model, model_name, settings):
     '''
     Serialise and compress trained sklearn model to repo
     input: model (sklearn model)
@@ -86,7 +151,7 @@ def serialise_trained_model(model, model_name, settings=json_settings):
     '''
     joblib.dump(model, settings['MODEL_PATH']+'/'+model_name, compress=9)
 
-def read_trained_model(model_name, settings=json_settings):
+def read_trained_model(model_name, settings):
     '''
     Read trained model from repo
     input: model_name (string for model file name)
@@ -96,7 +161,7 @@ def read_trained_model(model_name, settings=json_settings):
 
     return joblib.load(settings['MODEL_PATH']+'/'+model_name)
 
-def build_training(subject, features, data, flagpseudo=false):
+def build_training(subject, features, data, flagpseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -113,14 +178,14 @@ def build_training(subject, features, data, flagpseudo=false):
     # start by loading the metadata about the sequences
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
-    
+
     if flagpseudo:
         ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
         classlst = [0,1,0,1]
     else:
         ictyplst = ['interictal','preictal']
         classlst = [0,1]
-    
+
     segments = 'empty'
     # hacking this for later
     first = features[0]
@@ -133,21 +198,25 @@ def build_training(subject, features, data, flagpseudo=false):
         for i,ictal in enumerate(ictyplst):
             # this is bona fide programming
             if segments == 'empty':
-                segments = [np.array(list(data[feature][subject][ictal].keys())),[]]
+                segments = [np.array(list(\
+                        data[feature][subject][ictal].keys())),[]]
             elif segments[1] == []:
-                segments[1] = np.array(list(data[feature][subject][ictal].keys()))
+                segments[1] = np.array(list(\
+                        data[feature][subject][ictal].keys()))
             for segment in segments[i]:
                 # now stack up the feature vectors
                 try:
                     # Needs to NOT flatten first dimension, since if this is not
                     # singleton, this is where the 10 minute segment is further
                     # divided into parts (of 1 minute long each, say)
-                    Xf = np.vstack([Xf,
-                                    np.ndarray.flatten(data[feature][subject][ictal][segment].T)])
+                    Xf = np.vstack([Xf, np.ndarray.flatten(\
+                            data[feature][subject][ictal][segment].T)])
                 except ValueError:
-                    Xf = np.ndarray.flatten(data[feature][subject][ictal][segment].T)
+                    Xf = np.ndarray.flatten(\
+                            data[feature][subject][ictal][segment].T)
                 # and stack up the target vector
-                # but only for the first feature (will be the same for the rest)
+                # but only for the first feature
+                # (will be the same for the rest)
                 if feature == first:
                     try:
                         y.append(classlst[i])
@@ -164,13 +233,13 @@ def build_training(subject, features, data, flagpseudo=false):
 
     # stick together the segments
     segments = np.hstack(segments)
-    
+
     # create CV iterator
     cv = Sequence_LOO_CV(segments,metadata)
 
     # turn y into an array
     y = np.array(y)
-    return X,y,cv,segments
+    return X, y, cv, segments
 
 class Sequence_LOO_CV:
     def __init__(self,segments,metadata):
@@ -189,12 +258,12 @@ class Sequence_LOO_CV:
             hourID = int(metadata[segment]['hourID'])
             ictyp = metadata[segment]['ictyp']
             # dictionary identifying which class each segment should be in:
-            if ictyp == 'preictal' | ictyp == 'pseudopreictal':
+            if ictyp == 'preictal' or ictyp == 'pseudopreictal':
                 # Record the class of this segment
                 self.seg2class[segment] = 1
                 # Record the hourIDstr of this segment, noting it is preictal
                 self.seg2hour[segment] = "p{0}".format(hourID)
-            elif ictyp == 'interictal' | ictyp == 'pseudointerictal':
+            elif ictyp == 'interictal' or ictyp == 'pseudointerictal':
                 # Record the class of this segment
                 self.seg2class[segment] = 0
                 # Record the hourIDstr of this segment, noting it is interictal
@@ -205,14 +274,15 @@ class Sequence_LOO_CV:
             # Make sure the hourIDstr of which this segment is a member is
             # in the mapping from hourIDstr to class
             self.hour2class[self.seg2hour[segment]] = self.seg2class[segment]
-        
+
         # Find what unique hourIDstrings there are (p1, p2, ..., i1, i2, ...)
         self.hourIDs = np.array(list(set(self.seg2hour.values())))
-        
+
         # need to build a y vector for these sequences
+
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
-        
+
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, n_iter=10, test_size=0.2, random_state=7)
         # Some of the datasets only have 3 hours of preictal recordings.
@@ -240,8 +310,10 @@ class Sequence_LOO_CV:
                 elif hourID in testhourIDs:
                     test.append(i)
                 else:
-                    print("Warning, unable to match {0} to train or test.".format(segment))
-            yield train,test
+                    print("Warning, unable to match {0} "\
+                          "to train or test.".format(segment))
+            yield train, test
+
 
 def build_test(subject, features, data):
     '''
@@ -252,14 +324,15 @@ def build_test(subject, features, data):
     output: X (feature matrix as np.array)
             y (labels as np.array)
     '''
-    
+
     segments =  'empty'
     Xd = {}
     for feature in features:
         if segments == 'empty':
             segments = data[feature][subject]['test'].keys()
         for segment in segments:
-            fvector = np.ndarray.flatten(data[feature][subject]['test'][segment])
+            fvector = np.ndarray.flatten(\
+                    data[feature][subject]['test'][segment])
             try:
                 Xd[segment] = np.hstack([Xd[segment], fvector])
             except:
@@ -271,7 +344,7 @@ def build_test(subject, features, data):
         X.append(Xd[segment])
     X = np.vstack(X)
     return X, segments
-
+    
 
 def subjsortprediction(prediction_dict)
     '''
@@ -292,7 +365,7 @@ def subjsortprediction(prediction_dict)
     # Replace prediciton values with (index within the sort)/(numsegments-1)
     
 
-def output_csv(prediction_dict, settings=json_settings):
+def output_csv(prediction_dict, settings):
     '''
     Parse the predictions and output them in the correct format
     for submission to the output directory
@@ -307,6 +380,7 @@ def output_csv(prediction_dict, settings=json_settings):
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
             csv_output.writerow.keys([segment, str(prediction_dict[segment])])
+
 
 def get_cross_validation_set(y, *params):
     '''
@@ -330,8 +404,10 @@ def get_selector(**kwargs):
     input: **kwargs for selector params e.g. k
     output: sklearn.feature_selection object
     '''
-    selector = sklearn.feature_selection.SelectKBest(sklearn.feature_selection.f_classif,
-                                                     **kwargs)
+    selector = sklearn.feature_selection.SelectKBest(\
+            sklearn.feature_selection.f_classif,
+            **kwargs)
+
     return selector
 
 def get_scaler(**kwargs):
@@ -356,8 +432,8 @@ def get_classifier(**kwargs):
 def get_model(elements):
     '''
     Assemble the pipeline for classification
-    
-    input: elements in the following structure: 
+
+    input: elements in the following structure:
             [('scl',scaler), ..., ('clf',classifier)]
     output model - sklearn.pipeline object model
     '''
