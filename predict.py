@@ -21,7 +21,7 @@ def main(models=None):
     subjects = settings['SUBJECTS']
     features = settings['FEATURES']
     #load the data
-    data = train.get_data(features)
+    data = utils.get_data(features,settings)
     #iterate over subjects
     predictiondict = {}
     for subject in subjects:
