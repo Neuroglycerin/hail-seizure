@@ -235,13 +235,13 @@ def build_training(subject, features, data, flagpseudo=False):
     segments = np.hstack(segments)
 
     # create CV iterator
-    cv = Sequence_LOO_CV(segments,metadata)
+    cv = Sequence_CV(segments,metadata)
 
     # turn y into an array
     y = np.array(y)
     return X, y, cv, segments
 
-class Sequence_LOO_CV:
+class Sequence_CV:
     def __init__(self,segments,metadata):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
