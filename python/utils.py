@@ -161,7 +161,7 @@ def read_trained_model(model_name, settings):
 
     return joblib.load(settings['MODEL_PATH']+'/'+model_name)
 
-def build_training(subject, features, data, flagpseudo=false):
+def build_training(subject, features, data, flagpseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -255,12 +255,12 @@ class Sequence_LOO_CV:
             hourID = int(metadata[segment]['hourID'])
             ictyp = metadata[segment]['ictyp']
             # dictionary identifying which class each segment should be in:
-            if ictyp == 'preictal' | ictyp == 'pseudopreictal':
+            if ictyp == 'preictal' or ictyp == 'pseudopreictal':
                 # Record the class of this segment
                 self.seg2class[segment] = 1
                 # Record the hourIDstr of this segment, noting it is preictal
                 self.seg2hour[segment] = "p{0}".format(hourID)
-            elif ictyp == 'interictal' | ictyp == 'pseudointerictal':
+            elif ictyp == 'interictal' or ictyp == 'pseudointerictal':
                 # Record the class of this segment
                 self.seg2class[segment] = 0
                 # Record the hourIDstr of this segment, noting it is interictal
