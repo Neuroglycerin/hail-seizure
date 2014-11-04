@@ -164,45 +164,68 @@ def build_training(subject, features, data):
 class Sequence_LOO_CV:
     def __init__(self,segments,metadata):
         """Takes a list of the segments ordered as they are in the array.
-        Yield train,test tuples in the style of a sklearn iterator"""
+        Yield train,test tuples in the style of a sklearn iterator.
+        Despite the name, it is not actually leave-one-out. It is leave 20% out."""
         # put together the iterator
-        # first make a dictionary mapping from the segments to which sequence each is found in
+        # first make a dictionary mapping from the segments to which hour each is within
         self.segments = list(map(lambda segment: segment.split(".")[0], segments))
-        self.segtoseq = {}
-        self.seqclass = {}
+        self.seg2hour = {}
+        self.seg2class = {}
+        self.hour2class = {}
+        # Loop over all segments in
         for segment in self.segments:
-            # doubling and converting to int here because comparing floats is problematic
-            # have to double due to x.5 sequence numbers for pseudo-data
-            sequence = int(2*metadata[segment]['seqence'])
-            self.segtoseq[segment] = sequence
-            # dictionary identifying which class each sequence should be in:
-            if metadata[segment]['ictyp'] == 'preictal':
-                self.seqclass[sequence] = 1
+            # Look up the hourID number for this segment from the metadata
+            hourID = int(metadata[segment]['hourID'])
+            ictyp = metadata[segment]['ictyp']
+            # dictionary identifying which class each segment should be in:
+            if ictyp == 'preictal' | ictyp == 'pseudopreictal':
+                # Record the class of this segment
+                self.seg2class[segment] = 1
+                # Record the hourIDstr of this segment, noting it is preictal
+                self.seg2hour[segment] = "p{0}".format(hourID)
+            elif ictyp == 'interictal' | ictyp == 'pseudointerictal':
+                # Record the class of this segment
+                self.seg2class[segment] = 0
+                # Record the hourIDstr of this segment, noting it is interictal
+                self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                self.seqclass[sequence] = 0
-        # find what sequences we're working with
-        self.sequences = np.array(list(set(self.segtoseq.values())))
+                print("Unfamiliar ictal type {0} in training data!".format(ictyp))
+                continue
+            # Make sure the hourIDstr of which this segment is a member is
+            # in the mapping from hourIDstr to class
+            self.hour2class[self.seg2hour[segment]] = self.seg2class[segment]
+        
+        # Find what unique hourIDstrings there are (p1, p2, ..., i1, i2, ...)
+        self.hourIDs = np.array(list(set(self.seg2hour.values())))
+        
         # need to build a y vector for these sequences
-        y = [self.seqclass[sequence] for sequence in self.sequences]
-        # switching this to a stratified shuffle split; test_size is hand-set for good results
-        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, test_size=0.8)
+        # Presumably we need this line to make sure ordering is the same?
+        y = [self.hour2class[hourID] for hourID in self.hourIDs]
+        
+        # Initialise a Stratified shuffle split
+        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, n_iter=10, test_size=0.2, random_state=7)
+        # Some of the datasets only have 3 hours of preictal recordings.
+        # This will provied 10 stratified shuffles, each using 1 of the preictal hours
+        # Doesn't guarantee actually using each hour at least once though!
+        # We fix the random number generator so we will always use the same split
+        # for this subject across multiple CV tests for a fairer comparison.
         return None
 
     def __iter__(self):
         for train,test in self.cv:
-            # map these back to the indices of the segments in each sequence
-            trainsequences = self.sequences[train]
-            testsequences = self.sequences[test]
+            # map these back to the indices of the hourID list
+            trainhourIDs = self.hourIDs[train]
+            testhourIDs = self.hourIDs[test]
             train,test = [],[]
             for i,segment in enumerate(self.segments):
-                sequence = self.segtoseq[segment]
-                if sequence in trainsequences:
+                hourID = self.seg2hour[segment]
+                if hourID in trainhourIDs:
                     train.append(i)
-                elif sequence in testsequences:
+                elif hourID in testhourIDs:
                     test.append(i)
                 else:
                     print("Warning, unable to match {0} to train or test.".format(segment))
-            yield train,test       
+            yield train,test
 
 def build_test(subject, features, data):
     '''
