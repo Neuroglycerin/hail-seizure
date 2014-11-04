@@ -161,12 +161,13 @@ def read_trained_model(model_name, settings):
 
     return joblib.load(settings['MODEL_PATH']+'/'+model_name)
 
-def build_training(subject, features, data):
+def build_training(subject, features, data, flagpseudo=false):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
             features (features to use)
             data (data structure produced by get_data)
+            flagpseudo (bool: whether to include pseudodata)
     output: X (feature matrix as np.array)
             y (target vector as np.array)
             cross-validation iterator
@@ -178,6 +179,13 @@ def build_training(subject, features, data):
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
 
+    if flagpseudo:
+        ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
+        classlst = [0,1,0,1]
+    else:
+        ictyplst = ['interictal','preictal']
+        classlst = [0,1]
+
     segments = 'empty'
     # hacking this for later
     first = features[0]
@@ -187,7 +195,7 @@ def build_training(subject, features, data):
         # enumerate to get numbers for target vector:
         #     0 is interictal
         #     1 is preictal
-        for i,ictal in enumerate(['interictal','preictal']):
+        for i,ictal in enumerate(ictyplst):
             # this is bona fide programming
             if segments == 'empty':
                 segments = [np.array(list(\
@@ -208,9 +216,9 @@ def build_training(subject, features, data):
                 # (will be the same for the rest)
                 if feature == first:
                     try:
-                        y.append(i)
+                        y.append(classlst[i])
                     except NameError:
-                        y = [i]
+                        y = [classlst[i]]
         # stick the X arrays together
         try:
             X = np.hstack([X, Xf])
@@ -233,45 +241,70 @@ def build_training(subject, features, data):
 class Sequence_LOO_CV:
     def __init__(self,segments,metadata):
         """Takes a list of the segments ordered as they are in the array.
-        Yield train,test tuples in the style of a sklearn iterator"""
+        Yield train,test tuples in the style of a sklearn iterator.
+        Despite the name, it is not actually leave-one-out. It is leave 20% out."""
         # put together the iterator
-        # first make a dictionary mapping from the segments to which
-        # sequence each is found in
-        self.segments = list(map(lambda segment: segment.split(".")[0],
-                                 segments))
-        self.segtoseq = {}
-        self.seqclass = {}
+        # first make a dictionary mapping from the segments to which hour each is within
+        self.segments = list(map(lambda segment: segment.split(".")[0], segments))
+        self.seg2hour = {}
+        self.seg2class = {}
+        self.hour2class = {}
+        # Loop over all segments in
         for segment in self.segments:
-            # doubling and converting to int here because comparing
-            # floats is problematic
-            # have to double due to x.5 sequence numbers for pseudo-data
-            sequence = int(2*metadata[segment]['seqence'])
-            self.segtoseq[segment] = sequence
-            # dictionary identifying which class each sequence should be in:
-            if metadata[segment]['ictyp'] == 'preictal':
-                self.seqclass[sequence] = 1
+            # Look up the hourID number for this segment from the metadata
+            hourID = int(metadata[segment]['hourID'])
+            ictyp = metadata[segment]['ictyp']
+            # dictionary identifying which class each segment should be in:
+            if ictyp == 'preictal' | ictyp == 'pseudopreictal':
+                # Record the class of this segment
+                self.seg2class[segment] = 1
+                # Record the hourIDstr of this segment, noting it is preictal
+                self.seg2hour[segment] = "p{0}".format(hourID)
+            elif ictyp == 'interictal' | ictyp == 'pseudointerictal':
+                # Record the class of this segment
+                self.seg2class[segment] = 0
+                # Record the hourIDstr of this segment, noting it is interictal
+                self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                self.seqclass[sequence] = 0
-        # find what sequences we're working with
-        self.sequences = np.array(list(set(self.segtoseq.values())))
+                print("Unfamiliar ictal type {0} in training data!".format(ictyp))
+                continue
+            # Make sure the hourIDstr of which this segment is a member is
+            # in the mapping from hourIDstr to class
+            self.hour2class[self.seg2hour[segment]] = self.seg2class[segment]
+
+        # Find what unique hourIDstrings there are (p1, p2, ..., i1, i2, ...)
+        self.hourIDs = np.array(list(set(self.seg2hour.values())))
+
         # need to build a y vector for these sequences
-        y = [self.seqclass[sequence] for sequence in self.sequences]
-        # switching this to a stratified shuffle split
-        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
-                                                                  test_size=0.7)
+
+        # Presumably we need this line to make sure ordering is the same?
+        y = [self.hour2class[hourID] for hourID in self.hourIDs]
+
+        # Initialise a Stratified shuffle split
+        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, n_iter=10, test_size=0.2, random_state=7)
+        # Some of the datasets only have 3 hours of preictal recordings.
+        # This will provie 10 stratified shuffles, each using 1 of the preictal hours
+        # Doesn't guarantee actually using each hour at least once though!
+        # We fix the random number generator so we will always use the same split
+        # for this subject across multiple CV tests for a fairer comparison.
         return None
 
     def __iter__(self):
         for train,test in self.cv:
-            # map these back to the indices of the segments in each sequence
-            trainsequences = self.sequences[train]
-            testsequences = self.sequences[test]
+            # map these back to the indices of the hourID list
+            trainhourIDs = self.hourIDs[train]
+            testhourIDs = self.hourIDs[test]
             train,test = [],[]
+            # Loop over all segments
             for i,segment in enumerate(self.segments):
-                sequence = self.segtoseq[segment]
-                if sequence in trainsequences:
+                # Check if the hourID string is in the train or test partition
+                hourID = self.seg2hour[segment]
+                if hourID in trainhourIDs:
+                    # I do not know generators, but this looks REALLY WRONG to me
+                    # Surely this is adding each segment index to the list of
+                    # hour indices which is the value of train as provided by self.cv?!
                     train.append(i)
-                elif sequence in testsequences:
+                elif hourID in testhourIDs:
                     test.append(i)
                 else:
                     print("Warning, unable to match {0} "\
