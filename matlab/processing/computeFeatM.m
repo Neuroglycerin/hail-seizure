@@ -40,8 +40,7 @@ alloutparams = cell(nFle, 1);
 parfor iFle=1:nFle
     % Load this segment
     Dat = loadSegFile(fullfile(mydir,fnames{iFle}));
-    % Check how long segment parts should be
-    prtlen = floor(size(Dat.data,2)/nPrt);
+    % Note how many parts there should be
     mynPrt = nPrt;
     % Handle pseudo training datasets
     if ispseudo
@@ -89,7 +88,8 @@ parfor iFle=1:nFle
     
     % Apply the preprocessing model
     Dat = ppfunc(Dat);
-    % THIS MIGHT CHANGE THE DATA LENGTH!
+    % The preprocessing model might change the datalength
+    prtlen = floor(size(Dat.data,2)/mynPrt);
     
     % Compute the feature for each part of the recording
     % Do the first part now
