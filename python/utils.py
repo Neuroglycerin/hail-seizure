@@ -346,13 +346,13 @@ def build_test(subject, features, data):
     return X, segments
     
 
-def subjsortprediction(prediction_dict)
+def subjsortprediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
     of preictal and interictal segments in the test data
     '''
     # Loop over all segments
-    for segment in prediction_dict.keys():
+    #for segment in prediction_dict.keys():
         # Look at segment and take out the subject name
         # Use this to split predictions by subject name
     # Within each subject, sort the segments by prediction value
@@ -363,7 +363,7 @@ def subjsortprediction(prediction_dict)
     # appropriate interspersion at the larger scale.
     
     # Replace prediciton values with (index within the sort)/(numsegments-1)
-    
+    return None
 
 def output_csv(prediction_dict, settings):
     '''
