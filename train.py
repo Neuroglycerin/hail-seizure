@@ -1,34 +1,40 @@
 #!/usr/bin/env python
 
-import python.utils as utils #contains mainly parsers
-import json
-
-def get_data(features):
-    return {feat_name: utils.parse_matlab_HDF5(feat_name) for feat_name in features}
+import python.utils as utils
 
 if __name__=='__main__':
 
-    settings = json.load(open('SETTINGS.json', 'r'))
+    #get and parse CLI options
+    parser = utils.get_parser()
+    (opts, args) = parser.parse_args()
+
+    settings = utils.get_settings(opts.settings)
 
     features = settings['FEATURES']
-
-    data = get_data(features)
-
     subjects = settings['SUBJECTS']
+
+    data = utils.get_data(features, settings)
 
     #thresh = utils.get_thresh()
 
-    #selector = utils.get_selector(k=3000)
+    #selector = utils.get_selector(k=opts.selector_k)
 
     scaler = utils.get_scaler()
 
     classifier = utils.get_classifier()
 
-    #model_pipe = utils.get_model([('thr',thresh),('sel',selector),('scl',scaler),('cls',classifier)])
-    model_pipe = utils.get_model([('scl',scaler),('clf',classifier)])
+    '''
+    model_pipe = utils.get_model([('thr',thresh),
+                                   ('sel',selector),
+                                   ('scl',scaler),
+                                   ('cls',classifier)])
+    '''
+
+    model_pipe = utils.get_model([('scl', scaler),
+                                  ('clf', classifier)])
 
     # set depth to something lower
-    model_pipe.set_params(clf__max_depth=3)
+    model_pipe.set_params(clf__max_depth=opts.max_depth)
 
     #dictionary to store results
     subject_predictions = {}
@@ -47,7 +53,7 @@ if __name__=='__main__':
             # calculate the weights
             weights = utils.get_weights(y[train])
             # fit the model to the training data
-            model_pipe.fit(X[train],y[train],clf__sample_weight=weights)
+            model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
             # append new predictions
             predictions.append(model_pipe.predict_proba(X[test]))
             # append test weights to store (why?)
@@ -62,7 +68,11 @@ if __name__=='__main__':
         weights = utils.np.hstack(allweights)
 
         # calculate the total AUC score
-        auc = utils.sklearn.metrics.roc_auc_score(labels,predictions,sample_weight=weights)
+        auc = utils.sklearn.metrics.roc_auc_score(\
+                labels,
+                predictions,
+                sample_weight=weights)
+
         print("predicted AUC score for {1}: {0:.2f}".format(auc,subject))
 
         # fit the final model
@@ -70,13 +80,17 @@ if __name__=='__main__':
 
         # save it
         model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(model_pipe, "model_{0}_{1}".format(subject,settings["VERSION"]))
+        utils.serialise_trained_model(\
+                model_pipe,
+                "model_{0}_{1}".format(subject, settings["VERSION"]),
+                settings)
 
         #store results from each subject
-        subject_predictions[subject] = (predictions,labels,weights)
+        subject_predictions[subject] = (predictions, labels, weights)
 
     #stack subject results (don't worrry about this line)
-    predictions,labels,weights = map(utils.np.hstack, zip(*list(subject_predictions.values())))
+    predictions,labels,weights = map(utils.np.hstack,
+                                     zip(*list(subject_predictions.values())))
 
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
