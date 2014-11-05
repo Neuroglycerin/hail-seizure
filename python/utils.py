@@ -2,6 +2,7 @@ import json
 import numpy as np
 import os
 import h5py
+import csv
 import warnings
 from sklearn.externals import joblib #pickle w/ optimisation for np arrays
 import sklearn.feature_selection
@@ -69,10 +70,11 @@ def get_data(features, settings):
             settings - parsed settings file
     output: data - dict of {feature name: respective parsed HDF5}
     '''
-    data = {feat_name:\
-            parse_matlab_HDF5(feat_name, settings)\
-            for feat_name in features}
-
+    data = {}
+    for feat_name in features:
+        parsed_feat = parse_matlab_HDF5(feat_name, settings)
+        if parsed_feat is not None:
+            data.update({feat_name: parsed_feat})
     return data
 
 def parse_matlab_HDF5(feat, settings):
@@ -102,11 +104,10 @@ def parse_matlab_HDF5(feat, settings):
     h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
 
     # Try to open hdf5 file if it doesn't exist print error and return None
-    e = 0
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except OSError:
-        warnings.warn("WARNING: {0} does not exist (or is not readable)"
+        warnings.warn("{0} does not exist (or is not readable)"
                       "".format(h5_file_name),
                       UserWarning)
         return None
@@ -136,7 +137,7 @@ def parse_matlab_HDF5(feat, settings):
                     # directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
-        warnings.warn("WARNING: Unable to parse {0}".format(h5_file_name),
+        warnings.warn("Unable to parse {0}".format(h5_file_name),
                       UserWarning)
         return None
 
@@ -275,7 +276,8 @@ class Sequence_CV:
                 # Record the hourIDstr of this segment, noting it is interictal
                 self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                print("Unfamiliar ictal type {0} in training data!".format(ictyp))
+                warnings.warn("Unfamiliar ictal type {0} in training data.".format(ictyp),
+                              UserWarning)
                 continue
             # Make sure the hourIDstr of which this segment is a member is
             # in the mapping from hourIDstr to class
@@ -316,8 +318,8 @@ class Sequence_CV:
                 elif hourID in testhourIDs:
                     test.append(i)
                 else:
-                    print("Warning, unable to match {0} "\
-                          "to train or test.".format(segment))
+                    warnings.warn("Unable to match {0} to train or test".format(segment),
+                                  UserWarning)
             yield train, test
 
 
@@ -352,16 +354,19 @@ def build_test(subject, features, data):
     return X, segments
 
 
-def subjsortprediction(prediction_dict):
+def subjsort_prediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
     of preictal and interictal segments in the test data
     '''
+
     # Loop over all segments
     #for segment in prediction_dict.keys():
         # Look at segment and take out the subject name
         # Use this to split predictions by subject name
     # Within each subject, sort the segments by prediction value
+
+
 
     # Using prior knowledge about how many preictal and interictal segments we
     # expect to see, intersperse segments from each subject.
@@ -379,13 +384,16 @@ def output_csv(prediction_dict, settings):
             settings (the settings dict from parsing the json_object)
     output: void
     '''
-    output_file = '{0}/output_{1}.csv'.format(settings['SUBMISSION_PATH'],
+    output_file = '{0}/output{1}.csv'.format(settings['SUBMISSION_PATH'],
                                               settings['VERSION'])
     with open(output_file, 'w') as output_fh:
         csv_output = csv.writer(output_fh)
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
-            csv_output.writerow.keys([segment, str(prediction_dict[segment])])
+            # write segment idea and second probability as this
+            # corresponds to the prob of class 1 (preictal)
+            csv_output.writerow([segment,
+                               str(prediction_dict[segment][-1])])
 
 
 def get_cross_validation_set(y, *params):

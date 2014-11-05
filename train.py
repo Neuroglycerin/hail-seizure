@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import python.utils as utils
 
@@ -10,6 +10,8 @@ def main(opts):
     subjects = settings['SUBJECTS']
 
     data = utils.get_data(features, settings)
+
+    print("=====Feature HDF5s parsed=====")
 
     #thresh = utils.get_thresh()
 
@@ -29,6 +31,8 @@ def main(opts):
     subject_predictions = {}
 
     for subject in subjects:
+
+        print("=====Training {0} Model=====".format(str(subject)))
 
         X,y,cv,segments = utils.build_training(subject, features, data)
 
@@ -50,6 +54,7 @@ def main(opts):
             allweights.append(weights)
             # store true labels
             labels.append(y[test])
+
 
         # stack up the results
         predictions = utils.np.vstack(predictions)[:,1]
