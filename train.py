@@ -19,14 +19,6 @@ def main(opts):
 
     classifier = utils.get_classifier()
 
-    '''
-    model_pipe = utils.get_model([('thr',thresh),
-                                   ('sel',selector),
-
-                                   ('scl',scaler),
-                                   ('cls',classifier)])
-    '''
-
     model_pipe = utils.get_model([('scl', scaler),
                                   ('clf', classifier)])
 
