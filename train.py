@@ -11,6 +11,8 @@ def main(opts):
 
     data = utils.get_data(features, settings)
 
+    print("=====Feature HDF5s parsed=====\n")
+
     #thresh = utils.get_thresh()
 
     #selector = utils.get_selector(k=opts.selector_k)
@@ -30,7 +32,9 @@ def main(opts):
 
     for subject in subjects:
 
-        X,y,cv,segments = utils.build_training(subject, features, data)
+        print("=====Training subject specific model for {0}=====".format(subject)
+
+        X, y, cv, segments = utils.build_training(subject, features, data)
 
         # initialise lists for cross-val results
         predictions = []
