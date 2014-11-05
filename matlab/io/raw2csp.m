@@ -1,4 +1,4 @@
-function Dat = raw2csp(Dat, subj)
+function Dat = raw2csp(Dat, subj, fullmodlst)
 
 % Parameters --------------------------------------------------------------
 settingsfname = 'SETTINGS.json';
@@ -13,7 +13,14 @@ distrodir = fileparts(which(settingsfname));
 
 % This is the path we expect the weights to be saved at
 mydir = fullfile(distrodir,settings.MODEL_PATH);
-Wfname = ['csp_weights_' subj '.mat'];
+
+if ~isempty(strfind(fullmodlst,'cln'))
+    % If it is cleaned, use the weights from the cleaned version
+    Wfname = ['csp_weights_' subj '_cln.mat'];
+else
+    % Use the regular weights
+    Wfname = ['csp_weights_' subj '.mat'];
+end
 Wfnamefull = fullfile(mydir,Wfname);
 
 % Check the file exists
