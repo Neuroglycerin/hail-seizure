@@ -275,7 +275,8 @@ class Sequence_CV:
                 # Record the hourIDstr of this segment, noting it is interictal
                 self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                print("Unfamiliar ictal type {0} in training data!".format(ictyp))
+                warnings.warn("WARNING: unfamiliar ictal type {0} in training data.".format(ictyp), 
+                              UserWarning)
                 continue
             # Make sure the hourIDstr of which this segment is a member is
             # in the mapping from hourIDstr to class
@@ -316,8 +317,8 @@ class Sequence_CV:
                 elif hourID in testhourIDs:
                     test.append(i)
                 else:
-                    print("Warning, unable to match {0} "\
-                          "to train or test.".format(segment))
+                    warnings.warn("WARNING: unable to match {0} to train or test".format(segment), 
+                                  UserWarning)
             yield train, test
 
 
@@ -390,7 +391,6 @@ def output_csv(prediction_dict, settings):
         for segment in prediction_dict.keys():
             # write segment idea and second probability as this
             # corresponds to the prob of class 1 (preictal)
-            print(prediction_dict[segment])
             csv_output.writerow([segment,
                                str(prediction_dict[segment][-1])])
 
