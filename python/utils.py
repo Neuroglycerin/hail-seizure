@@ -187,6 +187,8 @@ def build_training(subject, features, data, flagpseudo=False):
         classlst = [0,1]
 
     segments = 'empty'
+
+
     # hacking this for later
     first = features[0]
     for feature in features:
@@ -344,7 +346,7 @@ def build_test(subject, features, data):
         X.append(Xd[segment])
     X = np.vstack(X)
     return X, segments
-    
+
 
 def subjsortprediction(prediction_dict):
     '''
@@ -356,12 +358,12 @@ def subjsortprediction(prediction_dict):
         # Look at segment and take out the subject name
         # Use this to split predictions by subject name
     # Within each subject, sort the segments by prediction value
-    
+
     # Using prior knowledge about how many preictal and interictal segments we
     # expect to see, intersperse segments from each subject.
     # Allow prediction values to control local order, but maintain the
     # appropriate interspersion at the larger scale.
-    
+
     # Replace prediciton values with (index within the sort)/(numsegments-1)
     return None
 
