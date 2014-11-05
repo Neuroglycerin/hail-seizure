@@ -9,6 +9,6 @@ extramodtyp = 'cln';
 names = subjnames();
 
 for i=1:length(names);
-    fprintf('%s: Computing CSP weights for %s\n',datestr(now,30),names{i});
+    fprintf('%s: Computing CSP weights for %s %s\n',datestr(now,30),extramodtyp,names{i});
     saveCSPweights(names{i}, extramodtyp);
 end
