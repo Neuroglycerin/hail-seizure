@@ -9,9 +9,12 @@ def main(opts):
     features = settings['FEATURES']
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(features, settings)
+    data = utils.get_data(features, settings, verbose=opts.verbose)
 
-    print("=====Feature HDF5s parsed=====")
+    features_that_parsed = list(data.keys())
+
+    if opts.verbose:
+        print("=====Feature HDF5s parsed=====")
 
     #thresh = utils.get_thresh()
 
@@ -25,16 +28,19 @@ def main(opts):
                                   ('clf', classifier)])
 
     # set depth to something lower
-    model_pipe.set_params(clf__max_depth=opts.max_depth)
+    model_pipe.set_params(clf__max_depth=opts.max_depth,
+                          clf__n_estimators=opts.tree_num,
+                          clf__n_jobs=opts.cores)
+
 
     #dictionary to store results
     subject_predictions = {}
 
     for subject in subjects:
+        if opts.verbose:
+            print("=====Training {0} Model=====".format(str(subject)))
 
-        print("=====Training {0} Model=====".format(str(subject)))
-
-        X,y,cv,segments = utils.build_training(subject, features, data)
+        X,y,cv,segments = utils.build_training(subject, features_that_parsed, data)
 
         # initialise lists for cross-val results
         predictions = []
@@ -89,6 +95,7 @@ def main(opts):
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
     auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
+
     print("predicted AUC score over all subjects: {0:.2f}".format(auc))
 
 if __name__=='__main__':

@@ -50,6 +50,21 @@ def get_parser():
                       help="Max tree depth in random forest classifier"
                            "(default=3)")
 
+    parser.add_option("-t", "--trees",
+                      action="store",
+                      dest="tree_num",
+                      type=int,
+                      default="100",
+                      help="Number of estimators to use in random forest classifier"
+                           "(default=100)")
+
+    parser.add_option("-j", "--cores",
+                      action="store",
+                      dest="cores",
+                      type=int,
+                      default=-1,
+                      help="Number of cores to use when training classifier"
+                           " (default is all of them)")
     return parser
 
 def get_settings(settings_file):
