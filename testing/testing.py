@@ -2,6 +2,7 @@
 
 import random
 import unittest
+import glob
 import warnings
 import subprocess
 import os
@@ -187,26 +188,27 @@ class test_predict(unittest.TestCase):
                                       stdout=cls.NULL,
                                       stderr=cls.NULL)
 
-        cls.output_file = os.listdir(cls.settings['SUBMISSION_PATH'])
+        cls.output_file = glob.glob(os.path.join(cls.settings['SUBMISSION_PATH'],
+                                                 "output") + \
+                                                    "*{0}.csv".format(\
+                                                        cls.settings['VERSION']))
 
     def test_file_output(self):
         '''
         Test whether a file was actually outputted
         '''
         # Check whether there is only one output in submission path
-        # (asserting 2 as .placeholder keeps that empty dir in repo)
-        # and that it is called submission.csv
-        self.assertEqual(len(self.output_file), 2)
-        self.assertEqual(self.output_file[0], 'submission.csv')
+        self.assertEqual(len(self.output_file), 1)
+        self.assertEqual(self.output_file[0], '{0}/output{1}.csv'.format(\
+                self.settings['SUBMISSION_PATH'],
+                self.settings['VERSION']))
 
     def test_csv_valid(self):
         '''
         Test whether file is a csv of the right dimensions
         '''
         # parse submission csv into list of lists with csv reader
-        with open(os.path.join(self.settings['SUBMISSION_PATH'],
-                               self.output_file[0]),
-                  'r') as csv_out_file:
+        with open(self.output_file[0], 'r') as csv_out_file:
             parsed_contents = [row for row \
                     in csv.reader(csv_out_file, delimiter=',')]
 

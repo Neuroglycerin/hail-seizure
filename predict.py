@@ -25,25 +25,21 @@ def main(models=None, settings_file='SETTINGS.json'):
     #load the data
     data = utils.get_data(features, settings)
     #iterate over subjects
-    predictiondict = {}
+    prediction_dict = {}
+
     for subject in subjects:
         #get the right model name (probably):
-        subjectmodel = [model for model in models if subject in model][0]
+        subject_model = [model for model in models if subject in model][0]
         #load the trained model:
-        model = utils.read_trained_model(subjectmodel, settings)
+        model = utils.read_trained_model(subject_model, settings)
         #build test set
-        X,segments = utils.build_test(subject,features,data)
+        X, segments = utils.build_test(subject, features, data)
         #make predictions
         predictions = model.predict_proba(X)
-        for segment,prediction in zip(segments, predictions):
-            predictiondict[segment] = prediction
+        for segment, prediction in zip(segments, predictions):
+            prediction_dict[segment] = prediction
 
-    #write the results to the submission csv
-    with open(settings['SUBMISSION_PATH']+"/submission.csv", "w") as f:
-        c = csv.writer(f)
-        c.writerow(['clip','preictal'])
-        for segment in predictiondict.keys():
-            c.writerow([segment,"%s"%predictiondict[segment][-1]])
+    utils.output_csv(prediction_dict, settings)
 
 if __name__=='__main__':
 
