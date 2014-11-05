@@ -2,6 +2,7 @@ import json
 import numpy as np
 import os
 import h5py
+import warnings
 from sklearn.externals import joblib #pickle w/ optimisation for np arrays
 import sklearn.feature_selection
 import sklearn.preprocessing
@@ -101,11 +102,13 @@ def parse_matlab_HDF5(feat, settings):
     h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
 
     # Try to open hdf5 file if it doesn't exist print error and return None
+    e = 0
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
-    except IOError:
-        print("WARNING: {0} does not exist (or is not readable)".format(\
-                h5_file_name))
+    except OSError:
+        warnings.warn("WARNING: {0} does not exist (or is not readable)"
+                      "".format(h5_file_name),
+                      UserWarning)
         return None
 
     # parse h5 object into dict (see docstring for struct)
@@ -133,8 +136,9 @@ def parse_matlab_HDF5(feat, settings):
                     # directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
-        print("WARNING: Unable to parse {0}".format(h5_file_name))
-
+        warnings.warn("WARNING: Unable to parse {0}".format(h5_file_name),
+                      UserWarning)
+        return None
 
     # make sure h5 object is closed
     h5_from_matlab.close()

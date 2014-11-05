@@ -2,24 +2,27 @@
 
 import random
 import unittest
+import warnings
 import subprocess
 import os
 import python.utils as utils
 import csv
+import h5py
 
 class test_HDF5_parsing(unittest.TestCase):
 
-    def setUp(self):
-        self.settings_fh = 'test_settings.json'
-        self.settings = utils.get_settings(self.settings_fh)
-        self.all_subjects = set(['Dog_1',
+    @classmethod
+    def setUpClass(cls):
+        cls.settings_fh = 'test_settings.json'
+        cls.settings = utils.get_settings(cls.settings_fh)
+        cls.all_subjects = set(['Dog_1',
                              'Dog_2',
                              'Dog_3',
                              'Dog_4',
                              'Dog_5',
                              'Patient_1',
                              'Patient_2'])
-        self.all_types = set(['preictal',
+        cls.all_types = set(['preictal',
                               'MIerr',
                               'test',
                               'MI',
@@ -27,12 +30,57 @@ class test_HDF5_parsing(unittest.TestCase):
                               'interictal',
                               'pseudopreictal'])
 
-    def test_ioerror(self):
+        cls.malformed_feat = 'malformed_feat'
+        cls.malformed_file = "{0}/{1}{2}.h5".format(cls.settings['TRAIN_DATA_PATH'],
+                                                    cls.malformed_feat,
+                                                    cls.settings['VERSION'])
+
+        cls.malformed_feat = h5py.File(cls.malformed_file, 'w')
+        cls.malformed_feat.create_dataset('malfie', (10,10))
+        cls.malformed_feat.close()
+
+    def test_ioerror_warning(self):
         '''
-        Assert a non-existent file correctly raises IOError
+        Assert a non-existent file correctly raises warning
         '''
-        self.assertRaises(IOError,
-                          utils.parse_matlab_HDF5('fake_feat', self.settings))
+
+        non_existent_feat = 'fake_feat'
+        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
+                                              non_existent_feat,
+                                              self.settings['VERSION'])
+
+        with warnings.catch_warnings(record=True) as w:
+                dummy = utils.parse_matlab_HDF5(non_existent_feat,
+                                                self.settings)
+
+                self.assertEqual(len(w), 1)
+                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(str(w[-1].message),
+                                 "WARNING: {0} does not exist (or is not "
+                                 "readable)".format(h5_file_name))
+
+    def test_parse_error_warning(self):
+        '''
+        Assert malformed HDF5 raises proper warning
+        '''
+
+
+        malformed_feat = 'malformed_feat'
+        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
+                                              malformed_feat,
+                                              self.settings['VERSION'])
+
+        with warnings.catch_warnings(record=True) as w:
+
+                dummy = utils.parse_matlab_HDF5(malformed_feat,
+                                                self.settings)
+
+                self.assertEqual(len(w), 1)
+                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(str(w[-1].message), "WARNING: Unable to "
+                                                     "parse {0}".format(\
+                                                                h5_file_name))
+
 
     def test_hdf5_parse(self):
         '''
@@ -52,6 +100,9 @@ class test_HDF5_parsing(unittest.TestCase):
 
         self.assertEqual(num_interictal_dog1_segs, 480)
 
+    @classmethod
+    def tearDownClass(cls):
+        os.unlink(cls.malformed_file)
 
 class test_train(unittest.TestCase):
 
@@ -143,8 +194,9 @@ class test_predict(unittest.TestCase):
         Test whether a file was actually outputted
         '''
         # Check whether there is only one output in submission path
+        # (asserting 2 as .placeholder keeps that empty dir in repo)
         # and that it is called submission.csv
-        self.assertEqual(len(self.output_file), 1)
+        self.assertEqual(len(self.output_file), 2)
         self.assertEqual(self.output_file[0], 'submission.csv')
 
     def test_csv_valid(self):
@@ -173,7 +225,7 @@ class test_predict(unittest.TestCase):
             # pre-generated models for testing predict are marked with x
             # therefore only remove non-pregenerated ones
             f_path = os.path.join(cls.settings['SUBMISSION_PATH'], f)
-            if os.path.isfile(f_path):
+            if os.path.isfile(f_path) and f!='.placeholder':
                 os.unlink(f_path)
 
 if __name__=='__main__':
