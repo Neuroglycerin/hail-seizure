@@ -24,6 +24,8 @@ def main(models=None, settings_file='SETTINGS.json'):
     features = settings['FEATURES']
     #load the data
     data = utils.get_data(features, settings)
+
+    features_that_parsed = list(data.keys())
     #iterate over subjects
     prediction_dict = {}
 
@@ -33,7 +35,7 @@ def main(models=None, settings_file='SETTINGS.json'):
         #load the trained model:
         model = utils.read_trained_model(subject_model, settings)
         #build test set
-        X, segments = utils.build_test(subject, features, data)
+        X, segments = utils.build_test(subject, features_that_parsed, data)
         #make predictions
         predictions = model.predict_proba(X)
         for segment, prediction in zip(segments, predictions):
