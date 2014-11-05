@@ -24,7 +24,7 @@ switch lower(submodtyp)
     case 'raw'
         func = @(x)x;
     case 'ica'
-        func = @(x) raw2ica(x, subj);
+        func = @(x) raw2ica(x, subj, fullmodlst);
     case 'csp'
         func = @(x) raw2csp(x, subj, fullmodlst);
     case 'cln'
