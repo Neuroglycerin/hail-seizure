@@ -70,10 +70,11 @@ def get_data(features, settings):
             settings - parsed settings file
     output: data - dict of {feature name: respective parsed HDF5}
     '''
-    data = {feat_name:\
-            parse_matlab_HDF5(feat_name, settings)\
-            for feat_name in features}
-
+    data = {}
+    for feat_name in features:
+        parsed_feat = parse_matlab_HDF5(feat_name, settings)
+        if parsed_feat is not None:
+            data.update({feat_name: parsed_feat})
     return data
 
 def parse_matlab_HDF5(feat, settings):
@@ -106,7 +107,7 @@ def parse_matlab_HDF5(feat, settings):
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except OSError:
-        warnings.warn("WARNING: {0} does not exist (or is not readable)"
+        warnings.warn("{0} does not exist (or is not readable)"
                       "".format(h5_file_name),
                       UserWarning)
         return None
@@ -136,7 +137,7 @@ def parse_matlab_HDF5(feat, settings):
                     # directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
-        warnings.warn("WARNING: Unable to parse {0}".format(h5_file_name),
+        warnings.warn("Unable to parse {0}".format(h5_file_name),
                       UserWarning)
         return None
 
@@ -275,7 +276,7 @@ class Sequence_CV:
                 # Record the hourIDstr of this segment, noting it is interictal
                 self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                warnings.warn("WARNING: unfamiliar ictal type {0} in training data.".format(ictyp), 
+                warnings.warn("Unfamiliar ictal type {0} in training data.".format(ictyp),
                               UserWarning)
                 continue
             # Make sure the hourIDstr of which this segment is a member is
@@ -317,7 +318,7 @@ class Sequence_CV:
                 elif hourID in testhourIDs:
                     test.append(i)
                 else:
-                    warnings.warn("WARNING: unable to match {0} to train or test".format(segment), 
+                    warnings.warn("Unable to match {0} to train or test".format(segment),
                                   UserWarning)
             yield train, test
 

@@ -57,7 +57,7 @@ class test_HDF5_parsing(unittest.TestCase):
                 self.assertEqual(len(w), 1)
                 self.assertIs(w[-1].category, UserWarning)
                 self.assertEqual(str(w[-1].message),
-                                 "WARNING: {0} does not exist (or is not "
+                                 "{0} does not exist (or is not "
                                  "readable)".format(h5_file_name))
 
     def test_parse_error_warning(self):
@@ -78,7 +78,7 @@ class test_HDF5_parsing(unittest.TestCase):
 
                 self.assertEqual(len(w), 1)
                 self.assertIs(w[-1].category, UserWarning)
-                self.assertEqual(str(w[-1].message), "WARNING: Unable to "
+                self.assertEqual(str(w[-1].message), "Unable to "
                                                      "parse {0}".format(\
                                                                 h5_file_name))
 
