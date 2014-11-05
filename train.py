@@ -11,7 +11,7 @@ def main(opts):
 
     data = utils.get_data(features, settings)
 
-    print("=====Feature HDF5s parsed=====\n")
+    print("=====Feature HDF5s parsed=====")
 
     #thresh = utils.get_thresh()
 
@@ -32,9 +32,9 @@ def main(opts):
 
     for subject in subjects:
 
-        print("=====Training subject specific model for {0}=====".format(subject)
+        print("=====Training {0} Model=====".format(str(subject)))
 
-        X, y, cv, segments = utils.build_training(subject, features, data)
+        X,y,cv,segments = utils.build_training(subject, features, data)
 
         # initialise lists for cross-val results
         predictions = []
@@ -54,6 +54,7 @@ def main(opts):
             allweights.append(weights)
             # store true labels
             labels.append(y[test])
+
 
         # stack up the results
         predictions = utils.np.vstack(predictions)[:,1]
