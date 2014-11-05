@@ -2,66 +2,230 @@
 
 import random
 import unittest
+import warnings
 import subprocess
 import os
 import python.utils as utils
-import filecmp
+import csv
+import h5py
 
 class test_HDF5_parsing(unittest.TestCase):
 
-    def setUp(self):
-        self.settings_fh = 'test_settings.json'
-        self.settings = utils.get_settings(self.settings_fh)
+    @classmethod
+    def setUpClass(cls):
+        cls.settings_fh = 'test_settings.json'
+        cls.settings = utils.get_settings(cls.settings_fh)
+        cls.all_subjects = set(['Dog_1',
+                             'Dog_2',
+                             'Dog_3',
+                             'Dog_4',
+                             'Dog_5',
+                             'Patient_1',
+                             'Patient_2'])
+        cls.all_types = set(['preictal',
+                              'MIerr',
+                              'test',
+                              'MI',
+                              'pseudointerictal',
+                              'interictal',
+                              'pseudopreictal'])
 
-    def test_error(self):
-        '''
-        Assert a non-existent file correctly raises IOError
-        '''
-        self.assertRaises(IOError,
-                          utils.parse_matlab_HDF5('fake_feat', self.settings))
+        cls.malformed_feat = 'malformed_feat'
+        cls.malformed_file = "{0}/{1}{2}.h5".format(cls.settings['TRAIN_DATA_PATH'],
+                                                    cls.malformed_feat,
+                                                    cls.settings['VERSION'])
 
-    def test_parse(self):
+        cls.malformed_feat = h5py.File(cls.malformed_file, 'w')
+        cls.malformed_feat.create_dataset('malfie', (10,10))
+        cls.malformed_feat.close()
+
+    def test_ioerror_warning(self):
+        '''
+        Assert a non-existent file correctly raises warning
+        '''
+
+        non_existent_feat = 'fake_feat'
+        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
+                                              non_existent_feat,
+                                              self.settings['VERSION'])
+
+        with warnings.catch_warnings(record=True) as w:
+                dummy = utils.parse_matlab_HDF5(non_existent_feat,
+                                                self.settings)
+
+                self.assertEqual(len(w), 1)
+                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(str(w[-1].message),
+                                 "WARNING: {0} does not exist (or is not "
+                                 "readable)".format(h5_file_name))
+
+    def test_parse_error_warning(self):
+        '''
+        Assert malformed HDF5 raises proper warning
+        '''
+
+
+        malformed_feat = 'malformed_feat'
+        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
+                                              malformed_feat,
+                                              self.settings['VERSION'])
+
+        with warnings.catch_warnings(record=True) as w:
+
+                dummy = utils.parse_matlab_HDF5(malformed_feat,
+                                                self.settings)
+
+                self.assertEqual(len(w), 1)
+                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(str(w[-1].message), "WARNING: Unable to "
+                                                     "parse {0}".format(\
+                                                                h5_file_name))
+
+
+    def test_hdf5_parse(self):
         '''
         Very basic check of parsed object structure containing minimum 3 dicts
         '''
         parsed_HDF5 = utils.parse_matlab_HDF5(self.settings['FEATURES'][0],
                                               self.settings)
 
-        self.assertIs(type(parsed_HDF5), dict)
+        subjects = set(parsed_HDF5.keys())
+        self.assertEqual(subjects, self.all_subjects)
 
-        subj_layer = parsed_HDF5[list(parsed_HDF5.keys())[0]]
-        self.assertIs(type(subj_layer), dict)
+        typs = set(parsed_HDF5['Dog_1'].keys())
+        self.assertEqual(typs, self.all_types)
 
-        typ_layer = subj_layer[list(subj_layer.keys())[0]]
-        self.assertIs(type(typ_layer), dict)
+        num_interictal_dog1_segs = len(\
+                parsed_HDF5['Dog_1']['interictal'].keys())
 
-class crude_model_test(unittest.TestCase):
+        self.assertEqual(num_interictal_dog1_segs, 480)
 
-    def setUp(self):
+    @classmethod
+    def tearDownClass(cls):
+        os.unlink(cls.malformed_file)
 
-        self.settings_fh = 'test_settings.json'
-        self.settings = utils.get_settings(self.settings_fh)
+class test_train(unittest.TestCase):
 
-    def test_full_train_run(self):
+    @classmethod
+    def setUpClass(cls):
+
+        cls.settings_fh = 'test_settings.json'
+        cls.settings = utils.get_settings(cls.settings_fh)
+
+        f = open('stdout_tmp', 'w')
+        cls.proc = subprocess.call(['../train.py',
+                                      '-s', 'test_settings.json'],
+                                      stdout=f)
+        f.close()
+
+        with open('stdout_tmp', 'r') as f:
+            cls.stdout = f.read()
+
+        cls.model_files = [x for x in \
+                os.listdir(cls.settings['MODEL_PATH']) if x[0]!='x']
+
+    def test_train_stdout(self):
         '''
-        Crude test of train.py on dummy dataset
+        Test stdout prints correct number of AUC scores
         '''
-        # call full pipe as subprocess then compare dir to sample dir
-        subprocess.call(['python', '../train.py', '-s', 'test_settings.json'])
+        # count the number of AUC scores printed to stdout
+        # and assert this is 8 (7 subjects and 1 overall)
+        AUC_score_count = self.stdout.count('AUC')
+        self.assertEqual(AUC_score_count, 8)
 
-        model_files = os.listdir('model')
+    def test_model_number(self):
+        '''
+        Test correct number of models are generated
+        '''
+        # get number of models
+        self.assertEqual(len(self.model_files), 7)
 
-        self.assertEqual(len(model_files), 7)
+    def test_model_size_correct(self):
+        '''
+        Test if one of the serialised models is roughly correct size
+        '''
+        # randomly pick an output model
+        output_model = random.choice(self.model_files)
 
-        output_model_stats = os.stat('model/model_Dog_1__v2')
+        # get file size and assert between 2.5 and 8k
+        output_model_stats = os.stat(os.path.join(\
+                self.settings['MODEL_PATH']+'/'+output_model))
         output_model_size = output_model_stats.st_size
+        self.assertTrue(2500 < output_model_size < 8000)
 
-        self.assertTrue(4000 < output_model_size < 5000)
+    def test_model_can_be_read(self):
+        '''
+        Check whether a model can be read
+        '''
+        output_model = random.choice(self.model_files)
+        parsed_model = utils.read_trained_model(output_model, self.settings)
 
-    def tearDown(self):
-        for f in os.listdir('model'):
-            f_path = os.path.join('model', f)
+        self.assertEqual(str(type(parsed_model)),
+                         "<class 'sklearn.pipeline.Pipeline'>")
+
+    @classmethod
+    def tearDownClass(cls):
+
+        for f in cls.model_files:
+            # pre-generated models for testing predict are marked with x
+            # therefore only remove non-pregenerated ones
+            f_path = os.path.join(cls.settings['MODEL_PATH'], f)
             if os.path.isfile(f_path):
+                os.unlink(f_path)
+        os.unlink('stdout_tmp')
+
+class test_predict(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+
+        cls.settings_fh = 'test_settings.json'
+        cls.settings = utils.get_settings(cls.settings_fh)
+        cls.NULL = open(os.devnull, 'w')
+        cls.proc = subprocess.call(['../predict.py',
+                                      '-s', 'test_settings.json'],
+                                      stdout=cls.NULL,
+                                      stderr=cls.NULL)
+
+        cls.output_file = os.listdir(cls.settings['SUBMISSION_PATH'])
+
+    def test_file_output(self):
+        '''
+        Test whether a file was actually outputted
+        '''
+        # Check whether there is only one output in submission path
+        # (asserting 2 as .placeholder keeps that empty dir in repo)
+        # and that it is called submission.csv
+        self.assertEqual(len(self.output_file), 2)
+        self.assertEqual(self.output_file[0], 'submission.csv')
+
+    def test_csv_valid(self):
+        '''
+        Test whether file is a csv of the right dimensions
+        '''
+        # parse submission csv into list of lists with csv reader
+        with open(os.path.join(self.settings['SUBMISSION_PATH'],
+                               self.output_file[0]),
+                  'r') as csv_out_file:
+            parsed_contents = [row for row \
+                    in csv.reader(csv_out_file, delimiter=',')]
+
+        # assert csv has right number of rows
+        self.assertEqual(len(parsed_contents), 3936)
+
+        # assert all rows have 2 cols
+        for row in parsed_contents:
+            self.assertEqual(len(row), 2)
+
+    @classmethod
+    def tearDownClass(cls):
+
+        cls.NULL.close()
+        for f in cls.output_file:
+            # pre-generated models for testing predict are marked with x
+            # therefore only remove non-pregenerated ones
+            f_path = os.path.join(cls.settings['SUBMISSION_PATH'], f)
+            if os.path.isfile(f_path) and f!='.placeholder':
                 os.unlink(f_path)
 
 if __name__=='__main__':

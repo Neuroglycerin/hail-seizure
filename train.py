@@ -2,11 +2,7 @@
 
 import python.utils as utils
 
-if __name__=='__main__':
-
-    #get and parse CLI options
-    parser = utils.get_parser()
-    (opts, args) = parser.parse_args()
+def main(opts):
 
     settings = utils.get_settings(opts.settings)
 
@@ -22,13 +18,6 @@ if __name__=='__main__':
     scaler = utils.get_scaler()
 
     classifier = utils.get_classifier()
-
-    '''
-    model_pipe = utils.get_model([('thr',thresh),
-                                   ('sel',selector),
-                                   ('scl',scaler),
-                                   ('cls',classifier)])
-    '''
 
     model_pipe = utils.get_model([('scl', scaler),
                                   ('clf', classifier)])
@@ -96,3 +85,11 @@ if __name__=='__main__':
     # not using sample_weight here due to error, should probably be fixed
     auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
     print("predicted AUC score over all subjects: {0:.2f}".format(auc))
+
+if __name__=='__main__':
+
+    #get and parse CLI options
+    parser = utils.get_parser()
+    (opts, args) = parser.parse_args()
+
+    main(opts)
