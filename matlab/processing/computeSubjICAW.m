@@ -2,7 +2,7 @@
 % Uses all datapoints in all datafiles for the subject
 % FastICA functions were taken and copied here as nested functions with
 % shared variables to reduce memory consumption.
-function W = computeSubjICAW(subj, dbgmde, do_icafiles)
+function W = computeSubjICAW(subj, modtyp, dbgmde, do_icafiles)
 
 % =========================================================================
 % Initialise random number generator
@@ -10,11 +10,14 @@ rng(7);
 
 % =========================================================================
 % Default inputs ----------------------------------------------------------
-if nargin<3;
+if nargin<4;
     do_icafiles = false; % Whether to prevent overwritting files
 end
-if nargin<2;
+if nargin<3;
     dbgmde   = true; % Whether to write progress to screen
+end
+if nargin<2;
+    modtyp = '';
 end
 pltmde = 'off'; % Whether to plot ICA progress
 
@@ -30,7 +33,13 @@ end
 
 % Main --------------------------------------------------------------------
 
-if dbgmde; fprintf('Performing ICA processing for subject %s\n',subj); end
+if dbgmde; fprintf('Performing ICA processing for subject %s %s\n',subj,modtyp); end
+
+% Load up the preprocessing function
+if isempty(modtyp) || strcmp(modtyp,'raw')
+    modtyp = 'raw';
+end
+ppfunc = getPreprocFunc(modtyp, subj);
 
 % Find ICA model ----------------------------------------------------------
 % Get a list of all the filenames in the ictypes we will use --------------
@@ -53,6 +62,8 @@ for iFle=1:nFle
     Dat = load(fnamelist{iFle});
     % Matfile contains a structure named the same as the file
     f = fieldnames(Dat);
+    % Apply the preprocessing function
+    Dat.(f{1}) = ppfunc(Dat.(f{1}));
     % Check how many datapoints there are
     datlen = size(Dat.(f{1}).data,2);
     % Initialise the holding matrix
@@ -81,7 +92,7 @@ clear mixedsig;
 % =========================================================================
 
 % Write the ICA matrix to file --------------------------------------------
-[Wfname,Wfnamefull_log] = getWfname(subj);
+[Wfname,Wfnamefull_log] = getWfname(subj, modtyp);
 if dbgmde; fprintf('Writing weight matrix to file\n  %s\n',Wfname); end
 if ~exist(fileparts(Wfname),'dir'); mkdir(fileparts(Wfname)); end;
 save(Wfname,'W','A'); % Overwrite the copy to be used in transformations
@@ -89,7 +100,12 @@ if ~exist(fileparts(Wfnamefull_log),'dir'); mkdir(fileparts(Wfnamefull_log)); en
 save(Wfnamefull_log,'W','A'); % Save a dated copy for posterity
 
 % Quit if we are not writing any files
-if ~do_icafiles; return; end;
+if ~do_icafiles;
+    return;
+else
+    warning('Will not write ICA files to disk');
+    return;
+end;
 
 % Process each file -------------------------------------------------------
 % Get a list of all the filenames in all the ictypes ----------------------
@@ -1537,7 +1553,7 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Wfnamefull,Wfnamefull_log] = getWfname(subj)
+function [Wfnamefull,Wfnamefull_log] = getWfname(subj, modtyp)
 
 % Declarations
 settingsfname = 'SETTINGS.json';
@@ -1545,8 +1561,14 @@ settingsfname = 'SETTINGS.json';
 % Load the settings file
 settings = json.read(settingsfname);
 
+if isempty(modtyp) || strcmp(modtyp,'raw')
+    modtyp = '';
+else
+    modtyp = ['_' modtyp];
+end
+
 mydir = fullfile(getRepoDir(), settings.MODEL_PATH);
-Wfname = ['ica_weights_' subj];
+Wfname = ['ica_weights_' subj modtyp];
 
 Wfnamefull = fullfile(mydir,Wfname);
 Wfnamefull_log = fullfile(mydir,'log',[Wfname '_' datestr(now,30)]);
