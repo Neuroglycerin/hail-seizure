@@ -62,7 +62,7 @@ def get_settings(settings_file):
         settings = json.load(sett_fh)
     return settings
 
-def get_data(features, settings):
+def get_data(features, settings, verbose=False):
     '''
     Iterate through Feature HDF5s and parse input using
     parse_matlab_HDF5 into a dict
@@ -72,6 +72,8 @@ def get_data(features, settings):
     '''
     data = {}
     for feat_name in features:
+        if verbose:
+            print("** Parsing {0} **".format(feat_name))
         parsed_feat = parse_matlab_HDF5(feat_name, settings)
         if parsed_feat is not None:
             data.update({feat_name: parsed_feat})
@@ -108,8 +110,7 @@ def parse_matlab_HDF5(feat, settings):
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except OSError:
         warnings.warn("{0} does not exist (or is not readable)"
-                      "".format(h5_file_name),
-                      UserWarning)
+                      "".format(h5_file_name))
         return None
 
     # parse h5 object into dict (see docstring for struct)
@@ -137,8 +138,7 @@ def parse_matlab_HDF5(feat, settings):
                     # directly under the typ dict
                     feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
     except:
-        warnings.warn("Unable to parse {0}".format(h5_file_name),
-                      UserWarning)
+        warnings.warn("Unable to parse {0}".format(h5_file_name))
         return None
 
     # make sure h5 object is closed
@@ -276,8 +276,7 @@ class Sequence_CV:
                 # Record the hourIDstr of this segment, noting it is interictal
                 self.seg2hour[segment] = "i{0}".format(hourID)
             else:
-                warnings.warn("Unfamiliar ictal type {0} in training data.".format(ictyp),
-                              UserWarning)
+                warnings.warn("Unfamiliar ictal type {0} in training data.".format(ictyp))
                 continue
             # Make sure the hourIDstr of which this segment is a member is
             # in the mapping from hourIDstr to class
@@ -318,8 +317,7 @@ class Sequence_CV:
                 elif hourID in testhourIDs:
                     test.append(i)
                 else:
-                    warnings.warn("Unable to match {0} to train or test".format(segment),
-                                  UserWarning)
+                    warnings.warn("Unable to match {0} to train or test".format(segment))
             yield train, test
 
 
