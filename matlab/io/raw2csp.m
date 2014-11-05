@@ -14,7 +14,10 @@ distrodir = fileparts(which(settingsfname));
 % This is the path we expect the weights to be saved at
 mydir = fullfile(distrodir,settings.MODEL_PATH);
 
-if ~isempty(strfind(fullmodlst,'cln'))
+if ~isempty(strfind(fullmodlst,'cln')) && ~isempty(strfind(fullmodlst,'dwn'))
+    % If it is cleaned, use the weights from the cleaned & downsampled version
+    Wfname = ['csp_weights_' subj '_cln,dwn.mat'];
+elseif ~isempty(strfind(fullmodlst,'cln'))
     % If it is cleaned, use the weights from the cleaned version
     Wfname = ['csp_weights_' subj '_cln.mat'];
 else

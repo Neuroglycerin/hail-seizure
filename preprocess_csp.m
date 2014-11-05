@@ -4,7 +4,7 @@
 % Recursively add all of matlab folder to matlab path
 addpath(genpath('matlab'));
 
-extramodtyp = 'cln';
+extramodtyp = 'cln,dwn';
 
 names = subjnames();
 

@@ -27,6 +27,8 @@ Dat.data = butterfiltfilt(Dat.data', [0 Dat.sampling_frequency/fsratio/2], Dat.s
 
 % Downsample as appropriate (by a factor of 25)
 Dat.data = downsample(Dat.data',fsratio)';
+% Update the sampling frequency
 Dat.sampling_frequency = Dat.sampling_frequency/fsratio;
+Dat.fs = Dat.sampling_frequency;
 
 end
