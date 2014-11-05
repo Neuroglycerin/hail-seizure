@@ -2,6 +2,7 @@ import json
 import numpy as np
 import os
 import h5py
+import csv
 import warnings
 from sklearn.externals import joblib #pickle w/ optimisation for np arrays
 import sklearn.feature_selection
@@ -102,7 +103,6 @@ def parse_matlab_HDF5(feat, settings):
     h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
 
     # Try to open hdf5 file if it doesn't exist print error and return None
-    e = 0
     try:
         h5_from_matlab = h5py.File(h5_file_name, 'r')
     except OSError:
@@ -352,16 +352,19 @@ def build_test(subject, features, data):
     return X, segments
 
 
-def subjsortprediction(prediction_dict):
+def subjsort_prediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
     of preictal and interictal segments in the test data
     '''
+
     # Loop over all segments
     #for segment in prediction_dict.keys():
         # Look at segment and take out the subject name
         # Use this to split predictions by subject name
     # Within each subject, sort the segments by prediction value
+
+
 
     # Using prior knowledge about how many preictal and interictal segments we
     # expect to see, intersperse segments from each subject.
@@ -379,13 +382,17 @@ def output_csv(prediction_dict, settings):
             settings (the settings dict from parsing the json_object)
     output: void
     '''
-    output_file = '{0}/output_{1}.csv'.format(settings['SUBMISSION_PATH'],
+    output_file = '{0}/output{1}.csv'.format(settings['SUBMISSION_PATH'],
                                               settings['VERSION'])
     with open(output_file, 'w') as output_fh:
         csv_output = csv.writer(output_fh)
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
-            csv_output.writerow.keys([segment, str(prediction_dict[segment])])
+            # write segment idea and second probability as this
+            # corresponds to the prob of class 1 (preictal)
+            print(prediction_dict[segment])
+            csv_output.writerow([segment,
+                               str(prediction_dict[segment][-1])])
 
 
 def get_cross_validation_set(y, *params):
