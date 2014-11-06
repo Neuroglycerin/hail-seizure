@@ -59,19 +59,32 @@ def print_verbose(string, flag=False):
 
 def call_train_and_predict(settings_file, verbose=False):
 
+    out = None
+    err = None
+
+    if not verbose:
+        null = open(os.devnull, 'w')
+        out = null
+        err = null
+
     print_verbose('**Training {0}**'.format(settings_file), flag=verbose)
-    train_retcode = subprocess.call(['./train.py', '-s', settings_file])
+    train_retcode = subprocess.call(['./train.py', '-s', settings_file],
+                                    stdout=out, stderr=err)
 
     if train_retcode != 0:
         warnings.warn("train.py -s {0} did not complete successfully".format(\
                 settings_file))
 
     print_verbose('**Predicting {0}**'.format(settings_file), flag=verbose)
-    predict_retcode = subprocess.call(['./predict.py', '-s', settings_file])
+    predict_retcode = subprocess.call(['./predict.py', '-s', settings_file],
+                                     stdout=out, stderr=err)
 
     if predict_retcode != 0:
         warnings.warn("predict.py -s {0} did not complete successfully".format(\
                 settings_file))
+
+    if not verbose:
+        null.close()
 
 
 #def run_in_parallel(settings, cores=1, verbose=False):
