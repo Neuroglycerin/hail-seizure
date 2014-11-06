@@ -12,9 +12,9 @@ import sklearn.pipeline
 import sklearn.ensemble
 import optparse
 
-def get_parser():
+def get_train_parser():
     '''
-    Generate optparse parser object
+    Generate optparse parser object for train.py
     with the relevant options
     input:  void
     output: optparse parser
@@ -67,6 +67,30 @@ def get_parser():
                            " (default is all of them)")
 
     return parser
+
+def get_predict_parser():
+    '''
+    Generate optparse parser object for predict.py
+    with the relevant options
+    input:  void
+    output: optparse parser
+    '''
+    parser = optparse.OptionParser()
+
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="Print verbose output")
+
+    parser.add_option("-s", "--settings",
+                      action="store",
+                      dest="settings",
+                      default="SETTINGS.json",
+                      help="Settings file to use in JSON format (default="
+                            "SETTINGS.json)")
+    return parser
+
 
 def get_settings(settings_file):
     '''
@@ -231,7 +255,7 @@ def read_trained_model(subject, settings, verbose=False):
 
     return model
 
-def build_training(subject, features, data, flagpseudo=False):
+def build_training(subject, features, data, r_seed=None, flagpseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -307,14 +331,14 @@ def build_training(subject, features, data, flagpseudo=False):
     segments = np.hstack(segments)
 
     # create CV iterator
-    cv = Sequence_CV(segments,metadata)
+    cv = Sequence_CV(segments, metadata, r_seed=r_seed)
 
     # turn y into an array
     y = np.array(y)
     return X, y, cv, segments
 
 class Sequence_CV:
-    def __init__(self,segments,metadata):
+    def __init__(self, segments, metadata, r_seed=None):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
         Despite the name, it is not actually leave-one-out. It is leave 20% out."""
@@ -356,7 +380,11 @@ class Sequence_CV:
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
         # Initialise a Stratified shuffle split
-        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y, n_iter=10, test_size=0.2, random_state=7)
+        self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
+                                                                  n_iter=10,
+                                                                  test_size=0.2,
+                                                                  random_state=r_seed)
+
         # Some of the datasets only have 3 hours of preictal recordings.
         # This will provie 10 stratified shuffles, each using 1 of the preictal hours
         # Doesn't guarantee actually using each hour at least once though!
