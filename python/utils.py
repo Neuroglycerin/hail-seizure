@@ -123,6 +123,7 @@ def parse_matlab_HDF5(feat, settings):
     feature_location = settings['TRAIN_DATA_PATH']
     version = settings['VERSION']
     subjects = settings['SUBJECTS']
+
     types = settings['DATA_TYPES']
 
     # open h5 read-only file for correct subj and version number
@@ -144,24 +145,39 @@ def parse_matlab_HDF5(feat, settings):
         for subj in subjects:
             # loop through subjects and initialise the outer subj dict
             feature_dict.update({subj: {}})
+
             for typ in types:
-                # loop through desired types and initialise typ dict
-                # for each subj
-                feature_dict[subj].update({typ: {}})
-                # because not all of next level have multiple values need
-                # need to check whether it is a list of segs or just a value
-                dataformat = type(h5_from_matlab[subj][typ])
-                if dataformat is h5py._hl.group.Group:
-                    # if it is a list of segments just iterate over them and
-                    # add to dict
-                    for seg in h5_from_matlab[subj][typ]:
-                        feature_dict[subj][typ].update(\
-                                {seg: h5_from_matlab[subj][typ][seg].value})
-                elif dataformat is h5py._hl.dataset.Dataset:
-                    # if it isn't a list of segements just add value
-                    # directly under the typ dict
-                    feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
-    except:
+                # Not all HDF5s will have all types (e.g. CSP won't have MI etc)
+                # Therefore check if type is present, continue next loop iter if
+                # it isn't
+
+                if typ in list(h5_from_matlab[subj]):
+                    # loop through desired types and initialise typ dict
+                    # for each subj
+                    feature_dict[subj].update({typ: {}})
+
+                    # Not all all of next level have multiple values so need
+                    # need to check whether it is a list of segs or just a
+                    # single value
+                    dataformat = type(h5_from_matlab[subj][typ])
+
+                    if dataformat is h5py._hl.group.Group:
+                         # If it is a list of segments then just iterate
+                         # over them and add to dict
+                         for seg in h5_from_matlab[subj][typ]:
+                             feature_dict[subj][typ].update(\
+                                     {seg: h5_from_matlab[subj][typ][seg].value})
+
+                    elif dataformat is h5py._hl.dataset.Dataset:
+                         # if it isn't a list of segements just add value
+                         # directly under the typ dict
+                         feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
+
+                elif typ not in list(h5_from_matlab[subj]):
+                    continue
+
+    except Exception as e:
+        print(e)
         warnings.warn("Unable to parse {0}".format(h5_file_name))
         return None
 
