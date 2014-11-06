@@ -110,20 +110,22 @@ class test_train(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cls.settings_fh = 'test_settings.json'
+        cls.settings_fh = 'test_train.json'
         cls.settings = utils.get_settings(cls.settings_fh)
 
         f = open('stdout_tmp', 'w')
-        cls.proc = subprocess.call(['../train.py',
-                                      '-s', 'test_settings.json'],
+        cls.proc = subprocess.call(['../train.py', '-t', '1',
+                                      '-s', 'test_train.json'],
                                       stdout=f)
         f.close()
 
         with open('stdout_tmp', 'r') as f:
             cls.stdout = f.read()
 
-        cls.model_files = [x for x in \
-                os.listdir(cls.settings['MODEL_PATH']) if x[0]!='x']
+        cls.model_files = glob.glob(os.path.join(cls.settings['MODEL_PATH'],
+                                        "{0}_model_for_*_using_{1}_feats.model".format(\
+                                                        cls.settings['RUN_NAME'],
+                                                        cls.settings['VERSION'])))
 
     def test_train_stdout(self):
         '''
@@ -149,16 +151,15 @@ class test_train(unittest.TestCase):
         output_model = random.choice(self.model_files)
 
         # get file size and assert between 2.5 and 8k
-        output_model_stats = os.stat(os.path.join(\
-                self.settings['MODEL_PATH']+'/'+output_model))
+        output_model_stats = os.stat(output_model)
         output_model_size = output_model_stats.st_size
-        self.assertTrue(2500 < output_model_size < 8000)
+        self.assertTrue(1000 < output_model_size < 10000)
 
     def test_model_can_be_read(self):
         '''
         Check whether a model can be read
         '''
-        output_model = random.choice(self.model_files)
+        output_model = random.choice(self.settings['SUBJECTS'])
         parsed_model = utils.read_trained_model(output_model, self.settings)
 
         self.assertEqual(str(type(parsed_model)),
@@ -166,32 +167,32 @@ class test_train(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-
+        '''
+        Remove generated model files and stdout output temp file
+        '''
         for f in cls.model_files:
-            # pre-generated models for testing predict are marked with x
-            # therefore only remove non-pregenerated ones
-            f_path = os.path.join(cls.settings['MODEL_PATH'], f)
-            if os.path.isfile(f_path):
-                os.unlink(f_path)
+            os.unlink(f)
+
         os.unlink('stdout_tmp')
+
 
 class test_predict(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
 
-        cls.settings_fh = 'test_settings.json'
+        cls.settings_fh = 'test_predict.json'
         cls.settings = utils.get_settings(cls.settings_fh)
         cls.NULL = open(os.devnull, 'w')
         cls.proc = subprocess.call(['../predict.py',
-                                      '-s', 'test_settings.json'],
+                                      '-s', 'test_predict.json'],
                                       stdout=cls.NULL,
                                       stderr=cls.NULL)
 
+
         cls.output_file = glob.glob(os.path.join(cls.settings['SUBMISSION_PATH'],
-                                                 "output") + \
-                                                    "*{0}.csv".format(\
-                                                        cls.settings['VERSION']))
+                                    "*.csv"))
+
 
     def test_file_output(self):
         '''
@@ -199,9 +200,11 @@ class test_predict(unittest.TestCase):
         '''
         # Check whether there is only one output in submission path
         self.assertEqual(len(self.output_file), 1)
-        self.assertEqual(self.output_file[0], '{0}/output{1}.csv'.format(\
-                self.settings['SUBMISSION_PATH'],
-                self.settings['VERSION']))
+        self.assertEqual(self.output_file[0],
+                         os.path.join(self.settings['SUBMISSION_PATH'],
+                                      '{0}_submission_using_{1}_feats'
+                                      '.csv'.format(self.settings['RUN_NAME'],
+                                                    self.settings['VERSION'])))
 
     def test_csv_valid(self):
         '''
@@ -221,14 +224,14 @@ class test_predict(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        '''
+        Close /dev/null filehandle and remove any csv output
+        '''
 
         cls.NULL.close()
         for f in cls.output_file:
-            # pre-generated models for testing predict are marked with x
-            # therefore only remove non-pregenerated ones
-            f_path = os.path.join(cls.settings['SUBMISSION_PATH'], f)
-            if os.path.isfile(f_path) and f!='.placeholder':
-                os.unlink(f_path)
+            if f!='.placeholder':
+                os.unlink(f)
 
 if __name__=='__main__':
 
