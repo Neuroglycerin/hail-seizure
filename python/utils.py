@@ -110,6 +110,14 @@ def get_settings(settings_file):
 
     settings.update({'RUN_NAME': settings_file_used})
 
+    # update file paths settings to have full absolute paths
+    for settings_field in ['TRAIN_DATA_PATH',
+                           'MODEL_PATH',
+                           'TEST_DATA_PATH',
+                           'SUBMISSION_PATH']:
+
+        settings[settings_field] = os.path.abspath(settings[settings_field])
+
     return settings
 
 def get_data(features, settings, verbose=False):
