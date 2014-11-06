@@ -87,12 +87,21 @@ def get_data(features, settings, verbose=False):
     '''
     data = {}
     for feat_name in features:
-        if verbose:
-            print("** Parsing {0} **".format(feat_name))
+        print_verbose("** Parsing {0} **".format(feat_name), flag=verbose)
         parsed_feat = parse_matlab_HDF5(feat_name, settings)
         if parsed_feat is not None:
             data.update({feat_name: parsed_feat})
     return data
+
+def print_verbose(string, flag=False):
+    '''
+    Print statement only if flag is true
+    '''
+    if type(flag) is not bool:
+        raise ValueError("verbose flag is not bool")
+
+    if flag:
+        print(string)
 
 def parse_matlab_HDF5(feat, settings):
     '''

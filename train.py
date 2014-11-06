@@ -13,8 +13,7 @@ def main(opts):
 
     features_that_parsed = list(data.keys())
 
-    if opts.verbose:
-        print("=====Feature HDF5s parsed=====")
+    utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
     #thresh = utils.get_thresh()
 
@@ -37,8 +36,8 @@ def main(opts):
     subject_predictions = {}
 
     for subject in subjects:
-        if opts.verbose:
-            print("=====Training {0} Model=====".format(str(subject)))
+        utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
+                            flag=opts.verbose)
 
         X,y,cv,segments = utils.build_training(subject, features_that_parsed, data)
 
