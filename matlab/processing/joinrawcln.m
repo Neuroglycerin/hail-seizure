@@ -33,7 +33,6 @@ function joinrawcln(feat_str, modtyp, featversion)
                 % Need to get a list of all the datasets
                 scrapeH5datasets(h5info(h5fnme_cln), subjlst{iSub}, ictyplst{iIct});
                 fprintf('\tFeature already present in cln for %s %s\n',subjlst{iSub},ictyplst{iIct});
-                fprintf('Here 1');
                 continue;
             catch ME
                 if ~strcmp(ME.identifier,'getFeatFromHDF5:missingSubject') ...
