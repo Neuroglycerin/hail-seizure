@@ -67,10 +67,9 @@ def main(opts):
         weights = utils.np.hstack(allweights)
 
         # calculate the total AUC score
-        auc = utils.sklearn.metrics.roc_auc_score(\
-                labels,
-                predictions,
-                sample_weight=weights)
+        auc = utils.sklearn.metrics.roc_auc_score(labels,
+                                                  predictions,
+                                                  sample_weight=weights)
 
         print("predicted AUC score for {1}: {0:.2f}".format(auc,subject))
 
@@ -79,21 +78,21 @@ def main(opts):
 
         # save it
         model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(\
-                model_pipe,
-                "model_{0}_{1}".format(subject, settings["VERSION"]),
-                settings)
+        utils.serialise_trained_model(model_pipe,
+                                      subject,
+                                      settings,
+                                      verbose=opts.verbose)
 
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
     #stack subject results (don't worrry about this line)
-    predictions,labels,weights = map(utils.np.hstack,
+    predictions, labels, weights = map(utils.np.hstack,
                                      zip(*list(subject_predictions.values())))
 
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
-    auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
+    auc = utils.sklearn.metrics.roc_auc_score(labels, predictions)
 
     print("predicted AUC score over all subjects: {0:.2f}".format(auc))
 

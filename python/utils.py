@@ -65,6 +65,7 @@ def get_parser():
                       default=-1,
                       help="Number of cores to use when training classifier"
                            " (default is all of them)")
+
     return parser
 
 def get_settings(settings_file):
@@ -75,6 +76,16 @@ def get_settings(settings_file):
     '''
     with open(settings_file, 'r') as sett_fh:
         settings = json.load(sett_fh)
+
+    # add settings file name (basename) to settings dict
+    # need to strip any additional path apart from basename
+    settings_file_basename = os.path.basename(settings_file)
+
+    # now strip off the extension (should be .json)
+    settings_file_used = os.path.splitext(settings_file_basename)[0]
+
+    settings.update({'RUN_NAME': settings_file_used})
+
     return settings
 
 def get_data(features, settings, verbose=False):
@@ -99,7 +110,6 @@ def print_verbose(string, flag=False):
     '''
     if type(flag) is not bool:
         raise ValueError("verbose flag is not bool")
-
     if flag:
         print(string)
 
@@ -176,8 +186,7 @@ def parse_matlab_HDF5(feat, settings):
                 elif typ not in list(h5_from_matlab[subj]):
                     continue
 
-    except Exception as e:
-        print(e)
+    except:
         warnings.warn("Unable to parse {0}".format(h5_file_name))
         return None
 
@@ -186,7 +195,7 @@ def parse_matlab_HDF5(feat, settings):
 
     return feature_dict
 
-def serialise_trained_model(model, model_name, settings):
+def serialise_trained_model(model, subject, settings, verbose=False):
     '''
     Serialise and compress trained sklearn model to repo
     input: model (sklearn model)
@@ -194,17 +203,33 @@ def serialise_trained_model(model, model_name, settings):
            settings (parsed SETTINGS.json object)
     output: retcode
     '''
-    joblib.dump(model, settings['MODEL_PATH']+'/'+model_name, compress=9)
+    model_name = "{0}_model_for_{1}_using_{2}_feats.model".format(\
+                                                      settings['RUN_NAME'],
+                                                      subject,
+                                                      settings['VERSION'])
 
-def read_trained_model(model_name, settings):
+    print_verbose("##Writing Model: {0}##".format(model_name), flag=verbose)
+    joblib.dump(model,
+                os.path.join(settings['MODEL_PATH'], model_name),
+                compress=9)
+
+
+def read_trained_model(subject, settings, verbose=False):
     '''
     Read trained model from repo
     input: model_name (string for model file name)
            settings (parsed SETTINGS.json object)
     output: model
     '''
+    model_name = "{0}_model_for_{1}_using_{2}_feats.model".format(\
+                                                      settings['RUN_NAME'],
+                                                      subject,
+                                                      settings['VERSION'])
 
-    return joblib.load(settings['MODEL_PATH']+'/'+model_name)
+    print_verbose("##Loading Model: {0}##".format(model_name), flag=verbose)
+    model = joblib.load(os.path.join(settings['MODEL_PATH'], model_name))
+
+    return model
 
 def build_training(subject, features, data, flagpseudo=False):
     '''
@@ -414,7 +439,7 @@ def subjsort_prediction(prediction_dict):
     # Replace prediciton values with (index within the sort)/(numsegments-1)
     return None
 
-def output_csv(prediction_dict, settings):
+def output_csv(prediction_dict, settings, verbose=False):
     '''
     Parse the predictions and output them in the correct format
     for submission to the output directory
@@ -422,9 +447,17 @@ def output_csv(prediction_dict, settings):
             settings (the settings dict from parsing the json_object)
     output: void
     '''
-    output_file = '{0}/output{1}.csv'.format(settings['SUBMISSION_PATH'],
-                                              settings['VERSION'])
-    with open(output_file, 'w') as output_fh:
+    output_file_basename = "{0}_submission_using_{1}_feats.csv".format(\
+                                                settings['RUN_NAME'],
+                                                settings['VERSION'])
+
+    output_file_path = os.path.join(settings['SUBMISSION_PATH'],
+                                    output_file_basename)
+
+    print_verbose("@@Writing test probabilities to {0}".format(output_file_path),
+                  flag=verbose)
+
+    with open(output_file_path, 'w') as output_fh:
         csv_output = csv.writer(output_fh)
         csv_output.writerow(['clip', 'preictal'])
         for segment in prediction_dict.keys():
