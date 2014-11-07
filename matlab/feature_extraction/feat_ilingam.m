@@ -32,9 +32,13 @@ nChn = size(Dat.data,1);
 nPairs = nChn*(nChn-1)/2;
 
 % Initialise holding variable
-featV = cell(2,1);
+featV = cell(3,1);
 featV{1} = nan(1,nPairs);
-featV{2} = k;
+featV{2} = nan(1,nChn);
+featV{3} = nan(1,nChn);
+
+featV{2}(1,:) = k;
+[~, featV{3}(1,:)] = sort(k);
 
 % Initialise pair counter
 paircount = 0;
@@ -50,7 +54,8 @@ end
 % ------------------------------------------------------------------------
 % Determine output parameter structure
 outparams.featnames = cell(2,1);
-outparams.featnames{1} = 'B';
-outparams.featnames{2} = 'k';
+outparams.featnames{1} = 'connweights';
+outparams.featnames{2} = 'causalorder';
+outparams.featnames{2} = 'causalindex';
 
 end
