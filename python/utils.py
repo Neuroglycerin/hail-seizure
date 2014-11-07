@@ -418,8 +418,14 @@ class DataAssembler:
         Output:
         * X,y
         """
+        # for preictal and interictal call build y and build X
+        # and stack them up
+        X,self.training_names = np.vstack([self._build_X(subject,'preictal'), \
+                self._build_X(subject,'interictal')])
+        y = np.vstack([self._build_y(subject,'preictal'), \
+                self._build_y(subject,'interictal')])
 
-        # store feature names for this training set
+        # storing feature names in self.training_names
 
         return X,y
 
@@ -432,8 +438,8 @@ class DataAssembler:
         Output:
         * X
         """
-
-        # store feature names for this training set
+        # storing names for the features in self.test_names
+        X,self.test_names = self._build_X(subject,'test')
 
         return X
 
