@@ -10,7 +10,7 @@ import python.utils as utils
 import csv
 import h5py
 
-class test_HDF5_parsing(unittest.TestCase):
+class testHDF5parsing(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -105,7 +105,7 @@ class test_HDF5_parsing(unittest.TestCase):
     def tearDownClass(cls):
         os.unlink(cls.malformed_file)
 
-class test_train(unittest.TestCase):
+class testTrain(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -176,7 +176,7 @@ class test_train(unittest.TestCase):
         os.unlink('stdout_tmp')
 
 
-class test_predict(unittest.TestCase):
+class testPredict(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -232,6 +232,131 @@ class test_predict(unittest.TestCase):
         for f in cls.output_file:
             if f!='.placeholder':
                 os.unlink(f)
+
+class testData_assembler(unittest.TestCase):
+    '''
+    Unittests for data_assembler object
+    '''
+    @classmethod
+    def setUpClass(cls):
+        cls.settings_fh = 'test_data_assembler.json'
+        cls.settings = utils.get_settings(cls.settings_fh)
+        cls.subjects = cls.settings['SUBJECTS']
+        cls.data = utils.get_data(cls.settings)
+        cls.metadata = json.load(open('test_segmentMetadata.json',
+                                      'r'))
+        cls.ictyps = ['preictal', 'interictal', 'test']
+
+        cls.segment_counts = {'Dog_1': {'preictal': 24,
+                                        'interictal': 480,
+                                        'test': 502},
+                              'Dog_2': {'preictal': 42,
+                                        'interictal': 500,
+                                        'test': 1000},
+                              'Dog_3': {'preictal': 72,
+                                        'interictal': 1440,
+                                        'test': 907},
+                              'Dog_4': {'preictal': 97,
+                                        'interictal': 804,
+                                        'test': 990},
+                              'Dog_5': {'preictal': 30,
+                                        'interictal': 450,
+                                        'test': 191},
+                              'Patient_1': {'preictal': 18,
+                                            'interictal': 50,
+                                            'test': 195},
+                              'Patient_2': {'preictal': 18,
+                                            'interictal': 42,
+                                            'test': 150}}
+        cls.feature_length = {'Dog_1': 16,
+                              'Dog_2': 16,
+                              'Dog_3': 16,
+                              'Dog_4': 16,
+                              'Dog_5': 15,
+                              'Patient_1': 15,
+                              'Patient_2': 24}
+
+
+    def setUp(self):
+        self.data_assembler = utils.data_assembler(self.settings,
+                                                   self.data,
+                                                   self.metadata)
+
+
+    def test_build_test(self):
+        self.data_assembler.build_test()
+        pass
+
+    def test_build_training(self):
+        self.data_assembler.build_training()
+        pass
+
+
+    def test__build_y(self):
+        self.data_assember._build_y()
+        pass
+
+
+    def test__build_X(self):
+        '''
+        Test _build_x is correctly returning the right shaped
+        matrix for every subj and ictyp using our fixed
+        data
+        '''
+        for subj in self.subjects:
+            for ictyp in self.ictyps:
+                X, index = self.data_assembler._build_X(subj, ictyp)
+                self.assertEqual(type(X), 'numpy.ndarray')
+                self.assertEqual(X.shape, (self.segment_counts[subj][ictyp],
+                                           self.feature_lengh[subj]*2))
+    def test__build_X_ordering(self):
+        '''
+        Check order of the features is preserved on assembly
+        '''
+        ictyp = random.choice(self.ictyps)
+        subj = random.choice(self.subjects)
+        X, feature_index = self.data_assembler._build_X(subj, ictyp)
+
+        self.assertAlmostEqual(0, X_part[:,:self.feature_length[subj]])
+        self.assertAlmostEqual(1, X_part[:,self.feature_length[subj]:self.feature_length[subj]*2])
+
+
+    def test__build_X_feature_index(self):
+        '''
+        Check feature index is correctly made
+        '''
+        ictyp = random.choice(self.ictyps)
+        subj = random.choice(self.subjects)
+        X, feature_index = self.data_assembler._build_X(subj, ictyp)
+        self.assertEqual(feature_index, self.settings['FEATURES'])
+
+
+    def test__assemble_feature(self):
+        '''
+        Check assembly of random ictype or feature
+        '''
+        ictyp = random.choice(self.ictyps)
+        subj = random.choice(self.subjects)
+
+        X_part = self.data_assembler._assemble_feature(subj, ictyp)
+        self.assertEqual(type(X_part), 'numpy.ndarray')
+        self.assertEqual(X_part.shape, (self.segment_counts[subj][ictyp],
+                                        self.feature_length[subj]))
+
+    def test_init(self):
+        '''
+        Test that the class initialises correctly
+        '''
+        self.assertEqual(self.data_assembler.settings, self.settings)
+        self.assertEqual(self.data_assembler.data, self.data)
+        self.assertEqual(self.data_assembler.metadata, self.metadata)
+
+    def tearDown(self):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
 if __name__=='__main__':
 
