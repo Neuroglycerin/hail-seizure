@@ -126,7 +126,7 @@ def get_settings(settings_file):
 
     return settings
 
-def get_data(features, settings, verbose=False):
+def get_data(settings, verbose=False):
     '''
     Iterate through Feature HDF5s and parse input using
     parse_matlab_HDF5 into a dict
@@ -135,6 +135,7 @@ def get_data(features, settings, verbose=False):
     output: data - dict of {feature name: respective parsed HDF5}
     '''
     data = {}
+    features = settings['FEATURES']
     for feat_name in features:
         print_verbose("** Parsing {0} **".format(feat_name), flag=verbose)
         parsed_feat = parse_matlab_HDF5(feat_name, settings)
@@ -176,7 +177,8 @@ def parse_matlab_HDF5(feat, settings):
 
     # open h5 read-only file for correct subj and version number
 
-    h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
+    h5_file_name = os.path.join(feature_location, "{1}{2}.h5".format(\
+            feat, version))
 
     # Try to open hdf5 file if it doesn't exist print error and return None
     try:
