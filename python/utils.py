@@ -320,7 +320,7 @@ class DataAssembler:
         feature = self.settings['FEATURES'][0]
         ictyp = 'test'
         for subject in self.settings['SUBJECTS']:
-            for segment in self.data[feature][subject].keys():
+            for segment in self.data[feature][subject][ictyp].keys():
                 segments[subject][ictyp] += [segment]
 
         # then enforce tuple
