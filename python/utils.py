@@ -371,11 +371,11 @@ class DataAssembler:
         rows = []
         for segment in self.segments[subject][ictyp]:
             # first flatten whatever is in the array returned
-            
+            row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
             # gather up all the rows in the right order
-            rows += [self.data[feature][subject][ictyp][segment]]
+            rows += [row]
         # stack up all the rows
-
+        X_part = np.vstack(rows)
 
         return X_part
 
