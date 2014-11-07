@@ -37,7 +37,9 @@ featV{1} = nan(1,nPairs);
 featV{2} = nan(1,nChn);
 featV{3} = nan(1,nChn);
 
+% Add the causal order of the channels [ch5, ch2, ch3, ch1, ch4, ...]
 featV{2}(1,:) = k;
+% Add the order index of each channel [4th, 2nd, 3rd, 1st, 5th, ...]
 [~, featV{3}(1,:)] = sort(k);
 
 % Initialise pair counter
@@ -53,9 +55,9 @@ end
 
 % ------------------------------------------------------------------------
 % Determine output parameter structure
-outparams.featnames = cell(2,1);
+outparams.featnames = cell(3,1);
 outparams.featnames{1} = 'connweights';
 outparams.featnames{2} = 'causalorder';
-outparams.featnames{2} = 'causalindex';
+outparams.featnames{3} = 'causalindex';
 
 end
