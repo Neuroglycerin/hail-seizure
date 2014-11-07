@@ -420,10 +420,15 @@ class DataAssembler:
         """
         # for preictal and interictal call build y and build X
         # and stack them up
-        X,self.training_names = np.vstack([self._build_X(subject,'preictal'), \
-                self._build_X(subject,'interictal')])
-        y = np.vstack([self._build_y(subject,'preictal'), \
-                self._build_y(subject,'interictal')])
+        X_inter,self.training_names = self._build_X(subject,'interictal')
+        X_pre,verification_names = self._build_X(subject,'preictal')
+
+        if all(tr != vf for tr in self.training_names for \
+                vf in verification_names):
+            raise ValueError
+        X = np.vstack([X_inter,X_pre])
+        y = np.hstack([self._build_y(subject,'interictal'), \
+                self._build_y(subject,'preictal')])
 
         # storing feature names in self.training_names
 
