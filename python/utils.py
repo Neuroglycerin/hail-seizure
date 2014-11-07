@@ -266,8 +266,8 @@ def read_trained_model(subject, settings, verbose=False):
 class Data_assembler:
     def __init__(self, settings, data, metadata):
         """
-        A class to take the data (nested dictionaries) and intended features and produce
-        training sets which can be used by scikit-learn.
+        A class to take the data (nested dictionaries) and intended features 
+        and produce training sets which can be used by scikit-learn.
 
         Initialisation:
 
@@ -279,24 +279,47 @@ class Data_assembler:
         self.metadata = metadata
         self.settings = settings
         self.data = data
+        self.metadata = metadata
 
         # parse for segment tuple/list
-        
+        self.segments = self._parse_segment_names()
 
         return None
+
+    def _parse_segment_names(self):
+        """
+        Creates a dictionary of dictionaries, containing tuples of segment
+        names:
+        Output:
+        * segment dictionaries {subject:{ictyp:[segment names, ...]}}
+        """
+        segments = {}
+        # This will fix the order of the segments
+        # iterate over all possible segments
+        for segment in self.metadata.keys():
+            # for this segment, find what subject it's in
+            subject = self.metadata[segment]['subject']
+            # and what ictyp it is
+            ictyp = self.metadata[segment]['ictyp']
+            # store in the dictionary of dictionaries
+            try:
+                segments[subject][ictyp] = segment
+            except KeyError:
+                # if the dictionary doesn't exist at this entry yet
+                # make it
+                segments[subject] = {}
+                segments[subject][ictyp] = segment
+
+        return segments
 
     def _build_X(self, subject, ictype):
         """
         Takes a subject string and ictal class string. Processes a 
         feature vector matrix X corresponding to that subject.
-
         Input:
-
         * subject
         * ictype
-
         Output:
-
         * X
         """
         # code pending
@@ -307,13 +330,9 @@ class Data_assembler:
         """
         Takes a subject string and processes an feature vector
         matrix X corresponding to that subject.
-
         Input:
-
         * subject
-
         Output:
-
         * y
         """
         # code pending
@@ -323,15 +342,10 @@ class Data_assembler:
     def _assemble_feature(self, feature):
         """
         Create a matrix containing a feature vector in the order:
-
         Input:
-
         * feature - which feature to build the matrix of
-
         Output:
-
         * X - matrix
-
         """
         # 
 
@@ -340,13 +354,9 @@ class Data_assembler:
     def build_training(self, subject):
         """
         Builds a training set for a given subject.
-
         Input:
-
         * subject
-
         Output:
-
         * X,y
         """
 
@@ -359,13 +369,9 @@ class Data_assembler:
     def build_test(self, subject):
         """
         Builds test set for given subject.
-
         Input:
-
         * subject
-
         Output:
-
         * X
         """
 
