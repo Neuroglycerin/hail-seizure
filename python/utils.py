@@ -110,6 +110,12 @@ def get_settings(settings_file):
 
     settings.update({'RUN_NAME': settings_file_used})
 
+    # make subjects, features, data_types immutable tuples
+
+    for field in ['SUBJECTS', 'DATA_TYPES', 'FEATURES']:
+        settings.update({field: tuple(settings[field])})
+
+
     # update file paths settings to have full absolute paths
     for settings_field in ['TRAIN_DATA_PATH',
                            'MODEL_PATH',
@@ -120,7 +126,7 @@ def get_settings(settings_file):
 
     return settings
 
-def get_data(features, settings, verbose=False):
+def get_data(settings, verbose=False):
     '''
     Iterate through Feature HDF5s and parse input using
     parse_matlab_HDF5 into a dict
@@ -129,6 +135,7 @@ def get_data(features, settings, verbose=False):
     output: data - dict of {feature name: respective parsed HDF5}
     '''
     data = {}
+    features = settings['FEATURES']
     for feat_name in features:
         print_verbose("** Parsing {0} **".format(feat_name), flag=verbose)
         parsed_feat = parse_matlab_HDF5(feat_name, settings)
@@ -170,7 +177,8 @@ def parse_matlab_HDF5(feat, settings):
 
     # open h5 read-only file for correct subj and version number
 
-    h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
+    h5_file_name = os.path.join(feature_location, "{1}{2}.h5".format(\
+            feat, version))
 
     # Try to open hdf5 file if it doesn't exist print error and return None
     try:
@@ -389,7 +397,7 @@ class Data_assembler:
         return X
 
 
-def build_training(subject, features, data, r_seed=None, flagpseudo=False):
+def build_training(subject, features, data, r_seed=None, flag_pseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -407,12 +415,13 @@ def build_training(subject, features, data, r_seed=None, flagpseudo=False):
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
 
-    if flagpseudo:
-        ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
-        classlst = [0,1,0,1]
+    if flag_pseudo:
+        ictyplst = ['interictal', 'preictal',
+                    'pseudointerictal', 'pseudopreictal']
+        classlst = [0, 1, 0, 1]
     else:
-        ictyplst = ['interictal','preictal']
-        classlst = [0,1]
+        ictyplst = ['interictal', 'preictal']
+        classlst = [0, 1]
 
     segments = 'empty'
 
