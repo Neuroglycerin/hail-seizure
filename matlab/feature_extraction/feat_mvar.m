@@ -25,7 +25,7 @@ param = parammerge(defparams, inparams);
 if isempty(param.modelorder)
     if isempty(param.maxlagdur)
         % Default duration
-        param.maxlagdur = 0.050; % 50ms
+        param.maxlagdur = 0.030; % 50ms
     end
     param.modelorder = round(param.maxlagdur * Dat.fs);
 end

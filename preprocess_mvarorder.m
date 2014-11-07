@@ -1,9 +1,15 @@
 
+% Recursively add all of matlab folder to matlab path
+addpath(genpath('matlab'));
+
+matlabpool('local',12);
+
 subjlst = subjnames();
 modtyps = {'raw','ica'};
 modtyps = {'raw'};
+modtyps = {'cln,raw,dwn'};
 
-for iSub = 4:numel(subjlst)
+for iSub = 1:numel(subjlst)
     for iMod = 1:numel(modtyps)
         fprintf('%s: %s %s %d\n', datestr(now,30), subjlst{iSub}, modtyps{iMod});
         tic;

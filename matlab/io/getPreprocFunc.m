@@ -1,4 +1,10 @@
-function func = getPreprocFunc(modtyp, subj)
+function func = getPreprocFunc(modtyp, subj, fullmodlst)
+
+% If this is the first call, the full list of preprocessing is the same is
+% the current list
+if nargin<3
+    fullmodlst = modtyp;
+end
 
 % Input handling ----------------------------------------------------------
 if ~ischar(modtyp);
@@ -18,9 +24,9 @@ switch lower(submodtyp)
     case 'raw'
         func = @(x)x;
     case 'ica'
-        func = @(x) raw2ica(x, subj);
+        func = @(x) raw2ica(x, subj, fullmodlst);
     case 'csp'
-        func = @(x) raw2csp(x, subj);
+        func = @(x) raw2csp(x, subj, fullmodlst);
     case 'cln'
         func = @(x) raw2cln(x);
     case 'dwn'
@@ -30,7 +36,7 @@ switch lower(submodtyp)
 end
 
 if ~isempty(K)
-    func2 = getPreprocFunc(modtyp(K(1)+1:end), subj);
+    func2 = getPreprocFunc(modtyp(K(1)+1:end), subj, fullmodlst);
     func = @(x) func2(func(x));
 end
 

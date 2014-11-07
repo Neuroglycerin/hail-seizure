@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import python.utils as utils
 
@@ -9,7 +9,11 @@ def main(opts):
     features = settings['FEATURES']
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(features, settings)
+    data = utils.get_data(features, settings, verbose=opts.verbose)
+
+    features_that_parsed = list(data.keys())
+
+    utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
     #thresh = utils.get_thresh()
 
@@ -23,14 +27,23 @@ def main(opts):
                                   ('clf', classifier)])
 
     # set depth to something lower
-    model_pipe.set_params(clf__max_depth=opts.max_depth)
+    model_pipe.set_params(clf__max_depth=opts.max_depth,
+                          clf__n_estimators=opts.tree_num,
+                          clf__n_jobs=opts.cores,
+                          clf__random_state=settings['R_SEED'])
+
 
     #dictionary to store results
     subject_predictions = {}
 
     for subject in subjects:
+        utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
+                            flag=opts.verbose)
 
-        X,y,cv,segments = utils.build_training(subject, features, data)
+        X,y,cv,segments = utils.build_training(subject,
+                                               features_that_parsed,
+                                               data,
+                                               r_seed=settings['R_SEED'])
 
         # initialise lists for cross-val results
         predictions = []
@@ -51,16 +64,16 @@ def main(opts):
             # store true labels
             labels.append(y[test])
 
+
         # stack up the results
         predictions = utils.np.vstack(predictions)[:,1]
         labels = utils.np.hstack(labels)
         weights = utils.np.hstack(allweights)
 
         # calculate the total AUC score
-        auc = utils.sklearn.metrics.roc_auc_score(\
-                labels,
-                predictions,
-                sample_weight=weights)
+        auc = utils.sklearn.metrics.roc_auc_score(labels,
+                                                  predictions,
+                                                  sample_weight=weights)
 
         print("predicted AUC score for {1}: {0:.2f}".format(auc,subject))
 
@@ -69,28 +82,28 @@ def main(opts):
 
         # save it
         model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(\
-                model_pipe,
-                "model_{0}_{1}".format(subject, settings["VERSION"]),
-                settings)
+        utils.serialise_trained_model(model_pipe,
+                                      subject,
+                                      settings,
+                                      verbose=opts.verbose)
 
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
     #stack subject results (don't worrry about this line)
-    predictions,labels,weights = map(utils.np.hstack,
+    predictions, labels, weights = map(utils.np.hstack,
                                      zip(*list(subject_predictions.values())))
 
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
-    auc = utils.sklearn.metrics.roc_auc_score(labels,predictions)
+    auc = utils.sklearn.metrics.roc_auc_score(labels, predictions)
+
     print("predicted AUC score over all subjects: {0:.2f}".format(auc))
 
 if __name__=='__main__':
 
     #get and parse CLI options
-    parser = utils.get_parser()
+    parser = utils.get_train_parser()
     (opts, args) = parser.parse_args()
 
     main(opts)
-
