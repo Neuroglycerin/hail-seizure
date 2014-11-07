@@ -38,7 +38,7 @@ function [B, stde, ci, k, Wout] = estimate(X)
 
 % Call the FastICA algorithm
 [icasig, A, W] = fastica( X, 'approach', 'symm', 'g', 'tanh', ...
-			  'epsilon', 1e-4, 'displayMode', 'off', 'maxNumIterations', 75);    
+			  'epsilon', 5e-5, 'displayMode', 'off', 'maxNumIterations', 75, 'verbose', 'off');    
 
 % % if exist('OCTAVE_VERSION'),
 % %     LOADPATH = savedLoadPath;
