@@ -307,7 +307,7 @@ class DataAssembler:
             for ictyp in self.settings['DATA_TYPES']:
                 segments[subject][ictyp] = []
         # This will fix the order of the segments
-        # iterate over all possible segments
+        # iterate over all possible _training_ segments
         for segment in self.metadata.keys():
             # for this segment, find what subject it's in
             subject = self.metadata[segment]['subject']
@@ -315,6 +315,13 @@ class DataAssembler:
             ictyp = self.metadata[segment]['ictyp']
             # store in the dictionary of dictionaries
             segments[subject][ictyp] += [segment]
+
+        # this will iterate over all possible test segments:
+        feature = self.settings['FEATURES'][0]
+        ictyp = 'test'
+        for subject in self.settings['SUBJECTS']:
+            for segment in self.data[feature][subject].keys():
+                segments[subject][ictyp] += [segment]
 
         # then enforce tuple
         for subject in segments.keys():
@@ -372,6 +379,7 @@ class DataAssembler:
             row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
             # gather up all the rows in the right order
             rows += [row]
+            assert False
         # stack up all the rows
         X_part = np.vstack(rows)
 
