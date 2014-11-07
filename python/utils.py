@@ -177,7 +177,7 @@ def parse_matlab_HDF5(feat, settings):
 
     # open h5 read-only file for correct subj and version number
 
-    h5_file_name = os.path.join(feature_location, "{1}{2}.h5".format(\
+    h5_file_name = os.path.join(feature_location, "{0}{1}.h5".format(\
             feat, version))
 
     # Try to open hdf5 file if it doesn't exist print error and return None
@@ -274,7 +274,7 @@ def read_trained_model(subject, settings, verbose=False):
 class DataAssembler:
     def __init__(self, settings, data, metadata):
         """
-        A class to take the data (nested dictionaries) and intended features 
+        A class to take the data (nested dictionaries) and intended features
         and produce training sets which can be used by scikit-learn.
 
         Initialisation:
@@ -327,7 +327,7 @@ class DataAssembler:
 
     def _build_X(self, subject, ictyp):
         """
-        Takes a subject string and ictal class string. Processes a 
+        Takes a subject string and ictal class string. Processes a
         feature vector matrix X corresponding to that subject.
         Also writes a vector of feature names corresponding to how
         they are arranged in the matrix.
@@ -389,6 +389,7 @@ class DataAssembler:
         * y
         """
         # code pending
+        #
 
         return X
 
