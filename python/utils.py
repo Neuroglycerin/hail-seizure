@@ -302,6 +302,10 @@ class DataAssembler:
         * segment dictionaries {subject:{ictyp:[segment names, ...]}}
         """
         segments = {}
+        for subject in self.settings['SUBJECTS']:
+            segments[subject] = {}
+            for ictyp in self.settings['DATA_TYPES']:
+                segments[subject][ictyp] = []
         # This will fix the order of the segments
         # iterate over all possible segments
         for segment in self.metadata.keys():
@@ -310,13 +314,7 @@ class DataAssembler:
             # and what ictyp it is
             ictyp = self.metadata[segment]['ictyp']
             # store in the dictionary of dictionaries
-            try:
-                segments[subject][ictyp] += [segment]
-            except KeyError:
-                # if the dictionary doesn't exist at this entry yet
-                # make it
-                segments[subject] = {}
-                segments[subject][ictyp] = [segment]
+            segments[subject][ictyp] += [segment]
 
         # then enforce tuple
         for subject in segments.keys():
@@ -379,7 +377,7 @@ class DataAssembler:
 
         return X_part
 
-    def _build_y(self, subject):
+    def _build_y(self, subject, ictyp):
         """
         Takes a subject string and processes an feature vector
         matrix X corresponding to that subject.
@@ -388,10 +386,12 @@ class DataAssembler:
         Output:
         * y
         """
-        # code pending
-        #
+        # iterate over segments to count
+        for segment in self.segments[subject][ictyp]:
+            #code pending
+            pass
 
-        return X
+        return y
 
     def build_training(self, subject):
         """
