@@ -323,8 +323,6 @@ class DataAssembler:
         ictyp = 'test'
         for subject in self.settings['SUBJECTS']:
             for segment in self.data[feature][subject][ictyp].keys():
-                # append .mat to match strings in data
-                segment = segment + '.mat'
                 segments[subject][ictyp] += [segment]
 
         # then enforce tuple
