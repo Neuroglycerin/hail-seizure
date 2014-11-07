@@ -379,7 +379,6 @@ class DataAssembler:
             row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
             # gather up all the rows in the right order
             rows += [row]
-            assert False
         # stack up all the rows
         X_part = np.vstack(rows)
 
@@ -394,12 +393,12 @@ class DataAssembler:
         Output:
         * y
         """
+        y_length = 0
         # iterate over segments to count
         for segment in self.segments[subject][ictyp]:
-            #code pending
-            pass
+            y_length += 1
 
-        return y
+        return [1]*y
 
     def build_training(self, subject):
         """
