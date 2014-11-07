@@ -271,7 +271,7 @@ def read_trained_model(subject, settings, verbose=False):
 
     return model
 
-class Data_assembler:
+class DataAssembler:
     def __init__(self, settings, data, metadata):
         """
         A class to take the data (nested dictionaries) and intended features
@@ -338,7 +338,13 @@ class Data_assembler:
         * X
         * feature_names
         """
-        # code pending
+        # iterate over features, calling _assemble feature
+        # to build parts of the full X matrix
+        X_parts = []
+        for feature in self.features:
+            X_parts += [self._assemble_feature(feature,ictype)]
+        # put these together with numpy
+        X = np.hstack(X_parts)
 
         # make vector of feature names
         # should be ['feature name',....]
@@ -358,7 +364,7 @@ class Data_assembler:
 
         return X
 
-    def _assemble_feature(self, feature):
+    def _assemble_feature(self, feature, ictype):
         """
         Create a matrix containing a feature vector in the order:
         Input:
