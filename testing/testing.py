@@ -332,18 +332,87 @@ class testDataAssembler(unittest.TestCase):
 
 
     def setUp(self):
-        self.DataAssemblerInstance= utils.DataAssembler(self.settings,
+        self.DataAssemblerInstance = utils.DataAssembler(self.settings,
                                                         self.data,
                                                         self.metadata)
 
 
     def test_build_test(self):
-        #self.DataAssemblerInstance.build_test()
-        self.assertTrue(False)
+
+        for subj in self.subjects:
+            X = self.DataAssemblerInstance.build_test(subj)
+            target_X_shape = (self.segment_counts[subj]['test'],
+                              self.feature_length[subj] * len(self.features))
+
+            self.assertIsInstance(X,
+                                  np.ndarray,
+                                  msg="Check that for subj {0} "
+                                      "X is an array".format(subj))
+
+
+            self.assertEqual(X.shape, target_X_shape,
+                             msg="Check that for subj {0} "
+                                 "X is an right shape".format(subj))
+
+
+            self.assertTrue(X[:,
+                              :self.feature_length[subj]].all() == 0,
+                        msg="Check that for subj {0} "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj))
+
+            self.assertTrue(X[:,
+                          self.feature_length[subj]:\
+                          self.feature_length[subj]*2].all() == 1,
+                        msg="Check that for subj {0} "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj))
+
 
     def test_build_training(self):
-        #self.DataAssemblerInstance.build_test()
-        self.assertTrue(False)
+
+        for subj in self.subjects:
+            X, y = self.DataAssemblerInstance.build_training(subj)
+
+            self.assertIsInstance(X,
+                                  np.ndarray,
+                                  msg="Check that for subj {0} "
+                                      "X is an array".format(subj))
+
+
+            target_X_shape = (self.segment_counts[subj]['interictal'] +
+                              self.segment_counts[subj]['preictal'],
+                              self.feature_length[subj] * len(self.features))
+
+            self.assertEqual(X.shape, target_X_shape,
+                             msg="Check that for subj {0} "
+                                 "X is an right shape".format(subj))
+
+            self.assertTrue(X[:,
+                              :self.feature_length[subj]].all() == 0,
+                        msg="Check that for subj {0} "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj))
+
+            self.assertTrue(X[:,
+                          self.feature_length[subj]:\
+                          self.feature_length[subj]*2].all() == 1,
+                        msg="Check that for subj {0} "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj))
+
+            self.assertIsInstance(y,
+                                  np.ndarray,
+                                  msg="Check that for subj {0} "
+                                      "X is an array".format(subj))
+
+            target_y_shape = (self.segment_counts[subj]['interictal'] +
+                              self.segment_counts[subj]['preictal'], )
+
+            self.assertEqual(y.shape, target_y_shape,
+                             msg="Check that for subj {0} "
+                                 "y is an right shape".format(subj))
+
 
 
     def test__build_y(self):
