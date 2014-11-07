@@ -342,7 +342,7 @@ class DataAssembler:
         # to build parts of the full X matrix
         X_parts = []
         feature_names = []
-        for feature in self.features:
+        for feature in self.settings['FEATURES']:
             X_part = self._assemble_feature(subject,feature,ictyp)
             X_parts += [X_part]
             # build vector of feature names,
