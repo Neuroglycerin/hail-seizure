@@ -110,6 +110,12 @@ def get_settings(settings_file):
 
     settings.update({'RUN_NAME': settings_file_used})
 
+    # make subjects, features, data_types immutable tuples
+
+    for field in ['SUBJECTS', 'DATA_TYPES', 'FEATURES']:
+        settings.update({field: tuple(settings[field])})
+
+
     # update file paths settings to have full absolute paths
     for settings_field in ['TRAIN_DATA_PATH',
                            'MODEL_PATH',
@@ -263,7 +269,7 @@ def read_trained_model(subject, settings, verbose=False):
 
     return model
 
-def build_training(subject, features, data, r_seed=None, flagpseudo=False):
+def build_training(subject, features, data, r_seed=None, flag_pseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -281,12 +287,13 @@ def build_training(subject, features, data, r_seed=None, flagpseudo=False):
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
 
-    if flagpseudo:
-        ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
-        classlst = [0,1,0,1]
+    if flag_pseudo:
+        ictyplst = ['interictal', 'preictal',
+                    'pseudointerictal', 'pseudopreictal']
+        classlst = [0, 1, 0, 1]
     else:
-        ictyplst = ['interictal','preictal']
-        classlst = [0,1]
+        ictyplst = ['interictal', 'preictal']
+        classlst = [0, 1]
 
     segments = 'empty'
 
