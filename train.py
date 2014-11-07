@@ -6,10 +6,9 @@ def main(opts):
 
     settings = utils.get_settings(opts.settings)
 
-    features = settings['FEATURES']
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(features, settings, verbose=opts.verbose)
+    data = utils.get_data(settings, verbose=opts.verbose)
 
     features_that_parsed = list(data.keys())
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import random
+import numpy as np
+import sklearn.pipeline
 import json
 import unittest
 import glob
@@ -47,19 +49,25 @@ class testHDF5parsing(unittest.TestCase):
         '''
 
         non_existent_feat = 'fake_feat'
-        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
-                                              non_existent_feat,
-                                              self.settings['VERSION'])
+        h5_file_name = os.path.join(self.settings['TRAIN_DATA_PATH'],
+                                    "{0}{1}.h5".format(non_existent_feat,
+                                                       self.settings['VERSION']))
 
         with warnings.catch_warnings(record=True) as w:
                 dummy = utils.parse_matlab_HDF5(non_existent_feat,
                                                 self.settings)
 
-                self.assertEqual(len(w), 1)
-                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(len(w), 1, msg="Check there is one and only "
+                                                "one warning raised")
+                self.assertIs(w[-1].category, UserWarning, msg="Check that "
+                                                                "warning raised "
+                                                                "is a UserWarning ")
                 self.assertEqual(str(w[-1].message),
                                  "{0} does not exist (or is not "
-                                 "readable)".format(h5_file_name))
+                                 "readable)".format(h5_file_name), msg="Check the "
+                                                                        "warning is "
+                                                                        "the correct "
+                                                                        "format ")
 
     def test_parse_error_warning(self):
         '''
@@ -68,20 +76,23 @@ class testHDF5parsing(unittest.TestCase):
 
 
         malformed_feat = 'malformed_feat'
-        h5_file_name = "{0}/{1}{2}.h5".format(self.settings['TRAIN_DATA_PATH'],
-                                              malformed_feat,
-                                              self.settings['VERSION'])
+        h5_file_name = os.path.join(self.settings['TRAIN_DATA_PATH'],
+                                    "{0}{1}.h5".format(malformed_feat,
+                                                       self.settings['VERSION']))
 
         with warnings.catch_warnings(record=True) as w:
 
                 dummy = utils.parse_matlab_HDF5(malformed_feat,
                                                 self.settings)
 
-                self.assertEqual(len(w), 1)
-                self.assertIs(w[-1].category, UserWarning)
+                self.assertEqual(len(w), 1, msg="Check one and only one error "
+                                                "raised")
+                self.assertIs(w[-1].category, UserWarning, msg="Check error is "
+                                                                "UserWarning")
                 self.assertEqual(str(w[-1].message), "Unable to "
                                                      "parse {0}".format(\
-                                                                h5_file_name))
+                                                                h5_file_name),
+                                 msg="Check the warning raised is correct format")
 
 
     def test_hdf5_parse(self):
@@ -92,15 +103,23 @@ class testHDF5parsing(unittest.TestCase):
                                               self.settings)
 
         subjects = set(parsed_HDF5.keys())
-        self.assertEqual(subjects, self.all_subjects)
+        self.assertEqual(subjects,
+                         self.all_subjects,
+                         msg="Check that parsed HDF5 contains all subjects")
 
         typs = set(parsed_HDF5['Dog_1'].keys())
-        self.assertEqual(typs, self.all_types)
+        self.assertEqual(typs,
+                         self.all_types,
+                         msg="Check that all ictypes are in parsed file by "
+                             "checking the ictypes under Dog_1")
 
         num_interictal_dog1_segs = len(\
                 parsed_HDF5['Dog_1']['interictal'].keys())
 
-        self.assertEqual(num_interictal_dog1_segs, 480)
+        self.assertEqual(num_interictal_dog1_segs,
+                         480,
+                         msg="Check there is the correct number of segments in "
+                             "parsed HDF5s by checking dog1 interictal")
 
     @classmethod
     def tearDownClass(cls):
@@ -135,14 +154,18 @@ class testTrain(unittest.TestCase):
         # count the number of AUC scores printed to stdout
         # and assert this is 8 (7 subjects and 1 overall)
         AUC_score_count = self.stdout.count('AUC')
-        self.assertEqual(AUC_score_count, 8)
+        self.assertEqual(AUC_score_count,
+                         8,
+                         msg="Check that train prints 8 AUC scores to stdout")
 
     def test_model_number(self):
         '''
         Test correct number of models are generated
         '''
         # get number of models
-        self.assertEqual(len(self.model_files), 7)
+        self.assertEqual(len(self.model_files),
+                         7,
+                         msg="Check that 7 models are written out to model_path dir")
 
     def test_model_size_correct(self):
         '''
@@ -154,7 +177,9 @@ class testTrain(unittest.TestCase):
         # get file size and assert between 2.5 and 8k
         output_model_stats = os.stat(output_model)
         output_model_size = output_model_stats.st_size
-        self.assertTrue(1000 < output_model_size < 10000)
+        self.assertTrue(1000 < output_model_size < 10000,
+                        msg="Check that randomly picked model ({0}) is between 1 "
+                            "and 10M".format(output_model))
 
     def test_model_can_be_read(self):
         '''
@@ -163,8 +188,10 @@ class testTrain(unittest.TestCase):
         output_model = random.choice(self.settings['SUBJECTS'])
         parsed_model = utils.read_trained_model(output_model, self.settings)
 
-        self.assertEqual(str(type(parsed_model)),
-                         "<class 'sklearn.pipeline.Pipeline'>")
+        self.assertIsInstance(parsed_model,
+                              sklearn.pipeline.Pipeline,
+                              msg="Check that randomly picked model ({0}) is "
+                                  "the correct sklearn obj type".format(output_model))
 
     @classmethod
     def tearDownClass(cls):
@@ -200,12 +227,15 @@ class testPredict(unittest.TestCase):
         Test whether a file was actually outputted
         '''
         # Check whether there is only one output in submission path
-        self.assertEqual(len(self.output_file), 1)
+        self.assertEqual(len(self.output_file), 1, msg="Check only one csv is "
+                                                       "output to output path")
         self.assertEqual(self.output_file[0],
                          os.path.join(self.settings['SUBMISSION_PATH'],
                                       '{0}_submission_using_{1}_feats'
                                       '.csv'.format(self.settings['RUN_NAME'],
-                                                    self.settings['VERSION'])))
+                                                    self.settings['VERSION'])),
+                         msg="Checking that the output csv has the right "
+                             "abspath and filename")
 
     def test_csv_valid(self):
         '''
@@ -217,11 +247,16 @@ class testPredict(unittest.TestCase):
                     in csv.reader(csv_out_file, delimiter=',')]
 
         # assert csv has right number of rows
-        self.assertEqual(len(parsed_contents), 3936)
+        self.assertEqual(len(parsed_contents),
+                         3936,
+                         msg="Check that output csv has 3936 rows "
+                             "(3935 test segments + header)")
 
         # assert all rows have 2 cols
         for row in parsed_contents:
-            self.assertEqual(len(row), 2)
+            self.assertEqual(len(row),
+                             2,
+                             msg="Check that output csv only has 2 cols")
 
     @classmethod
     def tearDownClass(cls):
@@ -243,31 +278,47 @@ class testDataAssembler(unittest.TestCase):
         cls.settings_fh = 'test_data_assembler.json'
         cls.settings = utils.get_settings(cls.settings_fh)
         cls.subjects = cls.settings['SUBJECTS']
+        cls.features = cls.settings['FEATURES']
         cls.data = utils.get_data(cls.settings)
-        cls.metadata = json.load(open('test_segmentMetadata.json',
-                                      'r'))
-        cls.ictyps = ['preictal', 'interictal', 'test']
+        with open('test_segmentMetadata.json', 'r') as f:
+            cls.metadata = json.load(f)
+
+        cls.ictyps = cls.settings['DATA_TYPES']
 
         cls.segment_counts = {'Dog_1': {'preictal': 24,
+                                        'pseudopreictal': 24,
                                         'interictal': 480,
+                                        'pseudointerictal': 480,
                                         'test': 502},
                               'Dog_2': {'preictal': 42,
+                                        'pseudopreictal': 42,
                                         'interictal': 500,
+                                        'pseudointerictal': 500,
                                         'test': 1000},
                               'Dog_3': {'preictal': 72,
+                                        'pseudopreictal': 72,
                                         'interictal': 1440,
+                                        'pseudointerictal': 1440,
                                         'test': 907},
                               'Dog_4': {'preictal': 97,
+                                        'pseudopreictal': 97,
                                         'interictal': 804,
+                                        'pseudointerictal': 804,
                                         'test': 990},
                               'Dog_5': {'preictal': 30,
+                                        'pseudopreictal': 30,
                                         'interictal': 450,
+                                        'pseudointerictal': 450,
                                         'test': 191},
                               'Patient_1': {'preictal': 18,
+                                            'pseudopreictal': 18,
                                             'interictal': 50,
+                                            'pseudointerictal': 50,
                                             'test': 195},
                               'Patient_2': {'preictal': 18,
+                                            'pseudopreictal': 18,
                                             'interictal': 42,
+                                            'pseudointerictal': 42,
                                             'test': 150}}
         cls.feature_length = {'Dog_1': 16,
                               'Dog_2': 16,
@@ -276,6 +327,8 @@ class testDataAssembler(unittest.TestCase):
                               'Dog_5': 15,
                               'Patient_1': 15,
                               'Patient_2': 24}
+        cls.ictyp_mapping = {'preictal': 1,
+                             'interictal': 0}
 
 
     def setUp(self):
@@ -285,18 +338,47 @@ class testDataAssembler(unittest.TestCase):
 
 
     def test_build_test(self):
-        self.DataAssemblerInstance.build_test()
-        pass
+        #self.DataAssemblerInstance.build_test()
+        self.assertTrue(False)
 
     def test_build_training(self):
-        self.DataAssemblerInstance.build_test()
-        pass
+        #self.DataAssemblerInstance.build_test()
+        self.assertTrue(False)
 
 
     def test__build_y(self):
-        self.DataAssemblerInstance._build_y()
-        pass
+        '''
+        For each subj and ictyp make sure the y vector returned is the right
+        size and has the right values
+        '''
+        for subj in self.subjects:
+            for ictyp in ['preictal', 'interictal']:
+                y = self.DataAssemblerInstance._build_y(subj, ictyp)
+                self.assertIsInstance(y,
+                                      np.ndarray,
+                                      msg="Check that y for subj {0} and "
+                                          "icty {1} is numpy array".format(subj,
+                                                                           ictyp))
+                self.assertEqual(y.shape[0],
+                                 self.segment_counts[subj][ictyp],
+                                 msg="Check that y is right length for subj {0} and "
+                                     "icty {1} is numpy array".format(subj, ictyp))
 
+                self.assertTrue(all(y == self.ictyp_mapping[ictyp]),
+                                msg="Check that y is all right value for subj {0} and "
+                                     "icty {1} is numpy array".format(subj, ictyp))
+
+
+    def test__build_y_error_on_test(self):
+        '''
+        Test whether y throws error if you attempt to create vector with the
+        test data ictyp
+        '''
+        subj = random.choice(self.subjects)
+        self.assertRaises(ValueError,
+                          self.DataAssemblerInstance._build_y,
+                          subj,
+                          'test')
 
     def test__build_X(self):
         '''
@@ -307,19 +389,39 @@ class testDataAssembler(unittest.TestCase):
         for subj in self.subjects:
             for ictyp in self.ictyps:
                 X, index = self.DataAssemblerInstance._build_X(subj, ictyp)
-                self.assertEqual(type(X), 'numpy.ndarray')
-                self.assertEqual(X.shape, (self.segment_counts[subj][ictyp],
-                                           self.feature_lengh[subj]*2))
+                self.assertIsInstance(X,
+                                      np.ndarray,
+                                      msg="Check that for subj {0} and ictyp {1} "
+                                          "X is an array".format(subj, ictyp))
+                self.assertEqual(X.shape,
+                                (self.segment_counts[subj][ictyp],
+                                    self.feature_length[subj]*2),
+                                 msg="Check that for subj {0} and ictyp {1} "
+                                     "X is an right shape".format(subj,
+                                                                  ictyp))
     def test__build_X_ordering(self):
         '''
         Check order of the features is preserved on assembly
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
-        X, feature_index = self.DataAssemberInstance._build_X(subj, ictyp)
+        X, index = self.DataAssemblerInstance._build_X(subj, ictyp)
 
-        self.assertAlmostEqual(0, X_part[:,:self.feature_length[subj]])
-        self.assertAlmostEqual(1, X_part[:,self.feature_length[subj]:self.feature_length[subj]*2])
+        self.assertTrue(X[:,
+                          :self.feature_length[subj]].all() == 0,
+                        msg="Check that for random subj {0} and ictyp {1} "
+                            "when reading an all 0 then all 1 feature in order "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj, ictyp))
+        self.assertTrue(X[:,
+                          self.feature_length[subj]:\
+                          self.feature_length[subj]*2].all() == 1,
+                        msg="Check that for random subj {0} and ictyp {1} "
+                            "when reading an all 0 then all 1 feature in order "
+                            "X is generated with 0 first then 1 "
+                            "afterwards".format(subj, ictyp))
+
+
 
 
     def test__build_X_feature_index(self):
@@ -329,8 +431,11 @@ class testDataAssembler(unittest.TestCase):
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
         X, feature_index = self.DataAssemblerInstance._build_X(subj, ictyp)
-        self.assertEqual(feature_index, self.settings['FEATURES'])
-
+        self.assertEqual((feature_index[0], feature_index[-1]),
+                         self.features,
+                         msg="Check that for random subj {0} and ictyp {1} "
+                             "feature index is same order as features "
+                             "are in settings".format(subj, ictyp))
 
     def test__assemble_feature(self):
         '''
@@ -338,11 +443,48 @@ class testDataAssembler(unittest.TestCase):
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
+        feature = random.choice(self.features)
 
-        X_part = self.DataAssemblerInstance._assemble_feature(subj, ictyp)
-        self.assertEqual(type(X_part), 'numpy.ndarray')
+        X_part = self.DataAssemblerInstance._assemble_feature(subj,
+                                                              feature,
+                                                              ictyp)
+        self.assertIsInstance(X_part,
+                              np.ndarray,
+                              msg="Check that for random subj {0} and ictyp {1} "
+                             "X_part is an array".format(subj, ictyp))
+
         self.assertEqual(X_part.shape, (self.segment_counts[subj][ictyp],
-                                        self.feature_length[subj]))
+                                        self.feature_length[subj]),
+                         msg="Check that for random subj {0} and ictyp {1} "
+                             "X_part is correct shape".format(subj, ictyp))
+
+
+    def test__parse_segment_names(self):
+        '''
+        Check parse segment names
+        - is a dict containing all the subjects
+        - For a random subject:
+          * it contains a dict
+          * a dict of a size equal to the summed segment count for all ictyps
+            of that subject
+        '''
+
+        segment_names = self.DataAssemblerInstance._parse_segment_names()
+        self.assertEqual(set(segment_names.keys()), set(self.subjects))
+
+        subj = random.choice(self.subjects)
+        self.assertIsInstance(segment_names[subj], dict)
+
+        subj_segment_number = sum([self.segment_counts[subj][ictyp] \
+                                        for ictyp in self.ictyps])
+
+        length_of_class_segment_names = sum([len(segment_names[subj][ictyp]) \
+                                                for ictyp in self.ictyps])
+
+        self.assertEqual(length_of_class_segment_names, subj_segment_number,
+                         msg="{0} subj used".format(subj))
+
+
 
     def test_init(self):
         '''
