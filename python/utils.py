@@ -303,12 +303,17 @@ class Data_assembler:
             ictyp = self.metadata[segment]['ictyp']
             # store in the dictionary of dictionaries
             try:
-                segments[subject][ictyp] = segment
+                segments[subject][ictyp] += [segment]
             except KeyError:
                 # if the dictionary doesn't exist at this entry yet
                 # make it
                 segments[subject] = {}
-                segments[subject][ictyp] = segment
+                segments[subject][ictyp] = [segment]
+
+        # then enforce tuple
+        for subject in segments.keys():
+            for ictyp in segments[subject].keys():
+                segments[subject][ictyp] = tuple(segments[subject][ictyp])
 
         return segments
 
@@ -316,15 +321,21 @@ class Data_assembler:
         """
         Takes a subject string and ictal class string. Processes a 
         feature vector matrix X corresponding to that subject.
+        Also writes a vector of feature names corresponding to how
+        they are arranged in the matrix.
         Input:
         * subject
         * ictype
         Output:
         * X
+        * feature_names
         """
         # code pending
 
-        return X
+        # make vector of feature names
+        # should be ['feature name',....]
+
+        return X, feature_names
 
     def _build_y(self, subject):
         """
@@ -344,12 +355,14 @@ class Data_assembler:
         Create a matrix containing a feature vector in the order:
         Input:
         * feature - which feature to build the matrix of
+        * subject
+        * ictype
         Output:
-        * X - matrix
+        * X_part - part of the X matrix
         """
         # 
 
-        return X
+        return X_part
 
     def build_training(self, subject):
         """
@@ -360,8 +373,6 @@ class Data_assembler:
         * X,y
         """
 
-        # make vector of feature names
-        # should be ['feature name',....]
 
         return X,y
 
