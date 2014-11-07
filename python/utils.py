@@ -393,6 +393,9 @@ class DataAssembler:
         Output:
         * y
         """
+        # check this is the right ictyp
+        if ictyp == "test":
+            raise ValueError
         y_length = 0
         # iterate over segments to count
         for segment in self.segments[subject][ictyp]:
