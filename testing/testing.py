@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+import json
 import unittest
 import glob
 import warnings
@@ -233,9 +234,9 @@ class testPredict(unittest.TestCase):
             if f!='.placeholder':
                 os.unlink(f)
 
-class testData_assembler(unittest.TestCase):
+class testDataAssembler(unittest.TestCase):
     '''
-    Unittests for data_assembler object
+    Unittests for DataAssembler object
     '''
     @classmethod
     def setUpClass(cls):
@@ -278,22 +279,22 @@ class testData_assembler(unittest.TestCase):
 
 
     def setUp(self):
-        self.data_assembler = utils.data_assembler(self.settings,
-                                                   self.data,
-                                                   self.metadata)
+        self.DataAssemblerInstance= utils.DataAssembler(self.settings,
+                                                        self.data,
+                                                        self.metadata)
 
 
     def test_build_test(self):
-        self.data_assembler.build_test()
+        self.DataAssemblerInstance.build_test()
         pass
 
     def test_build_training(self):
-        self.data_assembler.build_training()
+        self.DataAssemblerInstance.build_test()
         pass
 
 
     def test__build_y(self):
-        self.data_assember._build_y()
+        self.DataAssemblerInstance._build_y()
         pass
 
 
@@ -305,7 +306,7 @@ class testData_assembler(unittest.TestCase):
         '''
         for subj in self.subjects:
             for ictyp in self.ictyps:
-                X, index = self.data_assembler._build_X(subj, ictyp)
+                X, index = self.DataAssemblerInstance._build_X(subj, ictyp)
                 self.assertEqual(type(X), 'numpy.ndarray')
                 self.assertEqual(X.shape, (self.segment_counts[subj][ictyp],
                                            self.feature_lengh[subj]*2))
@@ -315,7 +316,7 @@ class testData_assembler(unittest.TestCase):
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
-        X, feature_index = self.data_assembler._build_X(subj, ictyp)
+        X, feature_index = self.DataAssemberInstance._build_X(subj, ictyp)
 
         self.assertAlmostEqual(0, X_part[:,:self.feature_length[subj]])
         self.assertAlmostEqual(1, X_part[:,self.feature_length[subj]:self.feature_length[subj]*2])
@@ -327,7 +328,7 @@ class testData_assembler(unittest.TestCase):
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
-        X, feature_index = self.data_assembler._build_X(subj, ictyp)
+        X, feature_index = self.DataAssemblerInstance._build_X(subj, ictyp)
         self.assertEqual(feature_index, self.settings['FEATURES'])
 
 
@@ -338,7 +339,7 @@ class testData_assembler(unittest.TestCase):
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
 
-        X_part = self.data_assembler._assemble_feature(subj, ictyp)
+        X_part = self.DataAssemblerInstance._assemble_feature(subj, ictyp)
         self.assertEqual(type(X_part), 'numpy.ndarray')
         self.assertEqual(X_part.shape, (self.segment_counts[subj][ictyp],
                                         self.feature_length[subj]))
@@ -347,9 +348,9 @@ class testData_assembler(unittest.TestCase):
         '''
         Test that the class initialises correctly
         '''
-        self.assertEqual(self.data_assembler.settings, self.settings)
-        self.assertEqual(self.data_assembler.data, self.data)
-        self.assertEqual(self.data_assembler.metadata, self.metadata)
+        self.assertEqual(self.DataAssemblerInstance.settings, self.settings)
+        self.assertEqual(self.DataAssemblerInstance.data, self.data)
+        self.assertEqual(self.DataAssemblerInstance.metadata, self.metadata)
 
     def tearDown(self):
         pass
