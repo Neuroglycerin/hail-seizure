@@ -325,7 +325,7 @@ class DataAssembler:
 
         return segments
 
-    def _build_X(self, subject, ictype):
+    def _build_X(self, subject, ictyp):
         """
         Takes a subject string and ictal class string. Processes a
         feature vector matrix X corresponding to that subject.
@@ -333,7 +333,7 @@ class DataAssembler:
         they are arranged in the matrix.
         Input:
         * subject
-        * ictype
+        * ictyp
         Output:
         * X
         * feature_names
@@ -341,15 +341,43 @@ class DataAssembler:
         # iterate over features, calling _assemble feature
         # to build parts of the full X matrix
         X_parts = []
+        feature_names = []
         for feature in self.features:
-            X_parts += [self._assemble_feature(feature,ictype)]
+            X_part = self._assemble_feature(subject,feature,ictyp)
+            X_parts += [X_part]
+            # build vector of feature names,
+            # with the length of the feature
+            feature_names += [feature]*X_part.shape[1]
         # put these together with numpy
         X = np.hstack(X_parts)
 
-        # make vector of feature names
+        # assemble vector of feature names together
         # should be ['feature name',....]
+        feature_names = np.hstack(feature_names)
 
         return X, feature_names
+
+    def _assemble_feature(self, subject, feature, ictyp):
+        """
+        Create a matrix containing a feature vector in the order:
+        Input:
+        * feature - which feature to build the matrix of
+        * subject
+        * ictyp
+        Output:
+        * X_part - part of the X matrix
+        """
+        # iterate over segments and build the X_part matrix
+        rows = []
+        for segment in self.segments[subject][ictyp]:
+            # first flatten whatever is in the array returned
+            row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
+            # gather up all the rows in the right order
+            rows += [row]
+        # stack up all the rows
+        X_part = np.vstack(rows)
+
+        return X_part
 
     def _build_y(self, subject):
         """
@@ -361,22 +389,9 @@ class DataAssembler:
         * y
         """
         # code pending
-
-        return X
-
-    def _assemble_feature(self, feature, ictype):
-        """
-        Create a matrix containing a feature vector in the order:
-        Input:
-        * feature - which feature to build the matrix of
-        * subject
-        * ictype
-        Output:
-        * X_part - part of the X matrix
-        """
         #
 
-        return X_part
+        return X
 
     def build_training(self, subject):
         """
@@ -387,6 +402,7 @@ class DataAssembler:
         * X,y
         """
 
+        # store feature names for this training set
 
         return X,y
 
