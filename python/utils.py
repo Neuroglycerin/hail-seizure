@@ -781,3 +781,11 @@ def get_weights(y):
     # generate vector for this weighting
     weights = np.array([weight if i == 1 else 1 for i in y])
     return weights
+
+def get_metadata():
+    '''
+    Return the metadata.
+    '''
+    with open('segmentMetadata.json') as metafile:
+        metadata = json.load(metafile)
+    return metadata
