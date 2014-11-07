@@ -316,7 +316,8 @@ class DataAssembler:
             # append .mat to match strings in data
             segment = segment + '.mat'
             # store in the dictionary of dictionaries
-            segments[subject][ictyp] += [segment]
+            if ictyp in self.settings['DATA_TYPES']:
+                segments[subject][ictyp] += [segment]
 
         # this will iterate over all possible test segments:
         feature = self.settings['FEATURES'][0]
@@ -402,8 +403,12 @@ class DataAssembler:
         # iterate over segments to count
         for segment in self.segments[subject][ictyp]:
             y_length += 1
-
-        return np.array([1]*y_length)
+        if 'preictal' == ictyp:
+            return np.array([1]*y_length)
+        elif 'interictal' == ictyp:
+            return np.array([0]*y_length)
+        else:
+            raise ValueError
 
     def build_training(self, subject):
         """
