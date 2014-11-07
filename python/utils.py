@@ -263,6 +263,115 @@ def read_trained_model(subject, settings, verbose=False):
 
     return model
 
+class Data_assembler:
+    def __init__(self, settings, data, metadata):
+        """
+        A class to take the data (nested dictionaries) and intended features and produce
+        training sets which can be used by scikit-learn.
+
+        Initialisation:
+
+        * settings - dictionary produced by json
+        * metadata - dictionary produced by metadata json
+        * data - data produced by get_data
+        """
+        # save initialisation to self
+        self.metadata = metadata
+        self.settings = settings
+        self.data = data
+
+        # parse for segment tuple/list
+        
+
+        return None
+
+    def _build_X(self, subject, ictype):
+        """
+        Takes a subject string and ictal class string. Processes a 
+        feature vector matrix X corresponding to that subject.
+
+        Input:
+
+        * subject
+        * ictype
+
+        Output:
+
+        * X
+        """
+        # code pending
+
+        return X
+
+    def _build_y(self, subject):
+        """
+        Takes a subject string and processes an feature vector
+        matrix X corresponding to that subject.
+
+        Input:
+
+        * subject
+
+        Output:
+
+        * y
+        """
+        # code pending
+
+        return X
+
+    def _assemble_feature(self, feature):
+        """
+        Create a matrix containing a feature vector in the order:
+
+        Input:
+
+        * feature - which feature to build the matrix of
+
+        Output:
+
+        * X - matrix
+
+        """
+        # 
+
+        return X
+
+    def build_training(self, subject):
+        """
+        Builds a training set for a given subject.
+
+        Input:
+
+        * subject
+
+        Output:
+
+        * X,y
+        """
+
+        # make vector of feature names
+        # should be ['feature name',....]
+
+        return X,y
+
+
+    def build_test(self, subject):
+        """
+        Builds test set for given subject.
+
+        Input:
+
+        * subject
+
+        Output:
+
+        * X
+        """
+
+        return X
+
+
 def build_training(subject, features, data, r_seed=None, flagpseudo=False):
     '''
     Build labelled data set for training
@@ -349,7 +458,7 @@ class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
-        Despite the name, it is not actually leave-one-out. It is leave 20% out."""
+        Leave 20% out"""
         # put together the iterator
         # first make a dictionary mapping from the segments to which hour each is within
         self.segments = list(map(lambda segment: segment.split(".")[0], segments))
