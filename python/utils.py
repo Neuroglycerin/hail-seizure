@@ -398,7 +398,7 @@ class DataAssembler:
         for segment in self.segments[subject][ictyp]:
             y_length += 1
 
-        return [1]*y
+        return [1]*y_length
 
     def build_training(self, subject):
         """
