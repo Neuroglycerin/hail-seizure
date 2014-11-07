@@ -110,6 +110,12 @@ def get_settings(settings_file):
 
     settings.update({'RUN_NAME': settings_file_used})
 
+    # make subjects, features, data_types immutable tuples
+
+    for field in ['SUBJECTS', 'DATA_TYPES', 'FEATURES']:
+        settings.update({field: tuple(settings[field])})
+
+
     # update file paths settings to have full absolute paths
     for settings_field in ['TRAIN_DATA_PATH',
                            'MODEL_PATH',
@@ -120,7 +126,7 @@ def get_settings(settings_file):
 
     return settings
 
-def get_data(features, settings, verbose=False):
+def get_data(settings, verbose=False):
     '''
     Iterate through Feature HDF5s and parse input using
     parse_matlab_HDF5 into a dict
@@ -129,6 +135,7 @@ def get_data(features, settings, verbose=False):
     output: data - dict of {feature name: respective parsed HDF5}
     '''
     data = {}
+    features = settings['FEATURES']
     for feat_name in features:
         print_verbose("** Parsing {0} **".format(feat_name), flag=verbose)
         parsed_feat = parse_matlab_HDF5(feat_name, settings)
@@ -170,7 +177,8 @@ def parse_matlab_HDF5(feat, settings):
 
     # open h5 read-only file for correct subj and version number
 
-    h5_file_name = "{0}/{1}{2}.h5".format(feature_location, feat, version)
+    h5_file_name = os.path.join(feature_location, "{0}{1}.h5".format(\
+            feat, version))
 
     # Try to open hdf5 file if it doesn't exist print error and return None
     try:
@@ -263,7 +271,155 @@ def read_trained_model(subject, settings, verbose=False):
 
     return model
 
-def build_training(subject, features, data, r_seed=None, flagpseudo=False):
+class DataAssembler:
+    def __init__(self, settings, data, metadata):
+        """
+        A class to take the data (nested dictionaries) and intended features
+        and produce training sets which can be used by scikit-learn.
+
+        Initialisation:
+
+        * settings - dictionary produced by json
+        * metadata - dictionary produced by metadata json
+        * data - data produced by get_data
+        """
+        # save initialisation to self
+        self.metadata = metadata
+        self.settings = settings
+        self.data = data
+        self.metadata = metadata
+
+        # parse for segment tuple/list
+        self.segments = self._parse_segment_names()
+
+        return None
+
+    def _parse_segment_names(self):
+        """
+        Creates a dictionary of dictionaries, containing tuples of segment
+        names:
+        Output:
+        * segment dictionaries {subject:{ictyp:[segment names, ...]}}
+        """
+        segments = {}
+        # This will fix the order of the segments
+        # iterate over all possible segments
+        for segment in self.metadata.keys():
+            # for this segment, find what subject it's in
+            subject = self.metadata[segment]['subject']
+            # and what ictyp it is
+            ictyp = self.metadata[segment]['ictyp']
+            # store in the dictionary of dictionaries
+            try:
+                segments[subject][ictyp] += [segment]
+            except KeyError:
+                # if the dictionary doesn't exist at this entry yet
+                # make it
+                segments[subject] = {}
+                segments[subject][ictyp] = [segment]
+
+        # then enforce tuple
+        for subject in segments.keys():
+            for ictyp in segments[subject].keys():
+                segments[subject][ictyp] = tuple(segments[subject][ictyp])
+
+        return segments
+
+    def _build_X(self, subject, ictyp):
+        """
+        Takes a subject string and ictal class string. Processes a
+        feature vector matrix X corresponding to that subject.
+        Also writes a vector of feature names corresponding to how
+        they are arranged in the matrix.
+        Input:
+        * subject
+        * ictyp
+        Output:
+        * X
+        * feature_names
+        """
+        # iterate over features, calling _assemble feature
+        # to build parts of the full X matrix
+        X_parts = []
+        feature_names = []
+        for feature in self.settings['FEATURES']:
+            X_part = self._assemble_feature(subject,feature,ictyp)
+            X_parts += [X_part]
+            # build vector of feature names,
+            # with the length of the feature
+            feature_names += [feature]*X_part.shape[1]
+        # put these together with numpy
+        X = np.hstack(X_parts)
+
+        # assemble vector of feature names together
+        # should be ['feature name',....]
+        feature_names = np.hstack(feature_names)
+
+        return X, feature_names
+
+    def _assemble_feature(self, subject, feature, ictyp):
+        """
+        Create a matrix containing a feature vector in the order:
+        Input:
+        * feature - which feature to build the matrix of
+        * subject
+        * ictyp
+        Output:
+        * X_part - part of the X matrix
+        """
+        # iterate over segments and build the X_part matrix
+        rows = []
+        for segment in self.segments[subject][ictyp]:
+            # first flatten whatever is in the array returned
+            row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
+            # gather up all the rows in the right order
+            rows += [row]
+        # stack up all the rows
+        X_part = np.vstack(rows)
+
+        return X_part
+
+    def _build_y(self, subject):
+        """
+        Takes a subject string and processes an feature vector
+        matrix X corresponding to that subject.
+        Input:
+        * subject
+        Output:
+        * y
+        """
+        # code pending
+        #
+
+        return X
+
+    def build_training(self, subject):
+        """
+        Builds a training set for a given subject.
+        Input:
+        * subject
+        Output:
+        * X,y
+        """
+
+        # store feature names for this training set
+
+        return X,y
+
+
+    def build_test(self, subject):
+        """
+        Builds test set for given subject.
+        Input:
+        * subject
+        Output:
+        * X
+        """
+
+        return X
+
+
+def build_training(subject, features, data, r_seed=None, flag_pseudo=False):
     '''
     Build labelled data set for training
     input : subject  (subject name string)
@@ -281,12 +437,13 @@ def build_training(subject, features, data, r_seed=None, flagpseudo=False):
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
 
-    if flagpseudo:
-        ictyplst = ['interictal','preictal','pseudointerictal','pseudopreictal']
-        classlst = [0,1,0,1]
+    if flag_pseudo:
+        ictyplst = ['interictal', 'preictal',
+                    'pseudointerictal', 'pseudopreictal']
+        classlst = [0, 1, 0, 1]
     else:
-        ictyplst = ['interictal','preictal']
-        classlst = [0,1]
+        ictyplst = ['interictal', 'preictal']
+        classlst = [0, 1]
 
     segments = 'empty'
 
@@ -349,7 +506,7 @@ class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
-        Despite the name, it is not actually leave-one-out. It is leave 20% out."""
+        Leave 20% out"""
         # put together the iterator
         # first make a dictionary mapping from the segments to which hour each is within
         self.segments = list(map(lambda segment: segment.split(".")[0], segments))
