@@ -276,6 +276,8 @@ class testDataAssembler(unittest.TestCase):
                               'Dog_5': 15,
                               'Patient_1': 15,
                               'Patient_2': 24}
+        cls.ictyp_mapping = {'preictal': 1,
+                             'ictal': 0}
 
 
     def setUp(self):
@@ -285,18 +287,34 @@ class testDataAssembler(unittest.TestCase):
 
 
     def test_build_test(self):
-        self.DataAssemblerInstance.build_test()
+        #self.DataAssemblerInstance.build_test()
         pass
 
     def test_build_training(self):
-        self.DataAssemblerInstance.build_test()
+        #self.DataAssemblerInstance.build_test()
         pass
 
 
     def test__build_y(self):
-        self.DataAssemblerInstance._build_y()
-        pass
+        '''
+        For each subj and ictyp make sure the y vector returned is the right
+        size and has the right values
+        '''
+        for subj in self.subjects:
+            for ictyp in ['preictal', 'interictal']:
+                y = self.DataAssemblerInstance._build_y(subj, ictyp)
+                self.assertEqual(type(y), 'numpy.ndarray')
+                self.assertEqual(y.shape, self.segment_counts[subj][ictyp])
+                self.assertTrue(all(y == self.ictyp_mapping[ictyp]))
 
+    def test__build_y_error_on_test(self):
+        '''
+        Test whether y throws error if you attempt to create vector with the
+        test data ictyp
+        '''
+        subj = random.choice(self.subjects)
+        self.assertRaises(ValueError,
+                          self.DataAssemblerInstance._build_y(subj, 'test'))
 
     def test__build_X(self):
         '''
@@ -306,9 +324,9 @@ class testDataAssembler(unittest.TestCase):
         '''
         for subj in self.subjects:
             for ictyp in self.ictyps:
-                X, index = self.DataAssemblerInstance._build_X(subj, ictyp)
-                self.assertEqual(type(X), 'numpy.ndarray')
-                self.assertEqual(X.shape, (self.segment_counts[subj][ictyp],
+                X, index = self.DataAssemblerInstanace._build_X(subj, ictyp)
+                self.assertequal(type(X), 'numpy.ndarray')
+                self.assertequal(X.shape, (self.segment_counts[subj][ictyp],
                                            self.feature_lengh[subj]*2))
     def test__build_X_ordering(self):
         '''
@@ -316,10 +334,14 @@ class testDataAssembler(unittest.TestCase):
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
-        X, feature_index = self.DataAssemberInstance._build_X(subj, ictyp)
+        X, index = self.DataAssemblerInstance._build_X(subj, ictyp)
 
-        self.assertAlmostEqual(0, X_part[:,:self.feature_length[subj]])
-        self.assertAlmostEqual(1, X_part[:,self.feature_length[subj]:self.feature_length[subj]*2])
+        self.assertTrue(all(X_part[:,
+                                   :self.feature_length[subj]] == 0))
+        self.assertTrue(all(X_part[:,
+                                   self.feature_length[subj]:\
+                                   self.feature_length[subj]*2] == 1))
+
 
 
     def test__build_X_feature_index(self):

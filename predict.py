@@ -15,7 +15,7 @@ def main(settings_file='SETTINGS.json'):
     features = settings['FEATURES']
 
     #load the data
-    data = utils.get_data(features, settings)
+    data = utils.get_data(settings)
 
     features_that_parsed = list(data.keys())
     #iterate over subjects
