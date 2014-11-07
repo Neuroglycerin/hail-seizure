@@ -313,6 +313,8 @@ class DataAssembler:
             subject = self.metadata[segment]['subject']
             # and what ictyp it is
             ictyp = self.metadata[segment]['ictyp']
+            # append .mat to match strings in data
+            segment = segment + '.mat'
             # store in the dictionary of dictionaries
             segments[subject][ictyp] += [segment]
 
@@ -321,6 +323,8 @@ class DataAssembler:
         ictyp = 'test'
         for subject in self.settings['SUBJECTS']:
             for segment in self.data[feature][subject][ictyp].keys():
+                # append .mat to match strings in data
+                segment = segment + '.mat'
                 segments[subject][ictyp] += [segment]
 
         # then enforce tuple
@@ -425,6 +429,8 @@ class DataAssembler:
         Output:
         * X
         """
+
+        # store feature names for this training set
 
         return X
 
