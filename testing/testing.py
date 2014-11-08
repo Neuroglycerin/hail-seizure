@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import random
+import copy
 import numpy as np
 import sklearn.pipeline
 import json
@@ -27,9 +28,7 @@ class testHDF5parsing(unittest.TestCase):
                              'Patient_1',
                              'Patient_2'])
         cls.all_types = set(['preictal',
-                              'MIerr',
                               'test',
-                              'MI',
                               'pseudointerictal',
                               'interictal',
                               'pseudopreictal'])
@@ -328,8 +327,11 @@ class testDataAssembler(unittest.TestCase):
                               'Dog_5': 15,
                               'Patient_1': 15,
                               'Patient_2': 24}
+
         cls.ictyp_mapping = {'preictal': 1,
-                             'interictal': 0}
+                             'interictal': 0,
+                             'pseudopreictal': 1,
+                             'pseudointerictal': 0}
 
 
     def setUp(self):
@@ -339,6 +341,9 @@ class testDataAssembler(unittest.TestCase):
 
 
     def test_build_test(self):
+        '''
+        For subjs ensure build_test outputs correct X matrix
+        '''
 
         for subj in self.subjects:
             X = self.DataAssemblerInstance.build_test(subj)
@@ -371,6 +376,9 @@ class testDataAssembler(unittest.TestCase):
 
 
     def test_build_training(self):
+        '''
+        For all subjects ensure that build_training outputs correct X, y
+        '''
 
         for subj in self.subjects:
             X, y = self.DataAssemblerInstance.build_training(subj)
@@ -418,8 +426,7 @@ class testDataAssembler(unittest.TestCase):
 
     def test__build_y(self):
         '''
-        For each subj and ictyp make sure the y vector returned is the right
-        size and has the right values
+        For each subj and ictyp make sure the returned y vector is correct
         '''
         for subj in self.subjects:
             for ictyp in ['preictal', 'interictal']:
@@ -441,8 +448,7 @@ class testDataAssembler(unittest.TestCase):
 
     def test__build_y_error_on_test(self):
         '''
-        Test whether y throws error if you attempt to create vector with the
-        test data ictyp
+        Test whether _build_y throws error if run on 'test' data
         '''
         subj = random.choice(self.subjects)
         self.assertRaises(ValueError,
@@ -452,9 +458,7 @@ class testDataAssembler(unittest.TestCase):
 
     def test__build_X(self):
         '''
-        Test _build_x is correctly returning the right shaped
-        matrix for every subj and ictyp using our fixed
-        data
+        For each subj, ictyp check Test _build_x is building X correctly
         '''
         for subj in self.subjects:
             for ictyp in self.ictyps:
@@ -471,7 +475,7 @@ class testDataAssembler(unittest.TestCase):
                                                                   ictyp))
     def test__build_X_ordering(self):
         '''
-        Check order of the features is preserved on assembly
+        Check order of the feature input is preserved by _build_X
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
@@ -496,7 +500,7 @@ class testDataAssembler(unittest.TestCase):
 
     def test__build_X_feature_index(self):
         '''
-        Check feature index is correctly made
+        Check feature index is correctly made by _build_X
         '''
         ictyp = random.choice(self.ictyps)
         subj = random.choice(self.subjects)
@@ -507,11 +511,35 @@ class testDataAssembler(unittest.TestCase):
                              "feature index is same order as features "
                              "are in settings".format(subj, ictyp))
 
-    def test__assemble_feature(self):
+
+
+
+    def test__assemble_feature_pseudo(self):
         '''
-        Check assembly of random ictype or feature
+        Check _assemble_feature returns correct X for feat for random subj and pseudoictyp
         '''
-        ictyp = random.choice(self.ictyps)
+        ictyp = random.choice(['pseudopreictal', 'pseudointerictal'])
+        subj = random.choice(self.subjects)
+        feature = random.choice(self.features)
+
+        X_part = self.DataAssemblerInstance._assemble_feature(subj,
+                                                              feature,
+                                                              ictyp)
+        self.assertIsInstance(X_part,
+                              np.ndarray,
+                              msg="Check that for random subj {0} and ictyp {1} "
+                             "X_part is an array".format(subj, ictyp))
+
+        self.assertEqual(X_part.shape, (self.segment_counts[subj][ictyp],
+                                        self.feature_length[subj]),
+                         msg="Check that for random subj {0} and ictyp {1} "
+                             "X_part is correct shape".format(subj, ictyp))
+
+    def test__assemble_feature_non_pseudo(self):
+        '''
+        Check _assemble_feature returns correct X for feat for random subj and ictyp
+        '''
+        ictyp = random.choice(['test', 'preictal', 'interictal'])
         subj = random.choice(self.subjects)
         feature = random.choice(self.features)
 
@@ -554,15 +582,41 @@ class testDataAssembler(unittest.TestCase):
         self.assertEqual(length_of_class_segment_names, subj_segment_number,
                          msg="{0} subj used".format(subj))
 
+    def test_init_with_pseudo(self):
+        '''
+        Check that pseudo flag is true when init with settings including pseudo
+        '''
 
+        test_settings = copy.deepcopy(self.settings)
+        test_settings['DATA_TYPES'] = ['test', 'interictal', 'preictal',
+                                  'pseudointerictal', 'pseudopreictal']
+
+        DataAssemblerInstance = utils.DataAssembler(test_settings,
+                                                    self.data,
+                                                    self.metadata)
+        self.assertTrue(DataAssemblerInstance.include_pseudo)
+
+    def test_init_without_pseudo(self):
+        '''
+        Check that pseudo flag is false when init with settings including pseudo
+        '''
+        test_settings = copy.deepcopy(self.settings)
+        test_settings['DATA_TYPES'] = ['test', 'interictal', 'preictal']
+
+        DataAssemblerInstance = utils.DataAssembler(test_settings,
+                                                    self.data,
+                                                    self.metadata)
+
+        self.assertFalse(DataAssemblerInstance.include_pseudo)
 
     def test_init(self):
         '''
-        Test that the class initialises correctly
+        Test that the class inits correctly for all params (apart from pseudoflag)
         '''
         self.assertEqual(self.DataAssemblerInstance.settings, self.settings)
         self.assertEqual(self.DataAssemblerInstance.data, self.data)
         self.assertEqual(self.DataAssemblerInstance.metadata, self.metadata)
+
 
     def tearDown(self):
         pass
