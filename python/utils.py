@@ -454,7 +454,7 @@ class DataAssembler:
         """
         # for preictal and interictal call build y and build X
         # and stack them up
-        verification_names = np.zeros([3])
+        verification_names = [[],[],[]]
         X_inter,self.training_names = self._build_X(subject,'interictal')
         X_pre,verification_names[0] = self._build_X(subject,'preictal')
         if include_pseudo:
