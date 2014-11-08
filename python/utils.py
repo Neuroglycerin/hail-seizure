@@ -62,13 +62,17 @@ def get_settings(settings_file):
     for field in ['SUBJECTS', 'DATA_TYPES', 'FEATURES']:
         settings.update({field: tuple(settings[field])})
 
+    # default directories for all paths
+    default_dirs = {'TRAIN_DATA_PATH': 'train',
+                    'MODEL_PATH': 'model',
+                    'SUBMISSION_PATH': 'output',
+                    'AUC_SCORE_PATH': 'auc_scores'}
 
-    # update file paths settings to have full absolute paths
-    for settings_field in ['TRAIN_DATA_PATH',
-                           'MODEL_PATH',
-                           'TEST_DATA_PATH',
-                           'SUBMISSION_PATH',
-                           'AUC_SCORE_PATH']:
+
+    # add missing default and update file paths settings to have full absolute paths
+    for settings_field in default_dirs.keys():
+        if settings_field not in settings.keys():
+            settings.update({settings_field: default_dirs[settings_field]})
 
         settings[settings_field] = os.path.abspath(settings[settings_field])
 
@@ -866,10 +870,10 @@ def output_auc_scores(auc_scores, settings):
 
     if os.path.exists(auc_csv_path):
         with open(auc_csv_path, 'a') as auc_csv:
-            writer = csv.writer(auc_csv, delimiter=",")
+            writer = csv.writer(auc_csv, delimiter="\t")
             writer.writerow(auc_row)
     else:
         with open(auc_csv_path, 'a') as auc_csv:
-            writer = csv.writer(auc_csv, delimiter=",")
+            writer = csv.writer(auc_csv, delimiter="\t")
             writer.writerow([''] + colnames)
             writer.writerow(auc_row)
