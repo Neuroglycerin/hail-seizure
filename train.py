@@ -22,29 +22,23 @@ def main(opts):
 
     scaler = utils.get_scaler()
 
-    classifier = utils.sklearn.svm.SVC(probability=True)
+    # get settings should convert class name string to actual classifier
+    # object
+    classifier = settings['CLASSIFIER']
+
+    # dict of classifier options
+    classifier_settings = settings['CLASSIFIER_OPTS']
+
+    #utils.sklearn.svm.SVC(probability=True)
 
     model_pipe = utils.get_model([('scl', scaler),
                                   ('clf', classifier)])
-
-    # set depth to something lower
-    #model_pipe.set_params(clf__max_depth=opts.max_depth,
-    #                      clf__n_estimators=opts.tree_num,
-    #                      clf__n_jobs=opts.cores,
-    #                      clf__random_state=settings['R_SEED'])
-
-
     #dictionary to store results
     subject_predictions = {}
 
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
                             flag=opts.verbose)
-
-        #X,y,cv,segments = utils.build_training(subject,
-        #                                       features_that_parsed,
-        #                                       data,
-        #                                       r_seed=settings['R_SEED'])
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -111,7 +105,7 @@ def main(opts):
 if __name__=='__main__':
 
     #get and parse CLI options
-    parser = utils.get_train_parser()
+    parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
     main(opts)

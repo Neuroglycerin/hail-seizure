@@ -2,20 +2,23 @@ import json
 import numpy as np
 import os
 import h5py
+import sys
 import csv
 import warnings
-from sklearn.externals import joblib #pickle w/ optimisation for np arrays
 import sklearn.feature_selection
+import sklearn.externals
+import sklearn.linear_model
 import sklearn.preprocessing
 import sklearn.cross_validation
 import sklearn.pipeline
 import sklearn.ensemble
 import sklearn.svm
+import sklearn
 import optparse
 
-def get_train_parser():
+def get_parser():
     '''
-    Generate optparse parser object for train.py
+    Generate optparse parser object for train and predict.py
     with the relevant options
     input:  void
     output: optparse parser
@@ -35,63 +38,39 @@ def get_train_parser():
                       help="Settings file to use in JSON format (default="
                             "SETTINGS.json)")
 
-    parser.add_option("-k", "--selector_k",
-                      action="store",
-                      dest="selector_k",
-                      type=int,
-                      default="3000",
-                      help="Number of best features to select"\
-                           " via ANOVA f-scores (default=3000)")
+    #parser.add_option("-k", "--selector_k",
+    #                  action="store",
+    #                  dest="selector_k",
+    #                  type=int,
+    #                  default="3000",
+    #                  help="Number of best features to select"\
+    #                       " via ANOVA f-scores (default=3000)")
 
-    parser.add_option("-d", "--max_depth",
-                      action="store",
-                      dest="max_depth",
-                      type=int,
-                      default="3",
-                      help="Max tree depth in random forest classifier"
-                           "(default=3)")
+    #parser.add_option("-d", "--max_depth",
+    #                  action="store",
+    #                  dest="max_depth",
+    #                  type=int,
+    #                  default="3",
+    #                  help="Max tree depth in random forest classifier"
+    #                       "(default=3)")
 
-    parser.add_option("-t", "--trees",
-                      action="store",
-                      dest="tree_num",
-                      type=int,
-                      default="100",
-                      help="Number of estimators to use in random forest classifier"
-                           "(default=100)")
-
-    parser.add_option("-j", "--cores",
-                      action="store",
-                      dest="cores",
-                      type=int,
-                      default=-1,
-                      help="Number of cores to use when training classifier"
-                           " (default is all of them)")
+    #parser.add_option("-t", "--trees",
+    #                  action="store",
+    #                  dest="tree_num",
+    #                  type=int,
+    #                  default="100",
+    #                  help="Number of estimators to use in random forest classifier"
+    #                       "(default=100)")
+    #
+    #parser.add_option("-j", "--cores",
+    #                  action="store",
+    #                  dest="cores",
+    #                  type=int,
+    #                  default=-1,
+    #                  help="Number of cores to use when training classifier"
+    #                       " (default is all of them)")
 
     return parser
-
-def get_predict_parser():
-    '''
-    Generate optparse parser object for predict.py
-    with the relevant options
-    input:  void
-    output: optparse parser
-    '''
-    parser = optparse.OptionParser()
-
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Print verbose output")
-
-    parser.add_option("-s", "--settings",
-                      action="store",
-                      dest="settings",
-                      default="SETTINGS.json",
-                      help="Settings file to use in JSON format (default="
-                            "SETTINGS.json)")
-    return parser
-
 
 def get_settings(settings_file):
     '''
@@ -124,6 +103,58 @@ def get_settings(settings_file):
                            'SUBMISSION_PATH']:
 
         settings[settings_field] = os.path.abspath(settings[settings_field])
+
+
+    # reads the settings classifier field and return the appropriate clf obj
+    # using the model mapping dict
+
+
+    # options that don't work as they don't have sampleweights param
+
+    #'RandomTreesEmbedding': sklearn.ensemble.RandomTreesEmbedding(),
+    #'GradientBoosting': sklearn.ensemble.GradientBoostingClassifier(),
+    #'RidgeClassifier': sklearn.linear_model.RidgeClassifier(),
+    #'LogisticRegression': sklearn.linear_model.LogisticRegression(),
+    #'SGDClassifier': sklearn.linear_model.SGDClassifier()}
+
+
+    classifier_objs = {'RandomForest': sklearn.ensemble.RandomForestClassifier(),
+                       'ExtraTrees': sklearn.ensemble.ExtraTreesClassifier(),
+                       'AdaBoost': sklearn.ensemble.AdaBoostClassifier(),
+                       'SVC': sklearn.svm.SVC(probability=True)}
+    # todo: bagging
+
+    default_classifier = classifier_objs['SVC']
+
+    if 'CLASSIFIER' in settings.keys():
+        try:
+            settings['CLASSIFIER'] = classifier_objs[settings['CLASSIFIER']]
+        except KeyError:
+            warnings.warn("Classifier: {0} (specified in {1}), "
+                          "using default instead: {2}".format(settings['CLASSIFIER'],
+                                                              settings_file,
+                                                              str(default_classifier)))
+
+    # if the field doesn't exist in settings return the default logistic regression model
+    # todo: change this to best performing classifier
+    else:
+        settings.update({'CLASSIFIER': default_classifier})
+
+    # if there is a settings opt field convert
+    if 'CLASSIFIER_OPTS' in settings.keys():
+        settings['CLASSIFIER_OPTS'] = {}
+
+    else:
+        settings.update({'CLASSIFIER_OPTS': {}})
+
+    # set the model with the params desired
+    try:
+        settings['CLASSIFIER'].set_params(**settings['CLASSIFIER_OPTS'])
+    except ValueError:
+        print("CLASSIFIER_OPTS {0} in {1} "
+              "contains invalid parameters".format(settings_file,
+                                                   str(settings['CLASSIFIER_OPTS'])))
+        sys.exit(1)
 
     return settings
 
@@ -250,7 +281,7 @@ def serialise_trained_model(model, subject, settings, verbose=False):
                                                       settings['VERSION'])
 
     print_verbose("##Writing Model: {0}##".format(model_name), flag=verbose)
-    joblib.dump(model,
+    sklearn.externals.joblib.dump(model,
                 os.path.join(settings['MODEL_PATH'], model_name),
                 compress=9)
 
@@ -268,7 +299,7 @@ def read_trained_model(subject, settings, verbose=False):
                                                       settings['VERSION'])
 
     print_verbose("##Loading Model: {0}##".format(model_name), flag=verbose)
-    model = joblib.load(os.path.join(settings['MODEL_PATH'], model_name))
+    model = sklearn.externals.joblib.load(os.path.join(settings['MODEL_PATH'], model_name))
 
     return model
 
@@ -605,7 +636,7 @@ class Sequence_CV:
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
                                                                   n_iter=10,
-                                                                  test_size=0.2,
+                                                                  test_size=0.5,
                                                                   random_state=r_seed)
 
         # Some of the datasets only have 3 hours of preictal recordings.

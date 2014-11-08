@@ -35,9 +35,10 @@ class testHDF5parsing(unittest.TestCase):
                               'pseudopreictal'])
 
         cls.malformed_feat = 'malformed_feat'
-        cls.malformed_file = "{0}/{1}{2}.h5".format(cls.settings['TRAIN_DATA_PATH'],
+        cls.malformed_file = os.path.join(cls.settings['TRAIN_DATA_PATH'],
+                                          "{0}{1}.h5".format(
                                                     cls.malformed_feat,
-                                                    cls.settings['VERSION'])
+                                                    cls.settings['VERSION']))
 
         cls.malformed_feat = h5py.File(cls.malformed_file, 'w')
         cls.malformed_feat.create_dataset('malfie', (10,10))
@@ -134,7 +135,7 @@ class testTrain(unittest.TestCase):
         cls.settings = utils.get_settings(cls.settings_fh)
 
         f = open('stdout_tmp', 'w')
-        cls.proc = subprocess.call(['../train.py', '-t', '1',
+        cls.proc = subprocess.call(['../train.py',
                                       '-s', 'test_train.json'],
                                       stdout=f)
         f.close()
@@ -177,9 +178,9 @@ class testTrain(unittest.TestCase):
         # get file size and assert between 2.5 and 8k
         output_model_stats = os.stat(output_model)
         output_model_size = output_model_stats.st_size
-        self.assertTrue(1000 < output_model_size < 10000,
+        self.assertTrue(1000 < output_model_size < 100000000,
                         msg="Check that randomly picked model ({0}) is between 1 "
-                            "and 10M".format(output_model))
+                            "and 100M".format(output_model))
 
     def test_model_can_be_read(self):
         '''
