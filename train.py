@@ -47,7 +47,9 @@ def main(opts):
         X,y = assembler.build_training(subject)
 
         # get the CV iterator
-        cv = utils.Sequence_CV(assembler.training_segments, metadata)
+        cv = utils.Sequence_CV(assembler.training_segments,
+                               metadata,
+                               r_seed=settings['R_SEED'])
 
         # initialise lists for cross-val results
         predictions = []
