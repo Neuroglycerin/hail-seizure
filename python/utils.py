@@ -455,6 +455,37 @@ class DataAssembler:
 
         return X
 
+    def composite_tiled(self):
+        """
+        Builds a composite tiled training set:
+        Output:
+        * X,y - tiled dataset:
+        """
+        # first assemble the pieces to build the tiled set from
+        X_parts = []
+        y_parts = []
+        dimensions = []
+        for subject in self.settings['SUBJECTS']:
+            X,y = self.build_training(subject)
+            X_parts += [X]
+            y_parts += [y]
+            dimensions += [X.shape]
+
+        # assemble this montrosity
+        X = np.ones(np.sum(list(zip(*dimensions)), axis=1))*np.nan
+        # assign each array within the new array, according to its size 
+        offset = [0,0]
+        for X_part in X_parts:
+            d = X_part.shape
+            X[offset[0]:d[0],offset[1]:d[1]] = X_part
+        
+        # stack up y
+        y = np.hstack(y)
+
+        # pending record of feature indexes
+
+        return X,y
+
 
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None):
