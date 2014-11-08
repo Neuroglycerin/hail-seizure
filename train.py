@@ -22,16 +22,16 @@ def main(opts):
 
     scaler = utils.get_scaler()
 
-    classifier = utils.get_classifier()
+    classifier = utils.sklearn.svm.SVC(probability=True)
 
     model_pipe = utils.get_model([('scl', scaler),
                                   ('clf', classifier)])
 
     # set depth to something lower
-    model_pipe.set_params(clf__max_depth=opts.max_depth,
-                          clf__n_estimators=opts.tree_num,
-                          clf__n_jobs=opts.cores,
-                          clf__random_state=settings['R_SEED'])
+    #model_pipe.set_params(clf__max_depth=opts.max_depth,
+    #                      clf__n_estimators=opts.tree_num,
+    #                      clf__n_jobs=opts.cores,
+    #                      clf__random_state=settings['R_SEED'])
 
 
     #dictionary to store results
