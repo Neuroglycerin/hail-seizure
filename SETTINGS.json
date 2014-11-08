@@ -2,6 +2,7 @@
     "R_SEED" : 5440,
     "TRAIN_DATA_PATH": "train",
     "MODEL_PATH": "model",
+    "AUC_SCORE_PATH": "auc_scores",
     "SUBJECTS": ["Dog_1",
                  "Dog_2",
                  "Dog_3",

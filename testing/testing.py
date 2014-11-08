@@ -14,6 +14,11 @@ import python.utils as utils
 import csv
 import h5py
 
+
+class testClassifieroptions(unittest.TestCase):
+    pass
+
+
 class testHDF5parsing(unittest.TestCase):
 
     @classmethod

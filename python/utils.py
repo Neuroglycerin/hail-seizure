@@ -37,39 +37,6 @@ def get_parser():
                       default="SETTINGS.json",
                       help="Settings file to use in JSON format (default="
                             "SETTINGS.json)")
-
-    #parser.add_option("-k", "--selector_k",
-    #                  action="store",
-    #                  dest="selector_k",
-    #                  type=int,
-    #                  default="3000",
-    #                  help="Number of best features to select"\
-    #                       " via ANOVA f-scores (default=3000)")
-
-    #parser.add_option("-d", "--max_depth",
-    #                  action="store",
-    #                  dest="max_depth",
-    #                  type=int,
-    #                  default="3",
-    #                  help="Max tree depth in random forest classifier"
-    #                       "(default=3)")
-
-    #parser.add_option("-t", "--trees",
-    #                  action="store",
-    #                  dest="tree_num",
-    #                  type=int,
-    #                  default="100",
-    #                  help="Number of estimators to use in random forest classifier"
-    #                       "(default=100)")
-    #
-    #parser.add_option("-j", "--cores",
-    #                  action="store",
-    #                  dest="cores",
-    #                  type=int,
-    #                  default=-1,
-    #                  help="Number of cores to use when training classifier"
-    #                       " (default is all of them)")
-
     return parser
 
 def get_settings(settings_file):
@@ -100,7 +67,8 @@ def get_settings(settings_file):
     for settings_field in ['TRAIN_DATA_PATH',
                            'MODEL_PATH',
                            'TEST_DATA_PATH',
-                           'SUBMISSION_PATH']:
+                           'SUBMISSION_PATH',
+                           'AUC_SCORE_PATH']:
 
         settings[settings_field] = os.path.abspath(settings[settings_field])
 
@@ -354,7 +322,7 @@ class DataAssembler:
                 ictyp = 'test'
                 subject = [subject for subject in self.settings['SUBJECTS'] \
                           if subject in segment][0]
-                
+
             else:
                 segment_key = segment.split('.')[0]
                 # for this segment, find what subject it's in
@@ -516,8 +484,8 @@ class DataAssembler:
             y = np.hstack([self._build_y(subject,'interictal'), \
                            self._build_y(subject,'preictal')])
         # storing feature names in self.training_names
-             
-        # storing the correct sequence of segments       
+
+        # storing the correct sequence of segments
         if self.include_pseudo:
             self.training_segments = np.hstack([ \
                     np.array(self.segments[subject]['interictal']), \
@@ -599,7 +567,7 @@ class DataAssembler:
 
         # record of segments
         self.composite_training_segments = np.hstack(segments)
-        
+
         # pending record of feature indexes
 
         return X,y
@@ -875,3 +843,33 @@ def get_metadata():
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
     return metadata
+
+
+def output_auc_scores(auc_scores, settings):
+    '''
+    Outputs AUC scores to a csv file in AUC_SCORE_PATH
+    input: auc_score dict mapping subj to scores
+            settings
+    output: void
+    '''
+
+    auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
+                                'AUC_scores.csv')
+
+    colnames = [subj for subj in settings['SUBJECTS']] + ['all']
+
+    scores = [auc_scores[subj] for subj in colnames]
+
+    auc_row = [settings['RUN_NAME']] + scores
+
+    # if csv exists just append the new auc line for this run
+
+    if os.path.exists(auc_csv_path):
+        with open(auc_csv_path, 'a') as auc_csv:
+            writer = csv.writer(auc_csv, delimiter=",")
+            writer.writerow(auc_row)
+    else:
+        with open(auc_csv_path, 'a') as auc_csv:
+            writer = csv.writer(auc_csv, delimiter=",")
+            writer.writerow([''] + colnames)
+            writer.writerow(auc_row)

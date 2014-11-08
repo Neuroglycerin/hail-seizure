@@ -36,6 +36,8 @@ def main(opts):
     #dictionary to store results
     subject_predictions = {}
 
+    auc_scores = {}
+
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
                             flag=opts.verbose)
@@ -77,7 +79,10 @@ def main(opts):
                                                   predictions,
                                                   sample_weight=weights)
 
-        print("predicted AUC score for {1}: {0:.2f}".format(auc,subject))
+        print("predicted AUC score for {1}: {0:.2f}".format(auc, subject))
+
+        # add AUC scores to a subj dict
+        auc_scores.update({subject: auc})
 
         # fit the final model
         weights = utils.get_weights(y)
@@ -92,6 +97,7 @@ def main(opts):
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
+
     #stack subject results (don't worrry about this line)
     predictions, labels, weights = map(utils.np.hstack,
                                      zip(*list(subject_predictions.values())))
@@ -101,6 +107,11 @@ def main(opts):
     auc = utils.sklearn.metrics.roc_auc_score(labels, predictions)
 
     print("predicted AUC score over all subjects: {0:.2f}".format(auc))
+
+    # output AUC scores to file
+    auc_scores.update({'all': auc})
+
+    utils.output_auc_scores(auc_scores)
 
 if __name__=='__main__':
 
