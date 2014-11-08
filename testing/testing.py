@@ -280,7 +280,7 @@ class testDataAssembler(unittest.TestCase):
         cls.subjects = cls.settings['SUBJECTS']
         cls.features = cls.settings['FEATURES']
         cls.data = utils.get_data(cls.settings)
-        with open('test_segmentMetadata.json', 'r') as f:
+        with open('../segmentMetadata.json', 'r') as f:
             cls.metadata = json.load(f)
 
         cls.ictyps = cls.settings['DATA_TYPES']
