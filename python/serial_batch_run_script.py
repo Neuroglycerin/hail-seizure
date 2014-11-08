@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import optparse
+import time
 import os
 import subprocess
+import python.utils as utils
 import warnings
 import glob
 
@@ -59,46 +61,54 @@ def print_verbose(string, flag=False):
 
 def call_train_and_predict(settings_file, verbose=False):
 
-    out = None
+    settings = utils.get_settings(settings_file)
+
+    batch_out_dir = "batch_out"
+    out = open(os.path.join(
+                     batch_out_dir,
+                     "{0}_batch_AUC_scores".format(settings['RUN_NAME'])), 'w')
     err = None
 
+    # Dump all stderr to /dev/null if we aren't wanting verbose output
     if not verbose:
         null = open(os.devnull, 'w')
-        out = null
         err = null
 
     print_verbose('**Training {0}**'.format(settings_file), flag=verbose)
-    train_retcode = subprocess.call(['./train.py', '-s', settings_file],
+
+    # Start train process
+    train_retcode = subprocess.call(['../train.py', '-s', settings_file],
                                     stdout=out, stderr=err)
 
+    # Raise a warning if it was non-zero and return
     if train_retcode != 0:
         warnings.warn("train.py -s {0} did not complete successfully".format(\
                 settings_file))
+        return None
+
+    print_verbose('##Trained {0}##'.format(settings_file), flag=verbose)
+
 
     print_verbose('**Predicting {0}**'.format(settings_file), flag=verbose)
-    predict_retcode = subprocess.call(['./predict.py', '-s', settings_file],
+
+    # Start predict proc
+    predict_retcode = subprocess.call(['../predict.py', '-s', settings_file],
                                      stdout=out, stderr=err)
 
+        # Raise warning if predict failed and return
     if predict_retcode != 0:
         warnings.warn("predict.py -s {0} did not complete successfully".format(\
                 settings_file))
+        return None
+
+    print_verbose('##Predicted {0}##'.format(settings_file), flag=verbose)
 
     if not verbose:
         null.close()
 
+    out.close()
 
-#def run_in_parallel(settings, cores=1, verbose=False):
-#    # pipe all output to dev null for parallel
-#    for settings_file in settings:
-#        thread = threading.Thread(target=call_train_and_predict, args=(settings))
-#        thread.start()
-#        pool.append(thread)
-#
-#    # won't work because of subprocess call blocking
-#    # but if I use Popen how do I make sure predict doesn't run ahread of train
-#
-#    for thread in pool:
-#        thread.join()
+    return None
 
 
 def run_in_serial(all_settings, verbose=False):
@@ -127,5 +137,4 @@ if __name__=='__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
     run_in_serial(settings_list, verbose=opts.verbose)
-    #run_in_parallel(settings_list, cores=opts.cores, verbose=opts.verbose)
 
