@@ -346,6 +346,7 @@ class DataAssembler:
             segments[subject] = {}
             for ictyp in self.settings['DATA_TYPES']:
                 segments[subject][ictyp] = []
+        allsegments = self._scrape_segments()
         # This will fix the order of the segments
         # iterate over all possible _training_ segments
         for segment in self.metadata.keys():
@@ -372,6 +373,34 @@ class DataAssembler:
                 segments[subject][ictyp] = tuple(segments[subject][ictyp])
 
         return segments
+
+    def _scrape_segments(self):
+        """
+        Scrapes segment ids out of the data file.
+        Ensures that each feature has the same segments covered.
+        Output:
+        * all_segments = total list of segments
+        """
+        # initialise set and fill with first feature's segments
+        all_segments = set([])
+        for subject in self.settings['SUBJECTS']:
+            for ictyp in self.settings['DATA_TYPES']:
+                all_segments += set(data[self.settings['FEATURES'][0]] \
+                    [subject][ictyp].keys())
+        # iterate over all features to ensure that the segments are the same
+        for feature in self.settings['FEATURES']:
+            verification_segments = set([])
+            for subject in self.settings['SUBJECTS']:
+                for ictyp in self.settings['DATA_TYPES']:
+                    verification_segments += set(data[feature] \
+                    [subject][ictyp].keys())
+            if verification_segments != all_segments:
+                raise ValueError("Feature {0} contains segments that \n
+                                do not match feature {1}.".format(feature, \
+                                        self.settings['FEATURES'][0]))
+        # turn segments into a tuple
+        all_segments = tuple(all_segments)
+        return all_segments
 
     def _build_X(self, subject, ictyp):
         """
