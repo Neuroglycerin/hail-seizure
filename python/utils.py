@@ -325,6 +325,13 @@ class DataAssembler:
         # parse for segment tuple/list
         self.segments = self._parse_segment_names()
 
+        # find out if we're dealing with pseudo data
+        if 'pseudointerictal' in settings['DATA_TYPES'] and \
+                'pseudopreictal' in settings['DATA_TYPES']:
+            self.include_pseudo=True
+        else:
+            self.include_pseudo=False
+
         return None
 
     def _parse_segment_names(self):
@@ -447,13 +454,11 @@ class DataAssembler:
         else:
             raise ValueError
 
-    def build_training(self, subject, include_pseudo=False):
+    def build_training(self, subject):
         """
         Builds a training set for a given subject.
         Input:
         * subject
-        Option:
-        * include_pseudo - include the pseudo-data
         Output:
         * X,y
         """
@@ -462,7 +467,7 @@ class DataAssembler:
         verification_names = [[],[],[]]
         X_inter,self.training_names = self._build_X(subject,'interictal')
         X_pre,verification_names[0] = self._build_X(subject,'preictal')
-        if include_pseudo:
+        if self.include_pseudo:
             X_psinter,verification_names[1] = self._build_X(subject,\
                     'pseudointerictal')
             X_pspre,verification_names[2] = self._build_X(subject,\
@@ -471,11 +476,11 @@ class DataAssembler:
         if all(all(tr != vf for tr in self.training_names for \
                 vf in verification) for verification in verification_names):
             raise ValueError
-        if include_pseudo:
+        if self.include_pseudo:
             X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
         else:
             X = np.vstack([X_inter,X_pre])
-        if include_pseudo:
+        if self.include_pseudo:
             y = np.hstack([self._build_y(subject,'interictal'), \
                            self._build_y(subject,'preictal'), \
                            self._build_y(subject,'pseudointerictal'), \
@@ -486,7 +491,7 @@ class DataAssembler:
         # storing feature names in self.training_names
              
         # storing the correct sequence of segments       
-        if include_pseudo:
+        if self.include_pseudo:
             self.training_segments = np.hstack([ \
                     np.array(self.segments[subject]['interictal']), \
                     np.array(self.segments[subject]['preictal']), \
