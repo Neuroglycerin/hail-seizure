@@ -384,7 +384,7 @@ class DataAssembler:
         for subject in self.settings['SUBJECTS']:
             for ictyp in self.settings['DATA_TYPES']:
                 all_segments |= set(self.data[self.settings['FEATURES'][0]] \
-                    [subject][ictyp].keys())
+                        [subject][ictyp].keys())
         # iterate over all features to ensure that the segments are the same
         for feature in self.settings['FEATURES']:
             verification_segments = set([])

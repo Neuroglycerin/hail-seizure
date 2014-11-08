@@ -595,7 +595,6 @@ class testDataAssembler(unittest.TestCase):
                                                     self.data,
                                                     self.metadata)
 
-        self.assertTrue(hasattr(self.DataAssemblerInstance, include_pseudo))
         self.assertTrue(DataAssemblerInstance.include_pseudo)
 
     def test_init_without_pseudo(self):
@@ -609,17 +608,12 @@ class testDataAssembler(unittest.TestCase):
                                                     self.data,
                                                     self.metadata)
 
-        self.assertTrue(hasattr(self.DataAssemblerInstance, include_pseudo))
         self.assertFalse(DataAssemblerInstance.include_pseudo)
 
     def test_init(self):
         '''
         Test that the class inits correctly for all params (apart from pseudoflag)
         '''
-
-        self.assertTrue(hasattr(self.DataAssemblerInstance, settings))
-        self.assertTrue(hasattr(self.DataAssemblerInstance, data))
-        self.assertTrue(hasattr(self.DataAssemblerInstance, metadata))
 
         self.assertEqual(self.DataAssemblerInstance.settings, self.settings)
         self.assertEqual(self.DataAssemblerInstance.data, self.data)
