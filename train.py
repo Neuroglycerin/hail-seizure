@@ -10,6 +10,8 @@ def main(opts):
 
     data = utils.get_data(settings, verbose=opts.verbose)
 
+    metadata = utils.get_metadata()
+
     features_that_parsed = list(data.keys())
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
@@ -39,10 +41,17 @@ def main(opts):
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
                             flag=opts.verbose)
 
-        X,y,cv,segments = utils.build_training(subject,
-                                               features_that_parsed,
-                                               data,
-                                               r_seed=settings['R_SEED'])
+        #X,y,cv,segments = utils.build_training(subject,
+        #                                       features_that_parsed,
+        #                                       data,
+        #                                       r_seed=settings['R_SEED'])
+
+        # initialise the data assembler
+        assembler = utils.DataAssembler(settings, data, metadata)
+        X,y = assembler.build_training(subject)
+
+        # get the CV iterator
+        cv = utils.Sequence_CV(assembler.training_segments, metadata)
 
         # initialise lists for cross-val results
         predictions = []

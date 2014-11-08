@@ -429,8 +429,12 @@ class DataAssembler:
         X = np.vstack([X_inter,X_pre])
         y = np.hstack([self._build_y(subject,'interictal'), \
                 self._build_y(subject,'preictal')])
-
         # storing feature names in self.training_names
+
+        # storing the correct sequence of segments
+        self.training_segments = np.hstack([ \
+                np.array(self.segments[subject]['interictal']), \
+                np.array(self.segments[subject]['preictal'])])
 
         return X,y
 
