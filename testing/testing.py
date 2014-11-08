@@ -286,39 +286,39 @@ class testDataAssembler(unittest.TestCase):
         cls.ictyps = cls.settings['DATA_TYPES']
 
         cls.segment_counts = {'Dog_1': {'preictal': 24,
-                                        'pseudopreictal': 24,
+                                        'pseudopreictal': 20,
                                         'interictal': 480,
-                                        'pseudointerictal': 480,
+                                        'pseudointerictal': 400,
                                         'test': 502},
                               'Dog_2': {'preictal': 42,
-                                        'pseudopreictal': 42,
+                                        'pseudopreictal': 35,
                                         'interictal': 500,
-                                        'pseudointerictal': 500,
+                                        'pseudointerictal': 416,
                                         'test': 1000},
                               'Dog_3': {'preictal': 72,
-                                        'pseudopreictal': 72,
+                                        'pseudopreictal': 60,
                                         'interictal': 1440,
-                                        'pseudointerictal': 1440,
+                                        'pseudointerictal': 1200,
                                         'test': 907},
                               'Dog_4': {'preictal': 97,
-                                        'pseudopreictal': 97,
+                                        'pseudopreictal': 80,
                                         'interictal': 804,
-                                        'pseudointerictal': 804,
+                                        'pseudointerictal': 670,
                                         'test': 990},
                               'Dog_5': {'preictal': 30,
-                                        'pseudopreictal': 30,
+                                        'pseudopreictal': 25,
                                         'interictal': 450,
-                                        'pseudointerictal': 450,
+                                        'pseudointerictal': 375,
                                         'test': 191},
                               'Patient_1': {'preictal': 18,
-                                            'pseudopreictal': 18,
+                                            'pseudopreictal': 15,
                                             'interictal': 50,
-                                            'pseudointerictal': 50,
+                                            'pseudointerictal': 41,
                                             'test': 195},
                               'Patient_2': {'preictal': 18,
-                                            'pseudopreictal': 18,
+                                            'pseudopreictal': 15,
                                             'interictal': 42,
-                                            'pseudointerictal': 42,
+                                            'pseudointerictal': 35,
                                             'test': 150}}
         cls.feature_length = {'Dog_1': 16,
                               'Dog_2': 16,
@@ -594,6 +594,8 @@ class testDataAssembler(unittest.TestCase):
         DataAssemblerInstance = utils.DataAssembler(test_settings,
                                                     self.data,
                                                     self.metadata)
+
+        self.assertTrue(hasattr(self.DataAssemblerInstance, include_pseudo)
         self.assertTrue(DataAssemblerInstance.include_pseudo)
 
     def test_init_without_pseudo(self):
@@ -607,12 +609,18 @@ class testDataAssembler(unittest.TestCase):
                                                     self.data,
                                                     self.metadata)
 
+        self.assertTrue(hasattr(self.DataAssemblerInstance, include_pseudo)
         self.assertFalse(DataAssemblerInstance.include_pseudo)
 
     def test_init(self):
         '''
         Test that the class inits correctly for all params (apart from pseudoflag)
         '''
+
+        self.assertTrue(hasattr(self.DataAssemblerInstance, settings)
+        self.assertTrue(hasattr(self.DataAssemblerInstance, data)
+        self.assertTrue(hasattr(self.DataAssemblerInstance, metadata)
+
         self.assertEqual(self.DataAssemblerInstance.settings, self.settings)
         self.assertEqual(self.DataAssemblerInstance.data, self.data)
         self.assertEqual(self.DataAssemblerInstance.metadata, self.metadata)
