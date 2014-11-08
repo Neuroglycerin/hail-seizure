@@ -10,6 +10,7 @@ import sklearn.preprocessing
 import sklearn.cross_validation
 import sklearn.pipeline
 import sklearn.ensemble
+import sklearn.svm
 import optparse
 
 def get_train_parser():
@@ -650,16 +651,6 @@ def get_scaler(**kwargs):
     '''
     scaler = sklearn.preprocessing.StandardScaler(**kwargs)
     return scaler
-
-def get_classifier(**kwargs):
-    '''
-    Return the classifier object
-    input: **kwargs for classifier params
-    output: sklearn.ensemble classifier object
-    '''
-    classifier = sklearn.ensemble.RandomForestClassifier(**kwargs)
-    return classifier
-
 
 def get_model(elements):
     '''
