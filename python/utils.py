@@ -450,6 +450,9 @@ class DataAssembler:
         # storing names for the features in self.test_names
         X,self.test_names = self._build_X(subject,'test')
 
+        # storing the correct sequence of segments
+        self.test_segments = np.array(self.segments[subject]['test'])
+
         return X
 
 

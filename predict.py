@@ -17,7 +17,12 @@ def main(settings_file='SETTINGS.json'):
     #load the data
     data = utils.get_data(settings)
 
+    #load the metadata
+    metadata = utils.get_metadata()
+
     features_that_parsed = list(data.keys())
+    settings['FEATURES'] = [feature for feature in settings['FEATURES'] \
+            if feature in features_that_parsed]
     #iterate over subjects
     prediction_dict = {}
 
@@ -25,11 +30,14 @@ def main(settings_file='SETTINGS.json'):
         #load the trained model:
         model = utils.read_trained_model(subject, settings, verbose=opts.verbose)
 
+        #initialise the data assembler
+        assembler = utils.DataAssembler(settings, data, metadata)
         #build test set
-        X, segments = utils.build_test(subject, features_that_parsed, data)
+        X = assembler.build_test(subject)
+
         #make predictions
         predictions = model.predict_proba(X)
-        for segment, prediction in zip(segments, predictions):
+        for segment, prediction in zip(assembler.test_segments, predictions):
             prediction_dict[segment] = prediction
 
     utils.output_csv(prediction_dict, settings, verbose=opts.verbose)
