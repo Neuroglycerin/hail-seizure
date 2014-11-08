@@ -348,23 +348,21 @@ class DataAssembler:
                 segments[subject][ictyp] = []
         all_segments = self._scrape_segments()
         # This will fix the order of the segments
-        # iterate over all possible _training_ segments
+        # iterate over all possible segments
         for segment in all_segments:
-            # for this segment, find what subject it's in
-            subject = self.metadata[segment]['subject']
-            # and what ictyp it is
-            ictyp = self.metadata[segment]['ictyp']
-            # append .mat to match strings in data
-            segment = segment + '.mat'
-            # store in the dictionary of dictionaries
+            if 'test' in segment:
+                ictyp = 'test'
+                subject = [subject for subject in self.settings['SUBJECTS'] \
+                          if subject in segment][0]
+                
+            else:
+                segment_key = segment.split('.')[0]
+                # for this segment, find what subject it's in
+                subject = self.metadata[segment_key]['subject']
+                # and what ictyp it is
+                ictyp = self.metadata[segment_key]['ictyp']
+                # store in the dictionary of dictionaries
             if ictyp in self.settings['DATA_TYPES']:
-                segments[subject][ictyp] += [segment]
-
-        # this will iterate over all possible test segments:
-        feature = self.settings['FEATURES'][0]
-        ictyp = 'test'
-        for subject in self.settings['SUBJECTS']:
-            for segment in self.data[feature][subject][ictyp].keys():
                 segments[subject][ictyp] += [segment]
 
         # then enforce tuple
@@ -385,17 +383,17 @@ class DataAssembler:
         all_segments = set([])
         for subject in self.settings['SUBJECTS']:
             for ictyp in self.settings['DATA_TYPES']:
-                all_segments += set(data[self.settings['FEATURES'][0]] \
+                all_segments |= set(self.data[self.settings['FEATURES'][0]] \
                     [subject][ictyp].keys())
         # iterate over all features to ensure that the segments are the same
         for feature in self.settings['FEATURES']:
             verification_segments = set([])
             for subject in self.settings['SUBJECTS']:
                 for ictyp in self.settings['DATA_TYPES']:
-                    verification_segments += set(data[feature] \
+                    verification_segments |= set(self.data[feature] \
                     [subject][ictyp].keys())
             if verification_segments != all_segments:
-                raise ValueError("Feature {0} contains segments that \n
+                raise ValueError("Feature {0} contains segments that \n \
                                 do not match feature {1}.".format(feature, \
                                         self.settings['FEATURES'][0]))
         # turn segments into a tuple
