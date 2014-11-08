@@ -369,6 +369,8 @@ class DataAssembler:
                                 do not match feature {1}.".format(feature, \
                                         self.settings['FEATURES'][0]))
         # turn segments into a tuple
+        all_segments = list(all_segments)
+        all_segments.sort()
         all_segments = tuple(all_segments)
         return all_segments
 
