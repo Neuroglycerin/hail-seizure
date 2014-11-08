@@ -44,7 +44,7 @@ def main(settings_file='SETTINGS.json'):
 
 if __name__=='__main__':
 
-    parser = utils.get_predict_parser()
+    parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
     main(settings_file=opts.settings)
