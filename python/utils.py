@@ -456,7 +456,33 @@ class DataAssembler:
 
         return X
 
-    def composite_tiled(self):
+    def _composite_assemble_X(self,X_parts,dimensions):
+        """
+        Takes the parts of X and assembles into a large tiled X matrix:
+         [X_part    X_part       X_part]
+         becomes:
+        [[X_part    nan          nan],
+         [nan       X_part       nan],
+         [nan       nan          X_part]]
+        Input:
+        * X_parts
+        * dimensions (list of tuples of dimensions of the X_parts)
+        Output:
+        * X
+        """
+        # assemble this montrosity
+        X = np.ones(np.sum(list(zip(*dimensions)), axis=1))*np.nan
+        # assign each array within the new array, according to its size 
+        offset = [0,0]
+        for X_part in X_parts:
+            d = X_part.shape
+            X[offset[0]:offset[0]+d[0],offset[1]:offset[1]+d[1]] = X_part
+            offset[0] += d[0]
+            offset[1] += d[1]
+
+        return X
+
+    def composite_tiled_training(self):
         """
         Builds a composite tiled training set:
         Output:
@@ -472,20 +498,37 @@ class DataAssembler:
             y_parts += [y]
             dimensions += [X.shape]
 
-        # assemble this montrosity
-        X = np.ones(np.sum(list(zip(*dimensions)), axis=1))*np.nan
-        # assign each array within the new array, according to its size 
-        offset = [0,0]
-        for X_part in X_parts:
-            d = X_part.shape
-            X[offset[0]:d[0],offset[1]:d[1]] = X_part
-        
+        X = self._composite_assemble_X(X_parts,dimensions) 
+
         # stack up y
-        y = np.hstack(y)
+        y = np.hstack(y_parts)
 
         # pending record of feature indexes
 
         return X,y
+
+    def composite_tiled_test(self):
+        """
+        Builds a composite tiled training set:
+        Output:
+        * X,y - tiled dataset:
+        """
+        # first assemble the pieces to build the tiled set from
+        X_parts = []
+        dimensions = []
+        segments = []
+        for subject in self.settings['SUBJECTS']:
+            X = self.build_test(subject)
+            X_parts += [X]
+            dimensions += [X.shape]
+            segments += [self.test_segments[:]]
+
+        X = self._composite_assemble_X(X_parts,dimensions) 
+        
+        # keep record of feature indexes
+        self.composite_test_segments = np.hstack(segments)
+
+        return X
 
 
 class Sequence_CV:
