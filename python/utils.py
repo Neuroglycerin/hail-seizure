@@ -154,7 +154,8 @@ def get_settings(settings_file):
         print("CLASSIFIER_OPTS {0} in {1} "
               "contains invalid parameters".format(settings_file,
                                                    str(settings['CLASSIFIER_OPTS'])))
-        sys.exit(1)
+        # exits with 0 if it fails as this will allow batch to complete and not fail
+        sys.exit(0)
 
     return settings
 
@@ -531,7 +532,7 @@ class DataAssembler:
         """
         # assemble this montrosity
         X = np.ones(np.sum(list(zip(*dimensions)), axis=1))*np.nan
-        # assign each array within the new array, according to its size 
+        # assign each array within the new array, according to its size
         offset = [0,0]
         for X_part in X_parts:
             d = X_part.shape
@@ -559,7 +560,7 @@ class DataAssembler:
             dimensions += [X.shape]
             segments += [self.training_segments[:]]
 
-        X = self._composite_assemble_X(X_parts,dimensions) 
+        X = self._composite_assemble_X(X_parts,dimensions)
 
         # stack up y
         y = np.hstack(y_parts)
@@ -587,8 +588,8 @@ class DataAssembler:
             dimensions += [X.shape]
             segments += [self.test_segments[:]]
 
-        X = self._composite_assemble_X(X_parts,dimensions) 
-        
+        X = self._composite_assemble_X(X_parts,dimensions)
+
         # keep record of feature indexes
         self.composite_test_segments = np.hstack(segments)
 
