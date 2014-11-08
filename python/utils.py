@@ -443,31 +443,55 @@ class DataAssembler:
         else:
             raise ValueError
 
-    def build_training(self, subject):
+    def build_training(self, subject, include_pseudo=False):
         """
         Builds a training set for a given subject.
         Input:
         * subject
+        Option:
+        * include_pseudo - include the pseudo-data
         Output:
         * X,y
         """
         # for preictal and interictal call build y and build X
         # and stack them up
+        verification_names = [[],[],[]]
         X_inter,self.training_names = self._build_X(subject,'interictal')
-        X_pre,verification_names = self._build_X(subject,'preictal')
+        X_pre,verification_names[0] = self._build_X(subject,'preictal')
+        if include_pseudo:
+            X_psinter,verification_names[1] = self._build_X(subject,\
+                    'pseudointerictal')
+            X_pspre,verification_names[2] = self._build_X(subject,\
+                    'pseudopreictal')
 
-        if all(tr != vf for tr in self.training_names for \
-                vf in verification_names):
+        if all(all(tr != vf for tr in self.training_names for \
+                vf in verification) for verification in verification_names):
             raise ValueError
-        X = np.vstack([X_inter,X_pre])
-        y = np.hstack([self._build_y(subject,'interictal'), \
-                self._build_y(subject,'preictal')])
+        if include_pseudo:
+            X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
+        else:
+            X = np.vstack([X_inter,X_pre])
+        if include_pseudo:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal'), \
+                           self._build_y(subject,'pseudointerictal'), \
+                           self._build_y(subject,'pseudopreictal')])
+        else:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal')])
         # storing feature names in self.training_names
-
-        # storing the correct sequence of segments
-        self.training_segments = np.hstack([ \
-                np.array(self.segments[subject]['interictal']), \
-                np.array(self.segments[subject]['preictal'])])
+             
+        # storing the correct sequence of segments       
+        if include_pseudo:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal']), \
+                    np.array(self.segments[subject]['pseudointerictal']), \
+                    np.array(self.segments[subject]['pseudopreictal'])   ])
+        else:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal'])])
 
         return X,y
 
@@ -524,17 +548,22 @@ class DataAssembler:
         X_parts = []
         y_parts = []
         dimensions = []
+        segments = []
         for subject in self.settings['SUBJECTS']:
             X,y = self.build_training(subject)
             X_parts += [X]
             y_parts += [y]
             dimensions += [X.shape]
+            segments += [self.training_segments[:]]
 
         X = self._composite_assemble_X(X_parts,dimensions)
 
         # stack up y
         y = np.hstack(y_parts)
 
+        # record of segments
+        self.composite_training_segments = np.hstack(segments)
+        
         # pending record of feature indexes
 
         return X,y
