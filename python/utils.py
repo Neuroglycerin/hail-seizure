@@ -90,10 +90,11 @@ def get_settings(settings_file):
     #'SGDClassifier': sklearn.linear_model.SGDClassifier()}
 
 
-    classifier_objs = {'RandomForest': sklearn.ensemble.RandomForestClassifier(),
-                       'ExtraTrees': sklearn.ensemble.ExtraTreesClassifier(),
-                       'AdaBoost': sklearn.ensemble.AdaBoostClassifier(),
-                       'SVC': sklearn.svm.SVC(probability=True)}
+    classifier_objs = {'RandomForest': sklearn.ensemble.RandomForestClassifier(random_state=settings['R_SEED']),
+                       'ExtraTrees': sklearn.ensemble.ExtraTreesClassifier(random_state=settings['R_SEED']),
+                       'AdaBoost': sklearn.ensemble.AdaBoostClassifier(random_state=settings['R_SEED']),
+                       'SVC': sklearn.svm.SVC(probability=True,
+                                              random_state=settings['R_SEED'])}
     # todo: bagging
 
     default_classifier = classifier_objs['SVC']
