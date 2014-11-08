@@ -346,10 +346,10 @@ class DataAssembler:
             segments[subject] = {}
             for ictyp in self.settings['DATA_TYPES']:
                 segments[subject][ictyp] = []
-        allsegments = self._scrape_segments()
+        all_segments = self._scrape_segments()
         # This will fix the order of the segments
         # iterate over all possible _training_ segments
-        for segment in self.metadata.keys():
+        for segment in all_segments:
             # for this segment, find what subject it's in
             subject = self.metadata[segment]['subject']
             # and what ictyp it is
