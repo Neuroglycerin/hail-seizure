@@ -389,8 +389,11 @@ class testDataAssembler(unittest.TestCase):
                                       "X is an array".format(subj))
 
 
+
             target_X_shape = (self.segment_counts[subj]['interictal'] +
-                              self.segment_counts[subj]['preictal'],
+                              self.segment_counts[subj]['preictal'] +
+                              self.segment_counts[subj]['pseudointerictal'] +
+                              self.segment_counts[subj]['pseudopreictal'],
                               self.feature_length[subj] * len(self.features))
 
             self.assertEqual(X.shape, target_X_shape,
