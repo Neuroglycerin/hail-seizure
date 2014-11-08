@@ -60,12 +60,16 @@ def print_verbose(string, flag=False):
     if flag:
         print(string)
 
-def batch_run_in_parallel(settings_list, cores):
+def batch_run_in_parallel(settings_list, cores, verbose=False):
 
     processes = []
+    num_to_run = len(settings_list)
+    finish_count = 0
     while True:
         while settings_list and len(processes) < cores:
             settings_file = settings_list.pop()
+            print_verbose("==Running {0}==".format(settings_file),
+                                                   flag=verbose)
             processes.append(subprocess.Popen(['./train_and_predict.py',
                                                 settings_file]))
 
@@ -73,6 +77,10 @@ def batch_run_in_parallel(settings_list, cores):
             if p.poll() is not None:
                 if p.returncode == 0:
                     processes.remove(p)
+                    finish_count += 1
+                    print_verbose("**Completed {0} of {1}**".format(finish_count,
+                                                                    num_to_run),
+                                  flag=verbose)
                 else:
                     sys.exit(1)
 
@@ -90,7 +98,5 @@ if __name__=='__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
 
-    batch_run_in_parallel(settings_list, int(opts.cores))
-
-    run_in_serial(settings_list, verbose=opts.verbose)
+    batch_run_in_parallel(settings_list, int(opts.cores), verbose=opts.verbose)
 
