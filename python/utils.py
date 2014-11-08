@@ -325,6 +325,13 @@ class DataAssembler:
         # parse for segment tuple/list
         self.segments = self._parse_segment_names()
 
+        # find out if we're dealing with pseudo data
+        if 'pseudointerictal' in settings['DATA_TYPES'] and \
+                'pseudopreictal' in settings['DATA_TYPES']:
+            self.include_pseudo=True
+        else:
+            self.include_pseudo=False
+
         return None
 
     def _parse_segment_names(self):
@@ -339,24 +346,23 @@ class DataAssembler:
             segments[subject] = {}
             for ictyp in self.settings['DATA_TYPES']:
                 segments[subject][ictyp] = []
+        all_segments = self._scrape_segments()
         # This will fix the order of the segments
-        # iterate over all possible _training_ segments
-        for segment in self.metadata.keys():
-            # for this segment, find what subject it's in
-            subject = self.metadata[segment]['subject']
-            # and what ictyp it is
-            ictyp = self.metadata[segment]['ictyp']
-            # append .mat to match strings in data
-            segment = segment + '.mat'
-            # store in the dictionary of dictionaries
+        # iterate over all possible segments
+        for segment in all_segments:
+            if 'test' in segment:
+                ictyp = 'test'
+                subject = [subject for subject in self.settings['SUBJECTS'] \
+                          if subject in segment][0]
+                
+            else:
+                segment_key = segment.split('.')[0]
+                # for this segment, find what subject it's in
+                subject = self.metadata[segment_key]['subject']
+                # and what ictyp it is
+                ictyp = self.metadata[segment_key]['ictyp']
+                # store in the dictionary of dictionaries
             if ictyp in self.settings['DATA_TYPES']:
-                segments[subject][ictyp] += [segment]
-
-        # this will iterate over all possible test segments:
-        feature = self.settings['FEATURES'][0]
-        ictyp = 'test'
-        for subject in self.settings['SUBJECTS']:
-            for segment in self.data[feature][subject][ictyp].keys():
                 segments[subject][ictyp] += [segment]
 
         # then enforce tuple
@@ -365,6 +371,34 @@ class DataAssembler:
                 segments[subject][ictyp] = tuple(segments[subject][ictyp])
 
         return segments
+
+    def _scrape_segments(self):
+        """
+        Scrapes segment ids out of the data file.
+        Ensures that each feature has the same segments covered.
+        Output:
+        * all_segments = total list of segments
+        """
+        # initialise set and fill with first feature's segments
+        all_segments = set([])
+        for subject in self.settings['SUBJECTS']:
+            for ictyp in self.settings['DATA_TYPES']:
+                all_segments |= set(self.data[self.settings['FEATURES'][0]] \
+                    [subject][ictyp].keys())
+        # iterate over all features to ensure that the segments are the same
+        for feature in self.settings['FEATURES']:
+            verification_segments = set([])
+            for subject in self.settings['SUBJECTS']:
+                for ictyp in self.settings['DATA_TYPES']:
+                    verification_segments |= set(self.data[feature] \
+                    [subject][ictyp].keys())
+            if verification_segments != all_segments:
+                raise ValueError("Feature {0} contains segments that \n \
+                                do not match feature {1}.".format(feature, \
+                                        self.settings['FEATURES'][0]))
+        # turn segments into a tuple
+        all_segments = tuple(all_segments)
+        return all_segments
 
     def _build_X(self, subject, ictyp):
         """
@@ -447,13 +481,11 @@ class DataAssembler:
         else:
             raise ValueError
 
-    def build_training(self, subject, include_pseudo=False):
+    def build_training(self, subject):
         """
         Builds a training set for a given subject.
         Input:
         * subject
-        Option:
-        * include_pseudo - include the pseudo-data
         Output:
         * X,y
         """
@@ -462,7 +494,7 @@ class DataAssembler:
         verification_names = [[],[],[]]
         X_inter,self.training_names = self._build_X(subject,'interictal')
         X_pre,verification_names[0] = self._build_X(subject,'preictal')
-        if include_pseudo:
+        if self.include_pseudo:
             X_psinter,verification_names[1] = self._build_X(subject,\
                     'pseudointerictal')
             X_pspre,verification_names[2] = self._build_X(subject,\
@@ -471,11 +503,11 @@ class DataAssembler:
         if all(all(tr != vf for tr in self.training_names for \
                 vf in verification) for verification in verification_names):
             raise ValueError
-        if include_pseudo:
+        if self.include_pseudo:
             X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
         else:
             X = np.vstack([X_inter,X_pre])
-        if include_pseudo:
+        if self.include_pseudo:
             y = np.hstack([self._build_y(subject,'interictal'), \
                            self._build_y(subject,'preictal'), \
                            self._build_y(subject,'pseudointerictal'), \
@@ -486,7 +518,7 @@ class DataAssembler:
         # storing feature names in self.training_names
              
         # storing the correct sequence of segments       
-        if include_pseudo:
+        if self.include_pseudo:
             self.training_segments = np.hstack([ \
                     np.array(self.segments[subject]['interictal']), \
                     np.array(self.segments[subject]['preictal']), \
