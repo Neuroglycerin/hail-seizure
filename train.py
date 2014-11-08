@@ -111,7 +111,7 @@ def main(opts):
     # output AUC scores to file
     auc_scores.update({'all': auc})
 
-    utils.output_auc_scores(auc_scores)
+    utils.output_auc_scores(auc_scores, settings)
 
 if __name__=='__main__':
 
