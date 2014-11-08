@@ -1,0 +1,68 @@
+Expected counts for data in test set, based on distribution in training set:
+
+P is the number of true positives, so it is the number of preictal segments
+           alltest  publictest
+P_Dog_1 =     24.0,  9.6
+P_Dog_2 =     77.5, 31.0
+P_Dog_3 =     43.2, 17.3
+P_Dog_4 =    106.6, 42.6
+P_Dog_5 =     11.9,  4.8
+P_Patient_1 = 51.6, 20.6
+P_Patient_2 = 45.0, 18.0
+P_tot =      359.8,143.9
+
+N is the number of negatives, so it is the number of interictal segments
+            alltest  publictest
+N_Dog_1 =     478.0, 191.0
+N_Dog_2 =     922.5, 369.0
+N_Dog_3 =     863.8, 345.5
+N_Dog_4 =     883.4, 353.4
+N_Dog_5 =     179.1,  71.6
+N_Patient_1 = 143.4,  57.4
+N_Patient_2 = 105.0,  42.0
+N_tot =      3575.2,1429.9
+
+
+Expected ROC values with zeros except one session, based on training distribution 
+(Computed with constructed AUROC formula):
+Dog_1     0.46650
+Dog_2     0.47868
+Dog_3     0.43923
+Dog_4     0.52459
+Dog_5     0.49149
+Patient_1 0.55165
+Patient_2 0.54785
+
+
+Observed ROC values with zeros except one session, found by submittion to Kaggle:
+Dog_1     0.49128
+Dog_2     0.55855
+Dog_3     0.46885
+Dog_4     0.47984
+Dog_5     0.49809
+Patient_1 0.48837
+Patient_2 0.51501
+
+
+Proportion of data in training which is preictal:
+P/(P+N) Dog_1 =     0.0478
+P/(P+N) Dog_2 =     0.0775
+P/(P+N) Dog_3 =     0.0477
+P/(P+N) Dog_4 =     0.1076
+P/(P+N) Dog_5 =     0.0632
+P/(P+N) Patient_1 = 0.2641
+P/(P+N) Patient_2 = 0.3000
+P/(P+N) overall =   0.0914
+
+
+Estimated proportion of data in test which is preictal:
+P/(P+N) Dog_1 =     0.0597 0.0891 0.0825
+P/(P+N) Dog_2 =     0.0900 0.1407 0.1387
+P/(P+N) Dog_3 =     0.0496 0.0775 0.0765
+P/(P+N) Dog_4 =     0.0758 0.0866 0.0849
+P/(P+N) Dog_5 =     0.0789 0.0875 0.0988
+P/(P+N) Patient_1 = 0.0769 0.0575 0.0641
+P/(P+N) Patient_2 = 0.1000 0.1719 0.1579
+P/(P+N) overall =   
+
+
