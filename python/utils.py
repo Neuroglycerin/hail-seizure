@@ -439,6 +439,10 @@ class DataAssembler:
             return np.array([1]*y_length)
         elif 'interictal' == ictyp:
             return np.array([0]*y_length)
+        elif 'pseudopreictal' == ictyp:
+            return np.array([1]*y_length)
+        elif 'pseudointerictal' == ictyp:
+            return np.array([0]*y_length)
         else:
             raise ValueError
 
