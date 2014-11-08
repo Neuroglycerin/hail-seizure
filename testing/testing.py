@@ -178,9 +178,9 @@ class testTrain(unittest.TestCase):
         # get file size and assert between 2.5 and 8k
         output_model_stats = os.stat(output_model)
         output_model_size = output_model_stats.st_size
-        self.assertTrue(1000 < output_model_size < 20000,
+        self.assertTrue(1000 < output_model_size < 100000000,
                         msg="Check that randomly picked model ({0}) is between 1 "
-                            "and 10M".format(output_model))
+                            "and 100M".format(output_model))
 
     def test_model_can_be_read(self):
         '''
