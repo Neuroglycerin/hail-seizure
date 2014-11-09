@@ -653,8 +653,6 @@ class Sequence_CV:
         # was returning inconsistent results on same data
         self.hourIDs.sort()
 
-        # need to build a y vector for these sequences
-
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
