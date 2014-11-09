@@ -657,18 +657,24 @@ class Sequence_CV:
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
+        # ensure a good split by putting exactly one hour in test
+        # Divide the no. of preictal hours by the total hours. Returns 
+        # number of samples to have exactly one preictal hour in test
+        test_size = int(len(y)/sum(y))
 
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
-                                                                  n_iter=n_iter,
-                                                                  test_size=0.5,
-                                                                  random_state=r_seed)
+                                                          n_iter=n_iter,
+                                                          test_size=test_size,
+                                                          random_state=r_seed)
 
         # Some of the datasets only have 3 hours of preictal recordings.
-        # This will provie 10 stratified shuffles, each using 1 of the preictal hours
+        # This will provie 10 stratified shuffles, each using 1 of the 
+        # preictal hours
         # Doesn't guarantee actually using each hour at least once though!
-        # We fix the random number generator so we will always use the same split
-        # for this subject across multiple CV tests for a fairer comparison.
+        # We fix the random number generator so we will always
+        # use the same set of splits for this subject across 
+        # multiple CV tests for a fairer comparison.
         return None
 
     def __iter__(self):
