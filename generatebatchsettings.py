@@ -302,11 +302,11 @@ def write_settingsjson(settings, args):
                     
                 for feature in args.featurenames:
                     if split==1:
-                        settings["FEATURES"] = '{0}_{1}_'.format(modtyp, feature)
+                        settings["FEATURES"] = ['{0}_{1}_'.format(modtyp, feature)]
                     else:
-                        settings["FEATURES"] = '{0}_{2}{1}_'.format(modtyp, feature, split)
-                        
+                        settings["FEATURES"] = ['{0}_{2}{1}_'.format(modtyp, feature, split)]
                     fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, feature[5:])
+                    
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
                         json.dump(settings, outfile)
 

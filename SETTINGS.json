@@ -1,6 +1,7 @@
 {   
     "R_SEED" : 5440,
     "TRAIN_DATA_PATH": "train",
+    "MODEL_PATH": "model",
     "SUBJECTS": ["Dog_1",
                  "Dog_2",
                  "Dog_3",
