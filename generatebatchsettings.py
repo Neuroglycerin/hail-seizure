@@ -178,7 +178,7 @@ def get_genbatch_parser():
     groupclass.add_argument("-c", "--classifier",
                       action="store",
                       dest="classifiers",
-                      default="",
+                      default="SVC",
                       nargs='+',
                       help="List of classifiers")
     
