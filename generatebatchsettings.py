@@ -156,7 +156,7 @@ def get_genbatch_parser():
     groupfeat.add_argument("-f", "--featurenames",
                       action="store",
                       dest="featurenames",
-                      default="",
+                      default=[],
                       nargs='+',
                       help="List of feature names")
     
@@ -171,7 +171,7 @@ def get_genbatch_parser():
     groupclass.add_argument("-c", "--classifier",
                       action="store",
                       dest="classifiers",
-                      default="SVC",
+                      default=["SVC"],
                       nargs='+',
                       help="List of classifiers")
     
@@ -184,7 +184,7 @@ def get_genbatch_parser():
     parser.add_argument("-m", "--modtyps",
                       action="store",
                       dest="modtyps",
-                      default="",
+                      default=[],
                       nargs='+',
                       help="Directory holding json settings files")
                       
@@ -198,7 +198,7 @@ def get_genbatch_parser():
                       action="store",
                       dest="numdatasplits",
                       type=int,
-                      default=1,
+                      default=[1],
                       nargs='+',
                       help="Number of data splits (1 or 10) to use")
                       
@@ -235,7 +235,7 @@ def parse_parser():
     # Add more complex default inputs
     if args.doallfeatures:
         args.featurenames = get_featlist()
-    if args.modtyps=="" or args.modtyps==None:
+    if args.modtyps==[] or args.modtyps==None:
         args.modtyps = get_modlist()
     if args.doallclassifiers:
         args.classifiers = get_classifierlist()
@@ -319,8 +319,6 @@ def main():
     else:
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
-    
-    args.numdatasplits = [args.numdatasplits]
     
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
