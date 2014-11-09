@@ -64,16 +64,17 @@ def get_settings(settings_file):
         settings.update({field: tuple(settings[field])})
 
     # default directories for all paths
-    default_dirs = {'TRAIN_DATA_PATH': 'train',
-                    'MODEL_PATH': 'model',
-                    'SUBMISSION_PATH': 'output',
-                    'AUC_SCORE_PATH': 'auc_scores'}
+    default_settings = {'TRAIN_DATA_PATH': 'train',
+                        'MODEL_PATH': 'model',
+                        'SUBMISSION_PATH': 'output',
+                        'AUC_SCORE_PATH': 'auc_scores',
+                        'CVITERCOUNT': 10}
 
 
     # add missing default and update file paths settings to have full absolute paths
-    for settings_field in default_dirs.keys():
+    for settings_field in default_settings.keys():
         if settings_field not in settings.keys():
-            settings.update({settings_field: default_dirs[settings_field]})
+            settings.update({settings_field: default_settings[settings_field]})
 
         settings[settings_field] = os.path.abspath(settings[settings_field])
 
@@ -611,7 +612,7 @@ class DataAssembler:
 
 
 class Sequence_CV:
-    def __init__(self, segments, metadata, r_seed=None):
+    def __init__(self, segments, metadata, r_seed=None, n_iter=10):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
         Leave 50% out"""
@@ -660,7 +661,7 @@ class Sequence_CV:
 
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
-                                                                  n_iter=10,
+                                                                  n_iter=n_iter,
                                                                   test_size=0.5,
                                                                   random_state=r_seed)
 
