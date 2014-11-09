@@ -1,6 +1,6 @@
 {   
     "R_SEED" : 5440,
-    "TRAIN_DATA_PATH": "INSERT_PATH_TO_H5s",
+    "TRAIN_DATA_PATH": "train",
     "SUBJECTS": ["Dog_1",
                  "Dog_2",
                  "Dog_3",
