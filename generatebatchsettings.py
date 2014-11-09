@@ -8,8 +8,6 @@ def get_default_settings():
     defaultsettings = {
         "R_SEED" : 5440,
         "AUC_SCORE_PATH": "auc_scores",
-        "CVITERCOUNT": 10,
-        "CLASSIFIER": "SVC",
         "TRAIN_DATA_PATH": "train",
         "SUBJECTS": ["Dog_1",
                      "Dog_2",
@@ -18,11 +16,6 @@ def get_default_settings():
                      "Dog_5",
                      "Patient_1",
                      "Patient_2"],
-        "DATA_TYPES": ["interictal",
-                      "preictal",
-                      "test",
-                      "pseudointerictal",
-                      "pseudopreictal"],
         "TEST_DATA_PATH": "test",
         "SUBMISSION_PATH": "output",
         "VERSION": "_v2",
@@ -173,7 +166,7 @@ def get_genbatch_parser():
                       default=False,
                       help="Use all featurenames")
     
-    groupclass = parser.add_mutually_exclusive_group(required=True)
+    groupclass = parser.add_mutually_exclusive_group(required=False)
     
     groupclass.add_argument("-c", "--classifier",
                       action="store",
@@ -276,6 +269,9 @@ def write_settingsjson(settings, args):
             shortclassifier = 'AB'
         else:
             shortclassifier = classifier
+        # Note if we are not using pseudodata
+        if args.nopseudo:
+            shortclassifier = shortclassifier + '_np'
             
         for split in args.numdatasplits:
         
@@ -287,6 +283,7 @@ def write_settingsjson(settings, args):
                 elif modtyp=='csp':
                     modtyp = 'cln,csp,dwn'
                 
+                
                 if modtyp=='cln,raw,dwn':
                     shortmodtyp = 'raw'
                 elif modtyp=='cln,ica,dwn':
@@ -296,14 +293,20 @@ def write_settingsjson(settings, args):
                 else:
                     shortmodtyp = modtyp
                 
+                if modtyp=='dirtyraw':
+                    modtyp = 'raw'
+                elif modtyp=='dirtyica':
+                    modtyp = 'ica'
+                elif modtyp=='dirtycsp':
+                    modtyp = 'csp'
+                    
                 for feature in args.featurenames:
                     if split==1:
                         settings["FEATURES"] = '{0}_{1}_'.format(modtyp, feature)
-                        fname = feature[5:]
                     else:
                         settings["FEATURES"] = '{0}_{2}{1}_'.format(modtyp, feature, split)
-                        fname = feature[5:]
-                    fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, fname)
+                        
+                    fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, feature[5:])
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
                         json.dump(settings, outfile)
 
@@ -323,6 +326,7 @@ def main():
         os.makedirs(args.outputdir)
     
     write_settingsjson(settings, args)
+    
     
 if __name__=='__main__':
     main()
