@@ -640,8 +640,6 @@ class Sequence_CV:
         # Find what unique hourIDstrings there are (p1, p2, ..., i1, i2, ...)
         self.hourIDs = np.array(list(set(self.seg2hour.values())))
 
-        # need to build a y vector for these sequences
-
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
