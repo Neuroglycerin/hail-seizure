@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import os
+import pickle
 import h5py
 import sys
 import csv
@@ -90,9 +91,15 @@ def get_settings(settings_file):
     #'SGDClassifier': sklearn.linear_model.SGDClassifier()}
 
 
-    classifier_objs = {'RandomForest': sklearn.ensemble.RandomForestClassifier(random_state=settings['R_SEED']),
-                       'ExtraTrees': sklearn.ensemble.ExtraTreesClassifier(random_state=settings['R_SEED']),
-                       'AdaBoost': sklearn.ensemble.AdaBoostClassifier(random_state=settings['R_SEED']),
+    classifier_objs = {'RandomForest': \
+                            sklearn.ensemble.RandomForestClassifier(\
+                                    random_state=settings['R_SEED']),
+                       'ExtraTrees': \
+                               sklearn.ensemble.ExtraTreesClassifier(\
+                                    random_state=settings['R_SEED']),
+                       'AdaBoost': \
+                               sklearn.ensemble.AdaBoostClassifier(\
+                                    random_state=settings['R_SEED']),
                        'SVC': sklearn.svm.SVC(probability=True,
                                               random_state=settings['R_SEED'])}
     # todo: bagging
@@ -363,11 +370,11 @@ class DataAssembler:
             verification_segments = set([])
             for subject in self.settings['SUBJECTS']:
                 for ictyp in self.settings['DATA_TYPES']:
-                    verification_segments |= set(self.data[feature] \
+                    verification_segments |= set(self.data[feature]\
                     [subject][ictyp].keys())
             if verification_segments != all_segments:
-                raise ValueError("Feature {0} contains segments that \n \
-                                do not match feature {1}.".format(feature, \
+                raise ValueError("Feature {0} contains segments that "
+                                 "do not match feature {1}.".format(feature,
                                         self.settings['FEATURES'][0]))
         # turn segments into a tuple
         all_segments = list(all_segments)
@@ -607,10 +614,11 @@ class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None):
         """Takes a list of the segments ordered as they are in the array.
         Yield train,test tuples in the style of a sklearn iterator.
-        Leave 20% out"""
+        Leave 50% out"""
         # put together the iterator
         # first make a dictionary mapping from the segments to which hour each is within
         self.segments = list(map(lambda segment: segment.split(".")[0], segments))
+
         self.seg2hour = {}
         self.seg2class = {}
         self.hour2class = {}
@@ -640,8 +648,13 @@ class Sequence_CV:
         # Find what unique hourIDstrings there are (p1, p2, ..., i1, i2, ...)
         self.hourIDs = np.array(list(set(self.seg2hour.values())))
 
+        # array was unordered due to dictionary values method therefore CV
+        # was returning inconsistent results on same data
+        self.hourIDs.sort()
+
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
+
 
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
