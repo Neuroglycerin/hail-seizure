@@ -163,6 +163,31 @@ class testTrain(unittest.TestCase):
                          8,
                          msg="Check that train prints 8 AUC scores to stdout")
 
+    def test_train_AUC_csv_out(self):
+        '''
+        Test the current writing of AUC scores to output csv
+        '''
+        AUC_csv = os.path.join(self.settings['AUC_SCORE_PATH'], 'AUC_scores.csv')
+
+        # check AUC csv exists or has been created
+        self.assertTrue(os.path.exists(AUC_csv))
+
+        # check there is only one csv that has been created
+        self.assertEqual(len(glob.glob(os.path.join(\
+                            self.settings['AUC_SCORE_PATH'], '*.csv'))),
+                         1)
+
+        # read it and check that it contains two lines with 7 tabs each
+        with open(AUC_csv, 'r') as AUC_csv_fh:
+            lines = [line for line in AUC_csv_fh.readlines()]
+
+        # check first line contains header information
+        target_header = "\t".join([''] + self.settings['SUBJECTS']) + '\tall\n'
+        self.assertTrue(lines[0] == target_header)
+        self.assertEqual(lines[1].count('\t'), 8)
+        self.assertIs(lines[1][:10], 'test_train')
+
+
     def test_model_number(self):
         '''
         Test correct number of models are generated
