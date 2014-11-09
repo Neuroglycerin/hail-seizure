@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import python.utils as utils
+import os
+import pickle
 
 def main(opts):
 
@@ -12,7 +14,10 @@ def main(opts):
 
     metadata = utils.get_metadata()
 
-    features_that_parsed = list(data.keys())
+    features_that_parsed = [feature for feature in \
+            settings['FEATURES'] if feature in list(data.keys())]
+
+    settings['FEATURES'] = features_that_parsed
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
@@ -46,6 +51,9 @@ def main(opts):
         assembler = utils.DataAssembler(settings, data, metadata)
         X,y = assembler.build_training(subject)
 
+
+
+
         # get the CV iterator
         cv = utils.Sequence_CV(assembler.training_segments,
                                metadata,
@@ -58,6 +66,7 @@ def main(opts):
 
         # run cross validation and report results
         for train, test in cv:
+
             # calculate the weights
             weights = utils.get_weights(y[train])
             # fit the model to the training data
