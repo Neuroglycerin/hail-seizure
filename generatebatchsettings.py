@@ -150,6 +150,13 @@ def get_genbatch_parser():
                       dest="outputdir",
                       required=True,
                       help="Directory holding json settings files")
+                      
+    parser.add_argument("--aucinsamefolder",
+                      action="store_true",
+                      dest="aucinsamefolder",
+                      default=False,
+                      help="Save AUC predictions to the generated folder")
+                      
 
     groupfeat = parser.add_mutually_exclusive_group(required=True)
     
@@ -319,6 +326,9 @@ def main():
     else:
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
+    
+    if args.aucinsamefolder:
+        settings["AUC_SCORE_PATH"] = arg.outputdir
     
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
