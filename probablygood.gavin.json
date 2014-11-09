@@ -27,5 +27,7 @@
                       "/disk/data1/neuroglycerin/hail-seizure-data/",
                       "/disk/scratch/s1145806/hail-seizure-data/",
                       "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
-                      "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
+                      "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"],
+    "SELECTION": 1,
+    "THRESHOLD": 1
 }

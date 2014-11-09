@@ -848,7 +848,7 @@ def get_thresh(**kwargs):
     input: kwargs
     output: sklearn variance threshold object
     '''
-    return sklearn.feature_selection.VarianceTheshold(**kwargs)
+    return sklearn.feature_selection.VarianceThreshold(**kwargs)
 
 def get_weights(y):
     '''

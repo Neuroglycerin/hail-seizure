@@ -21,17 +21,25 @@ def main(opts):
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
-    #thresh = utils.get_thresh()
-
-    #selector = utils.get_selector(k=opts.selector_k)
+    elements = []
 
     scaler = utils.get_scaler()
+    elements.append(('scl',scaler))
+
+    if settings['THRESHOLD'] == 1:
+        thresh = utils.get_thresh()
+        elements.append(('thr',thresh))
+
+    if settings['SELECTION'] == 1:
+        selector = utils.get_selector()
+        elements.append(('sel',selector))
 
     # get settings should convert class name string to actual classifier
     # object
     classifier = settings['CLASSIFIER']
+    elements.append(('cls',classifier))
 
-    # dict of classifier options
+    # dict of classifier options - not used yet?
     classifier_settings = settings['CLASSIFIER_OPTS']
 
     #utils.sklearn.svm.SVC(probability=True)
