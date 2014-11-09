@@ -130,6 +130,9 @@ class testHDF5parsing(unittest.TestCase):
     def tearDownClass(cls):
         os.unlink(cls.malformed_file)
 
+class testTrain_consistency(unittest.TestCase):
+    pass
+
 class testTrain(unittest.TestCase):
 
     @classmethod
@@ -182,11 +185,11 @@ class testTrain(unittest.TestCase):
             lines = [line for line in AUC_csv_fh.readlines()]
 
         # check first line contains header information
-        target_header = "\t".join([''] + self.settings['SUBJECTS']) + '\tall\n'
+        target_header = "\t".join([''] + list(self.settings['SUBJECTS']))\
+                            + '\tall\n'
         self.assertTrue(lines[0] == target_header)
         self.assertEqual(lines[1].count('\t'), 8)
         self.assertIs(lines[1][:10], 'test_train')
-
 
     def test_model_number(self):
         '''
@@ -231,6 +234,7 @@ class testTrain(unittest.TestCase):
         for f in cls.model_files:
             os.unlink(f)
 
+        os.unlink(os.path.join(cls.settings['AUC_SCORE_PATH'], 'AUC_scores.csv'))
         os.unlink('stdout_tmp')
 
 
