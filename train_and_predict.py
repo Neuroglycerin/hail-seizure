@@ -11,16 +11,10 @@ def call_train_and_predict(settings_file, verbose=False):
 
     settings = utils.get_settings(settings_file)
 
-    batch_out_dir = 'batch_out'
-    out_file = open(os.path.join(batch_out_dir,
-                                 "{0}_AUC".format(settings['RUN_NAME'])),'w')
-
     null = open(os.devnull, 'w')
-    err = null
-    out = null
 
     train_retcode = subprocess.call(['./train.py', '-s', settings_file],
-                                    stdout=out_file, stderr=err)
+                                    stdout=null, stderr=null)
 
     # Raise a warning if it was non-zero and return
     if train_retcode != 0:
@@ -30,7 +24,7 @@ def call_train_and_predict(settings_file, verbose=False):
 
     # Start ./predict proc
     predict_retcode = subprocess.call(['./predict.py', '-s', settings_file],
-                                     stdout=out, stderr=err)
+                                     stdout=null, stderr=null)
 
    # Raise warning if predict failed and return
     if predict_retcode != 0:
