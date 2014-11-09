@@ -130,6 +130,96 @@ class testHDF5parsing(unittest.TestCase):
     def tearDownClass(cls):
         os.unlink(cls.malformed_file)
 
+class testBatchParallel(unittest.TestCase):
+    '''
+    Class to test the batch parallel script as well as consistency in output
+    '''
+    @classmethod
+    def setUpClass(cls):
+        cls.settings_fh_1 = os.path.join('batch_test', 'batch_test1.json')
+        cls.settings_fh_2 = os.path.join('batch_test', 'batch_test2.json')
+        cls.settings_1 = utils.get_settings(cls.settings_fh_1)
+        cls.settings_2 = utils.get_settings(cls.settings_fh_2)
+
+        cls.NULL = open(os.devnull, 'w')
+        cls.proc = subprocess.call(['./parallel_batch_run.py',
+                                      '-s', 'batch_test'],
+                                      stdout=cls.NULL,
+                                      stderr=cls.NULL)
+
+    def test_model_output_and_consistency(self):
+        self.models = glob.glob(os.path.join(self.settings_1['MODEL_PATH'],
+                                             'batch*'))
+        self.assertEqual(len(self.models), 14)
+
+        target_models_1 = glob.glob(os.path.join(self.settings_1['MODEL_PATH'],
+                                                 self.settings_1['RUN_NAME']+\
+                                                        '_model_for_*.model'))
+
+        target_models_2 = glob.glob(os.path.join(self.settings_2['MODEL_PATH'],
+                                                 self.settings_2['RUN_NAME']+\
+                                                        '_model_for_*.model'))
+
+        target_models = target_models_1 + target_models_2
+
+        self.assertEqual(set(self.models), set(target_models))
+
+        random_subj = random.choice(self.settings_2['SUBJECTS'])
+
+        model_1 = os.path.join(\
+                self.settings_1['MODEL_PATH'],
+                        'batch_test1_model_for_{0}'
+                        '_using_{1}_feats.model'.format(random_subj,
+                                                        self.settings_1['VERSION']))
+
+        model_2 = os.path.join(\
+                self.settings_2['MODEL_PATH'],
+                        'batch_test2_model_for_{0}'
+                        '_using_{1}_feats.model'.format(random_subj,
+                                                        self.settings_2['VERSION']))
+
+
+        self.assertEqual(os.stat(model_1).st_size,
+                         os.stat(model_2).st_size)
+
+        for f in self.models:
+            os.unlink(f)
+
+
+    def test_submission_output_and_consistency(self):
+        self.outputs = glob.glob(os.path.join(self.settings_2['SUBMISSION_PATH'],
+                                              'batch*'))
+        self.assertEqual(len(self.outputs), 2)
+
+        with open(self.outputs[0], 'r') as output_1_fh:
+            output_1 = set(output_1_fh.read().split('\n'))
+
+        with open(self.outputs[1], 'r') as output_2_fh:
+            output_2 = set(output_2_fh.read().split('\n'))
+
+        self.assertEqual(output_1, output_2)
+
+        for f in self.outputs:
+            os.unlink(f)
+
+
+    def test_auc_score_output_and_consistency(self):
+        self.AUC_scores = glob.glob(os.path.join(self.settings_2['AUC_SCORE_PATH'],
+                                                 'AUC_scores.csv'))
+
+        self.assertEqual(len(self.AUC_scores), 1)
+
+        with open(self.AUC_scores[0], 'r') as auc_csv_fh:
+            lines = [line.split('\t') for line in auc_csv_fh.readlines()]
+
+
+        self.assertEqual(lines[1][1:], lines[2][1:])
+        self.assertEqual(len(lines), 3)
+
+        for f in self.AUC_scores:
+            os.unlink(f)
+
+
 class testTrain(unittest.TestCase):
 
     @classmethod
@@ -139,7 +229,7 @@ class testTrain(unittest.TestCase):
         cls.settings = utils.get_settings(cls.settings_fh)
 
         f = open('stdout_tmp', 'w')
-        cls.proc = subprocess.call(['../train.py',
+        cls.proc = subprocess.call(['./train.py',
                                       '-s', 'test_train.json'],
                                       stdout=f)
         f.close()
@@ -162,6 +252,31 @@ class testTrain(unittest.TestCase):
         self.assertEqual(AUC_score_count,
                          8,
                          msg="Check that train prints 8 AUC scores to stdout")
+
+    def test_train_AUC_csv_out(self):
+        '''
+        Test the current writing of AUC scores to output csv
+        '''
+        AUC_csv = os.path.join(self.settings['AUC_SCORE_PATH'], 'AUC_scores.csv')
+
+        # check AUC csv exists or has been created
+        self.assertTrue(os.path.exists(AUC_csv))
+
+        # check there is only one csv that has been created
+        self.assertEqual(len(glob.glob(os.path.join(\
+                            self.settings['AUC_SCORE_PATH'], '*.csv'))),
+                         1)
+
+        # read it and check that it contains two lines with 7 tabs each
+        with open(AUC_csv, 'r') as AUC_csv_fh:
+            lines = [line for line in AUC_csv_fh.readlines()]
+
+        # check first line contains header information
+        target_header = "\t".join([''] + list(self.settings['SUBJECTS']))\
+                            + '\tall\n'
+        self.assertTrue(lines[0] == target_header)
+        self.assertEqual(lines[1].count('\t'), 8)
+        self.assertEqual(lines[1][:10], 'test_train')
 
     def test_model_number(self):
         '''
@@ -206,6 +321,7 @@ class testTrain(unittest.TestCase):
         for f in cls.model_files:
             os.unlink(f)
 
+        os.unlink(os.path.join(cls.settings['AUC_SCORE_PATH'], 'AUC_scores.csv'))
         os.unlink('stdout_tmp')
 
 
@@ -217,7 +333,7 @@ class testPredict(unittest.TestCase):
         cls.settings_fh = 'test_predict.json'
         cls.settings = utils.get_settings(cls.settings_fh)
         cls.NULL = open(os.devnull, 'w')
-        cls.proc = subprocess.call(['../predict.py',
+        cls.proc = subprocess.call(['./predict.py',
                                       '-s', 'test_predict.json'],
                                       stdout=cls.NULL,
                                       stderr=cls.NULL)
