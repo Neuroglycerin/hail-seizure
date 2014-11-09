@@ -328,7 +328,7 @@ def main():
     settings["CVITERCOUNT"] = args.numcvruns
     
     if args.aucinsamefolder:
-        settings["AUC_SCORE_PATH"] = arg.outputdir
+        settings["AUC_SCORE_PATH"] = args.outputdir
     
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
