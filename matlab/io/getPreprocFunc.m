@@ -22,19 +22,26 @@ end
 
 switch lower(submodtyp)
     case 'raw'
+        % Raw. Leave as is.
         func = @(x)x;
-    case 'ica'
-        func = @(x) raw2ica(x, subj, fullmodlst);
-    case 'icadr'
-        func = @(x) raw2dr(raw2ica(x, subj, fullmodlst));
-    case 'csp'
-        func = @(x) raw2csp(x, subj, fullmodlst);
-    case 'cspdr'
-        func = @(x) raw2dr(raw2csp(x, subj, fullmodlst));
     case 'cln'
+        % Clean. Remove line noise and really low frequencies.
         func = @(x) raw2cln(x);
     case 'dwn'
+        % Downsample to 400Hz
         func = @(x) raw2dwn(x);
+    case 'ica'
+        % Independent Component Analysis
+        func = @(x) raw2ica(x, subj, fullmodlst);
+    case 'icadr'
+        % ICA with sources reduced to 8
+        func = @(x) raw2dr(raw2ica(x, subj, fullmodlst));
+    case 'csp'
+        % Common Spatial Patterns
+        func = @(x) raw2csp(x, subj, fullmodlst);
+    case 'cspdr'
+        % CSP with channels reduced to 8
+        func = @(x) raw2dr(raw2csp(x, subj, fullmodlst));
     otherwise
         error('Unfamiliar model preprocessing: %s',submodtyp);
 end
