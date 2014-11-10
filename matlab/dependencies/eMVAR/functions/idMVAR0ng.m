@@ -30,13 +30,14 @@ if nargin < 2, p=10; end % default model order
 
 %% 2) LiNGAM analysis on the residuals U
 %%% a) ICA on residuals
-[Sica, Mm, Q] = fastica( Up, 'approach', 'symm', 'g', 'tanh', 'epsilon', 1e-14, 'displayMode', 'off');  
+[Sica, Mm, Q] = fastica( Up, 'approach', 'symm', 'g', 'tanh', ...
+    'epsilon', 5e-5, 'stabilization', 'on', 'maxNumIterations', 80, 'displayMode', 'off', 'verbose', 'off');
 
 %%% b) row-permutation of Q to avoid zeros on the main diagonal
 if M<=8
-    [Qbar,rigaperm] = permnozeribrutal ( Q ); % Try all row permutations, find best solution
+    [Qbar,rigaperm] = nzdiagbruteforce( Q ); % Try all row permutations, find best solution
 else
-    [Qbar,rigaperm] = permnozerihungarian( Q ); % Find best row permutation by hungarian algorithm
+    [Qbar,rigaperm] = nzdiaghungarian( Q ); % Find best row permutation by hungarian algorithm
 end
 
 %%%c) Divide each row of Qbar by the diagonal element and find B0
