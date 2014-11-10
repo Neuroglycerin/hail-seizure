@@ -31,7 +31,7 @@ if nargin < 2, p=10; end % default model order
 %% 2) LiNGAM analysis on the residuals U
 %%% a) ICA on residuals
 [Sica, Mm, Q] = fastica( Up, 'approach', 'symm', 'g', 'tanh', ...
-    'epsilon', 5e-5, 'maxNumIterations', 120, 'displayMode', 'off', 'verbose', 'off');
+    'epsilon', 1e-5, 'maxNumIterations', 120, 'displayMode', 'off', 'verbose', 'off');
 
 %%% b) row-permutation of Q to avoid zeros on the main diagonal
 if M<=8
