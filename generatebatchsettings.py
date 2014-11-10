@@ -2,7 +2,7 @@
 import os
 import json
 import argparse
-
+import itertools
 
 def get_default_settings():
     defaultsettings = {
@@ -236,8 +236,8 @@ def parse_parser():
     args = parser.parse_args()
     
     # Check inputs are okay
-    if args.numcombined!=1:
-        raise ValueError("Number combined is not 1")
+    #if args.numcombined!=1:
+    #    raise ValueError("Number combined is not 1")
     
     # Add more complex default inputs
     if args.doallfeatures:
@@ -281,15 +281,17 @@ def write_settingsjson(settings, args):
             shortclassifier = shortclassifier + '_np'
             
         for split in args.numdatasplits:
-        
-            for modtyp in args.modtyps:
+            
+            fullfeatstrlst = []
+            shortfeatstrlst = []
+            
+            for iMod,modtyp in enumerate(args.modtyps):
                 if modtyp=='raw':
                     modtyp = 'cln,raw,dwn'
                 elif modtyp=='ica':
                     modtyp = 'cln,ica,dwn'
                 elif modtyp=='csp':
                     modtyp = 'cln,csp,dwn'
-                
                 
                 if modtyp=='cln,raw,dwn':
                     shortmodtyp = 'raw'
@@ -307,12 +309,34 @@ def write_settingsjson(settings, args):
                 elif modtyp=='dirtycsp':
                     modtyp = 'csp'
                     
-                for feature in args.featurenames:
+                myfull = []
+                myshort = []
+                
+                for iFtr,feature in enumerate(args.featurenames):
                     if split==1:
-                        settings["FEATURES"] = ['{0}_{1}_'.format(modtyp, feature)]
+                        myfull.append('{0}_{1}_'.format(modtyp, feature))
                     else:
-                        settings["FEATURES"] = ['{0}_{2}{1}_'.format(modtyp, feature, split)]
-                    fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, feature[5:])
+                        myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
+                    myshort.append('{0}_{1}'.format(shortmodtyp, feature[5:]))
+                
+                fullfeatstrlst.append(myfull)
+                shortfeatstrlst.append(myshort)
+            
+            for iMod in range(len(fullfeatstrlst)):
+                
+                for i in itertools.combinations(range(len(fullfeatstrlst[iMod])),args.numcombined):
+                    
+                    myfeats = []
+                    myshortfeats = []
+                    
+                    for j in range(args.numcombined):
+                        myfeats.append(fullfeatstrlst[iMod][i[j]])
+                        myshortfeats.append(shortfeatstrlst[iMod][i[j]])
+                    
+                    settings["FEATURES"] = myfeats
+                    
+                    ff = '_AND_'.join(myshortfeats)
+                    fname = '{0}_{1}.json'.format(shortclassifier, ff)
                     
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
                         json.dump(settings, outfile)
