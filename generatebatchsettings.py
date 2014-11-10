@@ -236,8 +236,8 @@ def parse_parser():
     args = parser.parse_args()
     
     # Check inputs are okay
-    if args.numcombined!=1:
-        raise ValueError("Number combined is not 1")
+    #if args.numcombined!=1:
+    #    raise ValueError("Number combined is not 1")
     
     # Add more complex default inputs
     if args.doallfeatures:
@@ -314,23 +314,32 @@ def write_settingsjson(settings, args):
                 
                 for iFtr,feature in enumerate(args.featurenames):
                     if split==1:
-                        myfull.append(['{0}_{1}_'.format(modtyp, feature)])
+                        myfull.append('{0}_{1}_'.format(modtyp, feature))
                     else:
-                        myfull.append(['{0}_{2}{1}_'.format(modtyp, feature, split)])
-                    myshort.append('{1}_{2}'.format(shortmodtyp, feature[5:]))
+                        myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
+                    myshort.append('{0}_{1}'.format(shortmodtyp, feature[5:]))
                 
                 fullfeatstrlst.append(myfull)
                 shortfeatstrlst.append(myshort)
             
-            for i in itertools.combinations():
+            for iMod in range(len(fullfeatstrlst)):
                 
-                settings["FEATURES"] = fullfeatstrlst[i]
-                
-                ff = '_AND'.join(shortfeatstrlst[i])
-                fname = '{0}_{1}_{2}.json'.format(shortclassifier, ff)
-                
-                with open(args.outputdir+'/'+fname, 'w') as outfile:
-                    json.dump(settings, outfile)
+                for i in itertools.combinations(range(len(fullfeatstrlst[iMod])),args.numcombined):
+                    
+                    myfeats = []
+                    myshortfeats = []
+                    
+                    for j in range(args.numcombined):
+                        myfeats.append(fullfeatstrlst[iMod][i[j]])
+                        myshortfeats.append(shortfeatstrlst[iMod][i[j]])
+                    
+                    settings["FEATURES"] = myfeats
+                    
+                    ff = '_AND_'.join(myshortfeats)
+                    fname = '{0}_{1}.json'.format(shortclassifier, ff)
+                    
+                    with open(args.outputdir+'/'+fname, 'w') as outfile:
+                        json.dump(settings, outfile)
 
 
 def main():
