@@ -19,8 +19,8 @@ function [Bm,B0,Sw,Am,Su,Up,Wp,percup,ki]=idMVAR0ng(Y,p,idMode);
 [M,N]=size(Y);
 
 error(nargchk(1,4,nargin));
-if nargin < 4, idMode=0; end % default least squares identification
-if nargin < 3, ki=[1:M]'; end % default series order: unaltered
+if nargin < 3, idMode=0; end % default least squares identification
+if nargin < 4, ki=[1:M]'; end % default series order: unaltered
 if nargin < 2, p=10; end % default model order
 
 %% 1) strictly causal MVAR model describing the data
@@ -31,13 +31,13 @@ if nargin < 2, p=10; end % default model order
 %% 2) LiNGAM analysis on the residuals U
 %%% a) ICA on residuals
 [Sica, Mm, Q] = fastica( Up, 'approach', 'symm', 'g', 'tanh', ...
-    'epsilon', 5e-5, 'stabilization', 'on', 'maxNumIterations', 80, 'displayMode', 'off', 'verbose', 'off');
+    'epsilon', 1e-5, 'stabilization', 'on', 'maxNumIterations', 100, 'displayMode', 'off', 'verbose', 'off');
 
 %%% b) row-permutation of Q to avoid zeros on the main diagonal
 if M<=8
-    [Qbar,rigaperm] = nzdiagbruteforce( Q ); % Try all row permutations, find best solution
+    [Qbar,rigaperm] = permnozeribrutal( Q ); % Try all row permutations, find best solution
 else
-    [Qbar,rigaperm] = nzdiaghungarian( Q ); % Find best row permutation by hungarian algorithm
+    [Qbar,rigaperm] = permnozerihungarian( Q ); % Find best row permutation by hungarian algorithm
 end
 
 %%%c) Divide each row of Qbar by the diagonal element and find B0
