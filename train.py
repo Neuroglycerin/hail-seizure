@@ -26,12 +26,12 @@ def main(opts):
     scaler = utils.get_scaler()
     elements.append(('scl',scaler))
 
-    if settings['THRESHOLD'] == 1:
+    if 'THRESHOLD' in settings.keys():
         thresh = utils.get_thresh()
         elements.append(('thr',thresh))
 
-    if settings['SELECTION'] == 1:
-        selector = utils.get_selector()
+    if 'SELECTION' in settings.keys():
+        selector = utils.get_selector(settings)
         elements.append(('sel',selector))
 
     # get settings should convert class name string to actual classifier

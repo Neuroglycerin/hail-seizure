@@ -795,16 +795,24 @@ def get_cross_validation_set(y, *params):
 
     return cv
 
-def get_selector(**kwargs):
+def get_selector(settings):
     '''
     Return a sklearn selector object
     will __always__ use ANOVA f-values for selection
     input: **kwargs for selector params e.g. k
     output: sklearn.feature_selection object
     '''
-    selector = sklearn.feature_selection.SelectKBest(\
-            sklearn.feature_selection.f_classif,
-            **kwargs)
+    if 'KBEST' in settings['SELECTION'].keys():
+        selector = sklearn.feature_selection.SelectKBest(\
+                sklearn.feature_selection.f_classif,
+                settings['SELECTION'])
+    elif 'PERCENTILE' in settings['SELECTION'].keys():
+        selector = sklearn.feature_selection.SelectPercentile(\
+                sklearn.feature_selection.f_classif,
+                percentile=settings['SELECTION']['PERCENTILE'])
+    else:
+        raise ValueError("Invalid feature selection"
+                " option: {0}".format(settings['SELECTION']))
 
     return selector
 
