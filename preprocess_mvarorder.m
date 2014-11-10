@@ -7,7 +7,7 @@ matlabpool('local',12);
 subjlst = subjnames();
 modtyps = {'raw','ica'};
 modtyps = {'raw'};
-modtyps = {'cln,raw,dwn'};
+modtyps = {'cln,icadr,dwn'};
 
 for iSub = 1:numel(subjlst)
     for iMod = 1:numel(modtyps)
