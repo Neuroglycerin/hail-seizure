@@ -2,7 +2,8 @@
 import os
 import json
 import argparse
-
+import itertools
+import numpy as np
 
 def get_default_settings():
     defaultsettings = {
@@ -145,18 +146,25 @@ def get_genbatch_parser():
                       default=False,
                       help="Print verbose output")
 
-    parser.add_argument("-d", "--dir",
+    parser.add_argument("-s", "-d", "--dir",
                       action="store",
                       dest="outputdir",
                       required=True,
                       help="Directory holding json settings files")
-                      
-    parser.add_argument("--aucinsamefolder",
+    
+    groupout = parser.add_mutually_exclusive_group(required=False)
+    
+    groupout.add_argument("-g", "--globaloutput",
                       action="store_true",
-                      dest="aucinsamefolder",
+                      dest="useglobaloutput",
                       default=False,
-                      help="Save AUC predictions to the generated folder")
+                      help="Save AUC predictions to the global AUC csv folder")
                       
+    groupout.add_argument("-o", "--aucoutput",
+                      action="store",
+                      dest="aucoutput",
+                      default="",
+                      help="Save AUC predictions to a specific folder")
 
     groupfeat = parser.add_mutually_exclusive_group(required=True)
     
@@ -235,18 +243,24 @@ def parse_parser():
     parser = get_genbatch_parser()
     args = parser.parse_args()
     
-    # Check inputs are okay
-    if args.numcombined!=1:
-        raise ValueError("Number combined is not 1")
-    
     # Add more complex default inputs
+    
+    # If we're doing all features, get the list
     if args.doallfeatures:
         args.featurenames = get_featlist()
+    # If we're doing all modtyps, get the list
     if args.modtyps==[] or args.modtyps==None:
         args.modtyps = get_modlist()
+    # If we're doing all classifiers, get the list
     if args.doallclassifiers:
         args.classifiers = get_classifierlist()
-    
+    # Use the global AUC output csv if requested
+    if args.useglobaloutput:
+        args.aucoutput = "auc_scores"
+    # By default, we will output in a CSV in the same folder as the batch folder
+    if args.aucoutput=="":
+        args.aucoutput = args.outputdir
+        
     return args
     
     
@@ -266,6 +280,7 @@ def write_settingsjson(settings, args):
     '''
     for classifier in args.classifiers:
         settings["CLASSIFIER"] = classifier
+        # Shorten the classifier name, to save filename space
         if classifier=='SVC':
             shortclassifier = 'SVC'
         elif classifier=='RandomForest':
@@ -276,13 +291,19 @@ def write_settingsjson(settings, args):
             shortclassifier = 'AB'
         else:
             shortclassifier = classifier
-        # Note if we are not using pseudodata
+        
+        # Record if we are not using pseudodata
+        # Add it to the classifier savename
         if args.nopseudo:
             shortclassifier = shortclassifier + '_np'
             
         for split in args.numdatasplits:
-        
-            for modtyp in args.modtyps:
+            
+            fullfeatstrlst = []
+            shortfeatstrlst = []
+            
+            for iMod,modtyp in enumerate(args.modtyps):
+                # Use these as shorthands for the clean versions
                 if modtyp=='raw':
                     modtyp = 'cln,raw,dwn'
                 elif modtyp=='ica':
@@ -290,7 +311,7 @@ def write_settingsjson(settings, args):
                 elif modtyp=='csp':
                     modtyp = 'cln,csp,dwn'
                 
-                
+                # Save the clean versions without full name to save space
                 if modtyp=='cln,raw,dwn':
                     shortmodtyp = 'raw'
                 elif modtyp=='cln,ica,dwn':
@@ -300,6 +321,7 @@ def write_settingsjson(settings, args):
                 else:
                     shortmodtyp = modtyp
                 
+                # But still allow to use the dirty versions on request
                 if modtyp=='dirtyraw':
                     modtyp = 'raw'
                 elif modtyp=='dirtyica':
@@ -307,13 +329,48 @@ def write_settingsjson(settings, args):
                 elif modtyp=='dirtycsp':
                     modtyp = 'csp'
                     
-                for feature in args.featurenames:
+                myfull = []
+                myshort = []
+                
+                # Make a list of all features with this modtyp
+                for iFtr,feature in enumerate(args.featurenames):
+                    # Have to have a special case for the unsplit segments
                     if split==1:
-                        settings["FEATURES"] = ['{0}_{1}_'.format(modtyp, feature)]
+                        myfull.append('{0}_{1}_'.format(modtyp, feature))
                     else:
-                        settings["FEATURES"] = ['{0}_{2}{1}_'.format(modtyp, feature, split)]
-                    fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, feature[5:])
+                        myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
+                    # The short version does not need "feat_" at beginning
+                    myshort.append('{0}_{1}'.format(shortmodtyp, feature[5:]))
+                
+                fullfeatstrlst.append(myfull)
+                shortfeatstrlst.append(myshort)
+            
+            if not args.dosinglemod:
+                fullfeatstrlst = np.array(fullfeatstrlst).flatten()
+                fullfeatstrlst = [fullfeatstrlst]
+                shortfeatstrlst = np.array(shortfeatstrlst).flatten()
+                shortfeatstrlst = [shortfeatstrlst]
+                
+            # Loop over every modtyp
+            for iMod in range(len(fullfeatstrlst)):
+                
+                # Make a combinatorial combination of features
+                for i in itertools.combinations(range(len(fullfeatstrlst[iMod])),args.numcombined):
                     
+                    myfeats = []
+                    myshortfeats = []
+                    
+                    # Add together each feature in this combination
+                    for j in range(args.numcombined):
+                        myfeats.append(fullfeatstrlst[iMod][i[j]])
+                        myshortfeats.append(shortfeatstrlst[iMod][i[j]])
+                    
+                    settings["FEATURES"] = myfeats
+                    
+                    ff = '_AND_'.join(myshortfeats)
+                    fname = '{0}_{1}.json'.format(shortclassifier, ff)
+                    
+                    # Output to a JSON
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
                         json.dump(settings, outfile)
 
@@ -327,8 +384,7 @@ def main():
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
     
-    if args.aucinsamefolder:
-        settings["AUC_SCORE_PATH"] = args.outputdir
+    settings["AUC_SCORE_PATH"] = args.outputdir
     
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)

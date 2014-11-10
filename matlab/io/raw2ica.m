@@ -14,23 +14,31 @@ distrodir = fileparts(which(settingsfname));
 % This is the path we expect the weights to be saved at
 mydir = fullfile(distrodir,settings.MODEL_PATH);
 
+k = strfind(fullmodlst,'ica');
 
-if ~isempty(strfind(fullmodlst,'cln')) && ~isempty(strfind(fullmodlst,'dwn'))
-    % If it is cleaned, use the weights from the cleaned & downsampled version
-    Wfname = ['ica_weights_' subj '_cln,dwn.mat'];
-elseif ~isempty(strfind(fullmodlst,'cln'))
-    % If it is cleaned, use the weights from the cleaned version
-    Wfname = ['ica_weights_' subj '_cln.mat'];
-else
+if isempty(k)
+    error('Full mod list does not contain ''ica''');
+end
+
+if k==1
     % Use the regular weights
     Wfname = ['ica_weights_' subj '.mat'];
+elseif ~isempty(strfind(fullmodlst(1:k-1),'cln')) &&  ~isempty(strfind(fullmodlst(k:end),'dwn'))
+    % Special case: use the cleaned and downsampled weights if we are now
+    % cleaning before ICA and downsampling afterward. We do this because
+    % the downsampling step involves further cleaning of high frequency
+    % artefacts
+    Wfname = ['ica_weights_' subj '_' fullmodlst(1:k-2) ',dwn.mat'];
+else
+    % Use the weights where ICA is done after these preprocessing steps
+    Wfname = ['ica_weights_' subj '_' fullmodlst(1:k-2) '.mat'];
 end
 
 Wfnamefull = fullfile(mydir,Wfname);
 
 % Check the file exists
 if ~exist(Wfnamefull,'file');
-    error('ICA demixing weights not present');
+    error('ICA demixing weights not present: %s',Wfnamefull);
 end
 
 % Load the Weight matrix from the file
