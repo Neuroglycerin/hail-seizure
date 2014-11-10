@@ -2,7 +2,7 @@
 % Uses all datapoints in all datafiles for the subject
 % FastICA functions were taken and copied here as nested functions with
 % shared variables to reduce memory consumption.
-function W = computeSubjICAW(subj, modtyp, dbgmde, do_icafiles)
+function W = computeSubjICAW(subj, modtyp, stopthresh, dbgmde, do_icafiles)
 
 % =========================================================================
 % Initialise random number generator
@@ -10,11 +10,14 @@ rng(7);
 
 % =========================================================================
 % Default inputs ----------------------------------------------------------
-if nargin<4;
-    do_icafiles = false; % Whether to prevent overwritting files
+if nargin<5 || isempty(do_icafiles)
+    do_icafiles = false; % Whether to write new files (pointless)
 end
-if nargin<3;
+if nargin<4 || isempty(dbgmde)
     dbgmde   = true; % Whether to write progress to screen
+end
+if nargin<3
+    stopthresh = [];
 end
 if nargin<2;
     modtyp = '';
@@ -87,7 +90,12 @@ end
 % =========================================================================
 % Perform ICA on the enormous dataset -------------------------------------
 if dbgmde; fprintf('Running FastICA\n'); end
-[~, A, W] = fastica('displayMode', pltmde);
+if ~isempty(stopthresh)
+    % Improved method with higher accuracy
+    [~, A, W] = fastica('displayMode', pltmde, 'epsilon', stopthresh);
+else
+    [~, A, W] = fastica('displayMode', pltmde);
+end
 clear mixedsig;
 % =========================================================================
 
