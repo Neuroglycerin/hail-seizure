@@ -810,6 +810,9 @@ def get_selector(settings):
         selector = sklearn.feature_selection.SelectPercentile(\
                 sklearn.feature_selection.f_classif,
                 percentile=settings['SELECTION']['PERCENTILE'])
+    elif 'FOREST' in settings['SELECTION'].keys():
+        selector = sklearn.ensemble.ExtraTreesClassifier(\
+                n_estimators=settings['SELECTION']['FOREST'])
     else:
         raise ValueError("Invalid feature selection"
                 " option: {0}".format(settings['SELECTION']))
