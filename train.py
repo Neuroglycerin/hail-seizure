@@ -46,7 +46,7 @@ def main(opts):
 
     model_pipe = utils.get_model(elements)
     utils.print_verbose("=== Model Used ===\n"
-                        "{0}\n ==================".format(model_pipe))
+    "{0}\n==================".format(model_pipe),flag=opts.verbose)
 
     #dictionary to store results
     subject_predictions = {}
