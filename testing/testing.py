@@ -178,7 +178,7 @@ class testBatchParallel(unittest.TestCase):
                         '_using_{1}_feats.model'.format(random_subj,
                                                         self.settings_2['VERSION']))
 
-
+        # binaries different sizes - unsure why
         #self.assertEqual(os.stat(model_1).st_size,
         #                 os.stat(model_2).st_size)
 
