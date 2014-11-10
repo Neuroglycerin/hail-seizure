@@ -37,15 +37,17 @@ def main(opts):
     # get settings should convert class name string to actual classifier
     # object
     classifier = settings['CLASSIFIER']
-    elements.append(('cls',classifier))
+    elements.append(('clf',classifier))
 
     # dict of classifier options - not used yet?
     classifier_settings = settings['CLASSIFIER_OPTS']
 
     #utils.sklearn.svm.SVC(probability=True)
 
-    model_pipe = utils.get_model([('scl', scaler),
-                                  ('clf', classifier)])
+    model_pipe = utils.get_model(elements)
+    utils.print_verbose("=== Model Used ===\n"
+                        "{0}\n ==================".format(model_pipe))
+
     #dictionary to store results
     subject_predictions = {}
 
@@ -80,7 +82,7 @@ def main(opts):
             model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
             # append new predictions
             predictions.append(model_pipe.predict_proba(X[test]))
-            # append test weights to store (why?)
+            # append test weights to store (why?) (used to calculate auc below)
             weights = utils.get_weights(y[test])
             allweights.append(weights)
             # store true labels
