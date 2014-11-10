@@ -25,8 +25,12 @@ switch lower(submodtyp)
         func = @(x)x;
     case 'ica'
         func = @(x) raw2ica(x, subj, fullmodlst);
+    case 'icadr'
+        func = @(x) raw2dr(raw2ica(x, subj, fullmodlst));
     case 'csp'
         func = @(x) raw2csp(x, subj, fullmodlst);
+    case 'cspdr'
+        func = @(x) raw2dr(raw2csp(x, subj, fullmodlst));
     case 'cln'
         func = @(x) raw2cln(x);
     case 'dwn'
@@ -39,5 +43,12 @@ if ~isempty(K)
     func2 = getPreprocFunc(modtyp(K(1)+1:end), subj, fullmodlst);
     func = @(x) func2(func(x));
 end
+
+end
+
+function Dat = raw2dr(Dat)
+
+% Isolate the first 8 channels and discard the rest
+Dat.data = Dat.data(1:8,:);
 
 end
