@@ -3,6 +3,7 @@ import os
 import json
 import argparse
 import itertools
+import numpy as np
 
 def get_default_settings():
     defaultsettings = {
@@ -153,7 +154,7 @@ def get_genbatch_parser():
     
     groupout = parser.add_mutually_exclusive_group(required=False)
     
-    groupout.add_argument("-g", "--globaloutput"
+    groupout.add_argument("-g", "--globaloutput",
                       action="store_true",
                       dest="useglobaloutput",
                       default=False,
@@ -344,7 +345,12 @@ def write_settingsjson(settings, args):
                 fullfeatstrlst.append(myfull)
                 shortfeatstrlst.append(myshort)
             
-            
+            if not args.dosinglemod:
+                fullfeatstrlst = np.array(fullfeatstrlst).flatten()
+                fullfeatstrlst = [fullfeatstrlst]
+                shortfeatstrlst = np.array(shortfeatstrlst).flatten()
+                shortfeatstrlst = [shortfeatstrlst]
+                
             # Loop over every modtyp
             for iMod in range(len(fullfeatstrlst)):
                 
