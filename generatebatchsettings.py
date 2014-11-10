@@ -2,7 +2,7 @@
 import os
 import json
 import argparse
-
+import itertools
 
 def get_default_settings():
     defaultsettings = {
@@ -281,15 +281,17 @@ def write_settingsjson(settings, args):
             shortclassifier = shortclassifier + '_np'
             
         for split in args.numdatasplits:
-        
-            for modtyp in args.modtyps:
+            
+            fullfeatstrlst = []
+            shortfeatstrlst = []
+            
+            for iMod,modtyp in enumerate(args.modtyps):
                 if modtyp=='raw':
                     modtyp = 'cln,raw,dwn'
                 elif modtyp=='ica':
                     modtyp = 'cln,ica,dwn'
                 elif modtyp=='csp':
                     modtyp = 'cln,csp,dwn'
-                
                 
                 if modtyp=='cln,raw,dwn':
                     shortmodtyp = 'raw'
@@ -307,15 +309,28 @@ def write_settingsjson(settings, args):
                 elif modtyp=='dirtycsp':
                     modtyp = 'csp'
                     
-                for feature in args.featurenames:
+                myfull = []
+                myshort = []
+                
+                for iFtr,feature in enumerate(args.featurenames):
                     if split==1:
-                        settings["FEATURES"] = ['{0}_{1}_'.format(modtyp, feature)]
+                        myfull.append(['{0}_{1}_'.format(modtyp, feature)])
                     else:
-                        settings["FEATURES"] = ['{0}_{2}{1}_'.format(modtyp, feature, split)]
-                    fname = '{0}_{1}_{2}.json'.format(shortclassifier, shortmodtyp, feature[5:])
-                    
-                    with open(args.outputdir+'/'+fname, 'w') as outfile:
-                        json.dump(settings, outfile)
+                        myfull.append(['{0}_{2}{1}_'.format(modtyp, feature, split)])
+                    myshort.append('{1}_{2}'.format(shortmodtyp, feature[5:]))
+                
+                fullfeatstrlst.append(myfull)
+                shortfeatstrlst.append(myshort)
+            
+            for i in itertools.combinations():
+                
+                settings["FEATURES"] = fullfeatstrlst[i]
+                
+                ff = '_AND'.join(shortfeatstrlst[i])
+                fname = '{0}_{1}_{2}.json'.format(shortclassifier, ff)
+                
+                with open(args.outputdir+'/'+fname, 'w') as outfile:
+                    json.dump(settings, outfile)
 
 
 def main():
