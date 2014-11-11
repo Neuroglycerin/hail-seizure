@@ -611,6 +611,27 @@ class DataAssembler:
 
         return X
 
+    def hour_classification_training(self,subject):
+        """
+        Builds a training set for testing classifiers
+        at the task of predicting which hour a segment
+        is from.
+        Not compatible with our own SequenceCV.
+        Input:
+        * subject - string
+        Output:
+        * X,y
+        """
+        # modularity at work
+        X,y = self.build_training(subject)
+
+        hourIDs = []
+        # then redefine the y vector based on the segments
+        for segment in self.training_segments:
+            segment = segment.split('.')[0]
+            hourIDs.append(self.metadata[segment]['hourID'])
+        y = np.array(hourIDs)
+        return X,y
 
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None, n_iter=10):
@@ -657,18 +678,24 @@ class Sequence_CV:
         # Presumably we need this line to make sure ordering is the same?
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
+        # ensure a good split by putting exactly one hour in test
+        # Divide the no. of preictal hours by the total hours. Returns 
+        # number of samples to have exactly one preictal hour in test
+        test_size = int(len(y)/sum(y))
 
         # Initialise a Stratified shuffle split
         self.cv = sklearn.cross_validation.StratifiedShuffleSplit(y,
-                                                                  n_iter=n_iter,
-                                                                  test_size=0.5,
-                                                                  random_state=r_seed)
+                                                          n_iter=n_iter,
+                                                          test_size=test_size,
+                                                          random_state=r_seed)
 
         # Some of the datasets only have 3 hours of preictal recordings.
-        # This will provie 10 stratified shuffles, each using 1 of the preictal hours
+        # This will provie 10 stratified shuffles, each using 1 of the 
+        # preictal hours
         # Doesn't guarantee actually using each hour at least once though!
-        # We fix the random number generator so we will always use the same split
-        # for this subject across multiple CV tests for a fairer comparison.
+        # We fix the random number generator so we will always
+        # use the same set of splits for this subject across 
+        # multiple CV tests for a fairer comparison.
         return None
 
     def __iter__(self):
@@ -789,16 +816,27 @@ def get_cross_validation_set(y, *params):
 
     return cv
 
-def get_selector(**kwargs):
+def get_selector(settings):
     '''
     Return a sklearn selector object
     will __always__ use ANOVA f-values for selection
     input: **kwargs for selector params e.g. k
     output: sklearn.feature_selection object
     '''
-    selector = sklearn.feature_selection.SelectKBest(\
-            sklearn.feature_selection.f_classif,
-            **kwargs)
+    if 'KBEST' in settings['SELECTION'].keys():
+        selector = sklearn.feature_selection.SelectKBest(\
+                sklearn.feature_selection.f_classif,
+                settings['SELECTION'])
+    elif 'PERCENTILE' in settings['SELECTION'].keys():
+        selector = sklearn.feature_selection.SelectPercentile(\
+                sklearn.feature_selection.f_classif,
+                percentile=settings['SELECTION']['PERCENTILE'])
+    elif 'FOREST' in settings['SELECTION'].keys():
+        selector = sklearn.ensemble.ExtraTreesClassifier(\
+                n_estimators=settings['SELECTION']['FOREST'])
+    else:
+        raise ValueError("Invalid feature selection"
+                " option: {0}".format(settings['SELECTION']))
 
     return selector
 
@@ -842,7 +880,7 @@ def get_thresh(**kwargs):
     input: kwargs
     output: sklearn variance threshold object
     '''
-    return sklearn.feature_selection.VarianceTheshold(**kwargs)
+    return sklearn.feature_selection.VarianceThreshold(**kwargs)
 
 def get_weights(y):
     '''

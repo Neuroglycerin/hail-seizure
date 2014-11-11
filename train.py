@@ -21,23 +21,33 @@ def main(opts):
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
-    #thresh = utils.get_thresh()
-
-    #selector = utils.get_selector(k=opts.selector_k)
+    elements = []
 
     scaler = utils.get_scaler()
+    elements.append(('scl',scaler))
+
+    if 'THRESHOLD' in settings.keys():
+        thresh = utils.get_thresh()
+        elements.append(('thr',thresh))
+
+    if 'SELECTION' in settings.keys():
+        selector = utils.get_selector(settings)
+        elements.append(('sel',selector))
 
     # get settings should convert class name string to actual classifier
     # object
     classifier = settings['CLASSIFIER']
+    elements.append(('clf',classifier))
 
-    # dict of classifier options
+    # dict of classifier options - not used yet?
     classifier_settings = settings['CLASSIFIER_OPTS']
 
     #utils.sklearn.svm.SVC(probability=True)
 
-    model_pipe = utils.get_model([('scl', scaler),
-                                  ('clf', classifier)])
+    model_pipe = utils.get_model(elements)
+    utils.print_verbose("=== Model Used ===\n"
+    "{0}\n==================".format(model_pipe),flag=opts.verbose)
+
     #dictionary to store results
     subject_predictions = {}
 
@@ -72,7 +82,7 @@ def main(opts):
             model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
             # append new predictions
             predictions.append(model_pipe.predict_proba(X[test]))
-            # append test weights to store (why?)
+            # append test weights to store (why?) (used to calculate auc below)
             weights = utils.get_weights(y[test])
             allweights.append(weights)
             # store true labels
