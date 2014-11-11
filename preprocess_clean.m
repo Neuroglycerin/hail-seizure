@@ -53,13 +53,18 @@ end
 
 writeclnmeta(subj,needcln,doremovelinenoise,dohighpass);
 
+% If no cleaning needed, exit now and don't write files
+if ~needcln;
+    return;
+end
+
 % Process each file -------------------------------------------------------
 
 % For each datafile, load it up, do the separating matrix transformation,
 % and save as a different file
 nFle = length(fnamelist);
 for iFle=1:nFle
-    if dbgmde && mod(iFle,100)==0; fprintf('Processing file %3d/%3d\n',iFle,nFle); end
+    if dbgmde; fprintf('Processing file %3d/%3d\n',iFle,nFle); end
     % Load the saved matfile
     Cntr = load(fnamelist{iFle});
     % Matfile contains a structure named the same as the file
