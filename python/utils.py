@@ -611,6 +611,27 @@ class DataAssembler:
 
         return X
 
+    def hour_classification_training(self,subject):
+        """
+        Builds a training set for testing classifiers
+        at the task of predicting which hour a segment
+        is from.
+        Not compatible with our own SequenceCV.
+        Input:
+        * subject - string
+        Output:
+        * X,y
+        """
+        # modularity at work
+        X,y = self.build_training(subject)
+
+        hourIDs = []
+        # then redefine the y vector based on the segments
+        for segment in self.training_segments:
+            segment = segment.split('.')[0]
+            hourIDs.append(self.metadata[segment]['hourID'])
+        y = np.array(hourIDs)
+        return X,y
 
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None, n_iter=10):
