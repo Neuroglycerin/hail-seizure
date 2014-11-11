@@ -719,38 +719,6 @@ class Sequence_CV:
                     warnings.warn("Unable to match {0} to train or test".format(segment))
             yield train, test
 
-
-def build_test(subject, features, data):
-    '''
-    Function to build data structures for submission
-    input : subject  (subject name string)
-            features (features to use)
-            data (nested dicts datastructure of all feature extracted data)
-    output: X (feature matrix as np.array)
-            y (labels as np.array)
-    '''
-
-    segments =  'empty'
-    Xd = {}
-    for feature in features:
-        if segments == 'empty':
-            segments = data[feature][subject]['test'].keys()
-        for segment in segments:
-            fvector = np.ndarray.flatten(\
-                    data[feature][subject]['test'][segment])
-            try:
-                Xd[segment] = np.hstack([Xd[segment], fvector])
-            except:
-                Xd[segment] = fvector
-
-    # make the X array and corresponding labels
-    X = []
-    for segment in segments:
-        X.append(Xd[segment])
-    X = np.vstack(X)
-    return X, segments
-
-
 def subjsort_prediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
