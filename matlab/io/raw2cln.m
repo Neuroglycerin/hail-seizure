@@ -1,4 +1,4 @@
-function Dat = raw2cln(Dat)
+function Dat = raw2cln(Dat, subj)
 
 % Parameters --------------------------------------------------------------
 settingsfname = 'SETTINGS.json';

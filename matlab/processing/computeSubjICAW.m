@@ -1573,6 +1573,10 @@ else
     modtyp = ['_' modtyp];
 end
 
+% Versions 3 and higher load precleaned files from disk
+if ~strcmp(settings.VERSION,'_v1') && ~strcmp(settings.VERSION,'_v2')
+    modtyp = strrep(modtyp,'cln','precln');
+end
 mydir = fullfile(getRepoDir(), settings.MODEL_PATH);
 Wfname = ['ica_weights_' subj modtyp];
 
