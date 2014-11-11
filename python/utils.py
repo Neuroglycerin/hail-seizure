@@ -940,7 +940,10 @@ def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
     Output:
     * Sigma_0 - covariance matrix of first distribution
     * Sigma_1 - covariance matrix of second distribution
-    
+
+    Currently __broken__ when used in our code, giving
+    negative KL divergences.
+
     [wikipedia]: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Kullback.E2.80.93Leibler_divergence
     """
     if len(mu_0.shape) < 2 or len(mu_1.shape) < 2:
