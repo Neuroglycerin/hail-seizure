@@ -17,15 +17,19 @@ ictyp = ictyp2ictyp(ictyp);
 
 % MAIN --------------------------------------------------------------------
 mydir = getDataDir();
-switch modtyp
-    case 'raw'
-        fname_format = [subj '_' ictyp '_*.mat'];
-%     case 'ica'
-%         mydir = fullfile(mydir,modtyp);
-%         fname_format = [modtyp '_' subj '_' ictyp '_*.mat'];
-    otherwise
-        error('Unfamiliar data modifier: %s',modtyp);
+
+% Load cleaning parameters
+ClnMeta = loadClnMeta(subj);
+
+if ~isempty(strfind(modtyp,'cln')) && ClnMeta.needcln
+    % Pre-cleaned file
+    mydir = fullfile(mydir,'cln');
+    fname_format = ['cln_' subj '_' ictyp '_*.mat'];
+else
+    % Raw file
+    fname_format = [subj '_' ictyp '_*.mat'];
 end
+
 % Each subject is in its own subfolder
 mydir = fullfile(mydir, subj);
 
