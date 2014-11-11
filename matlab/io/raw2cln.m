@@ -10,6 +10,10 @@ end
 
 % Note: apply the same preprocessing model to every dataset
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NEED TO DO THIS DYNAMICALLY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strncmp(Dat.filename, 'Patient_1', length('Patient_1'))
 % Remove 60Hz line noise artifact (present in Patient_1)
 % Notch reject
 Dat.data = butterfiltfilt(Dat.data', [55 65], Dat.sampling_frequency, order, 'stop', 'both')';
@@ -19,6 +23,7 @@ Dat.data = butterfiltfilt(Dat.data', [175 185], Dat.sampling_frequency, order, '
 
 % Remove 240Hz line noise artifact harmonic (present in Patient_1)
 Dat.data = butterfiltfilt(Dat.data', [235 245], Dat.sampling_frequency, order, 'stop', 'both')';
+end
 
 % Remove <1Hz (present in Patient_2)
 % High-pass filter
