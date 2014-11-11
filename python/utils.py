@@ -633,6 +633,31 @@ class DataAssembler:
         y = np.array(hourIDs)
         return X,y
 
+    def test_train_discrimination(self,subject):
+        """
+        Builds a training set for testing classifiers
+        at the task of predicting whether a segment
+        came from training or test.
+        Not compatible with our own SequenceCV,
+        but should be valid to apply any shuffled CV
+        split.
+        Input:
+        * subject - string
+        Output:
+        * X,y
+        """
+        # modularity at work
+        Xtrain,_ = self.build_training(subject)
+        Xtest = self.build_test(subject)
+
+        # stack the X matrices
+        X = np.vstack([Xtrain,Xtest])
+
+        # then redefine the y vector based on  test/train
+        y = np.array([0]*Xtrain.shape[0] + [1]*Xtest.shape[0])
+
+        return X,y
+
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None, n_iter=10):
         """Takes a list of the segments ordered as they are in the array.
