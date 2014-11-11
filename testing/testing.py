@@ -15,16 +15,17 @@ import csv
 import h5py
 
 
-class testClassifieroptions(unittest.TestCase):
-    pass
-
-
 class testHDF5parsing(unittest.TestCase):
+    '''
+    Unittests for the function that parses the matlab HDF5s
+    '''
 
     @classmethod
     def setUpClass(cls):
         cls.settings_fh = 'test_settings.json'
+
         cls.settings = utils.get_settings(cls.settings_fh)
+
         cls.all_subjects = set(['Dog_1',
                              'Dog_2',
                              'Dog_3',
@@ -32,6 +33,7 @@ class testHDF5parsing(unittest.TestCase):
                              'Dog_5',
                              'Patient_1',
                              'Patient_2'])
+
         cls.all_types = set(['preictal',
                               'test',
                               'pseudointerictal',
@@ -48,11 +50,11 @@ class testHDF5parsing(unittest.TestCase):
         cls.malformed_feat.create_dataset('malfie', (10,10))
         cls.malformed_feat.close()
 
+
     def test_ioerror_warning(self):
         '''
         Assert a non-existent file correctly raises warning
         '''
-
         non_existent_feat = 'fake_feat'
         h5_file_name = os.path.join(self.settings['TRAIN_DATA_PATH'],
                                     "{0}{1}.h5".format(non_existent_feat,
@@ -74,12 +76,11 @@ class testHDF5parsing(unittest.TestCase):
                                                                         "the correct "
                                                                         "format ")
 
+
     def test_parse_error_warning(self):
         '''
         Assert malformed HDF5 raises proper warning
         '''
-
-
         malformed_feat = 'malformed_feat'
         h5_file_name = os.path.join(self.settings['TRAIN_DATA_PATH'],
                                     "{0}{1}.h5".format(malformed_feat,
@@ -126,14 +127,18 @@ class testHDF5parsing(unittest.TestCase):
                          msg="Check there is the correct number of segments in "
                              "parsed HDF5s by checking dog1 interictal")
 
+
     @classmethod
     def tearDownClass(cls):
         os.unlink(cls.malformed_file)
 
+
 class testBatchParallel(unittest.TestCase):
     '''
     Class to test the batch parallel script as well as consistency in output
+    of train.py and predict.py when run on the same data multiple times
     '''
+
     @classmethod
     def setUpClass(cls):
         cls.settings_fh_1 = os.path.join('batch_test', 'batch_test1.json')
@@ -146,6 +151,7 @@ class testBatchParallel(unittest.TestCase):
                                       '-s', 'batch_test'],
                                       stdout=cls.NULL,
                                       stderr=cls.NULL)
+
 
     def test_model_output_and_consistency(self):
         self.models = glob.glob(os.path.join(self.settings_1['MODEL_PATH'],
@@ -221,6 +227,9 @@ class testBatchParallel(unittest.TestCase):
 
 
 class testTrain(unittest.TestCase):
+    '''
+    Unittests for the train.py script
+    '''
 
     @classmethod
     def setUpClass(cls):
@@ -242,6 +251,7 @@ class testTrain(unittest.TestCase):
                                                         cls.settings['RUN_NAME'],
                                                         cls.settings['VERSION'])))
 
+
     def test_train_stdout(self):
         '''
         Test stdout prints correct number of AUC scores
@@ -252,6 +262,7 @@ class testTrain(unittest.TestCase):
         self.assertEqual(AUC_score_count,
                          8,
                          msg="Check that train prints 8 AUC scores to stdout")
+
 
     def test_train_AUC_csv_out(self):
         '''
@@ -278,6 +289,7 @@ class testTrain(unittest.TestCase):
         self.assertEqual(lines[1].count('\t'), 8)
         self.assertEqual(lines[1][:10], 'test_train')
 
+
     def test_model_number(self):
         '''
         Test correct number of models are generated
@@ -286,6 +298,7 @@ class testTrain(unittest.TestCase):
         self.assertEqual(len(self.model_files),
                          7,
                          msg="Check that 7 models are written out to model_path dir")
+
 
     def test_model_size_correct(self):
         '''
@@ -301,6 +314,7 @@ class testTrain(unittest.TestCase):
                         msg="Check that randomly picked model ({0}) is between 1 "
                             "and 100M".format(output_model))
 
+
     def test_model_can_be_read(self):
         '''
         Check whether a model can be read
@@ -312,6 +326,7 @@ class testTrain(unittest.TestCase):
                               sklearn.pipeline.Pipeline,
                               msg="Check that randomly picked model ({0}) is "
                                   "the correct sklearn obj type".format(output_model))
+
 
     @classmethod
     def tearDownClass(cls):
@@ -326,10 +341,12 @@ class testTrain(unittest.TestCase):
 
 
 class testPredict(unittest.TestCase):
+    '''
+    Unittests for the predict.py script to ensure output is valid
+    '''
 
     @classmethod
     def setUpClass(cls):
-
         cls.settings_fh = 'test_predict.json'
         cls.settings = utils.get_settings(cls.settings_fh)
         cls.NULL = open(os.devnull, 'w')
@@ -337,7 +354,6 @@ class testPredict(unittest.TestCase):
                                       '-s', 'test_predict.json'],
                                       stdout=cls.NULL,
                                       stderr=cls.NULL)
-
 
         cls.output_file = glob.glob(os.path.join(cls.settings['SUBMISSION_PATH'],
                                     "*.csv"))
@@ -350,6 +366,7 @@ class testPredict(unittest.TestCase):
         # Check whether there is only one output in submission path
         self.assertEqual(len(self.output_file), 1, msg="Check only one csv is "
                                                        "output to output path")
+
         self.assertEqual(self.output_file[0],
                          os.path.join(self.settings['SUBMISSION_PATH'],
                                       '{0}_submission_using_{1}_feats'
@@ -357,6 +374,7 @@ class testPredict(unittest.TestCase):
                                                     self.settings['VERSION'])),
                          msg="Checking that the output csv has the right "
                              "abspath and filename")
+
 
     def test_csv_valid(self):
         '''
@@ -379,21 +397,23 @@ class testPredict(unittest.TestCase):
                              2,
                              msg="Check that output csv only has 2 cols")
 
+
     @classmethod
     def tearDownClass(cls):
         '''
         Close /dev/null filehandle and remove any csv output
         '''
-
         cls.NULL.close()
         for f in cls.output_file:
             if f!='.placeholder':
                 os.unlink(f)
 
+
 class testDataAssembler(unittest.TestCase):
     '''
-    Unittests for DataAssembler object
+    Unittests for DataAssembler - class which builds training and test data
     '''
+
     @classmethod
     def setUpClass(cls):
         cls.settings_fh = 'test_data_assembler.json'
@@ -476,11 +496,9 @@ class testDataAssembler(unittest.TestCase):
                                   msg="Check that for subj {0} "
                                       "X is an array".format(subj))
 
-
             self.assertEqual(X.shape, target_X_shape,
                              msg="Check that for subj {0} "
                                  "X is an right shape".format(subj))
-
 
             self.assertTrue(X[:,
                               :self.feature_length[subj]].all() == 0,
@@ -508,8 +526,6 @@ class testDataAssembler(unittest.TestCase):
                                   np.ndarray,
                                   msg="Check that for subj {0} "
                                       "X is an array".format(subj))
-
-
 
             target_X_shape = (self.segment_counts[subj]['interictal'] +
                               self.segment_counts[subj]['preictal'] +
@@ -549,7 +565,6 @@ class testDataAssembler(unittest.TestCase):
                                  "y is an right shape".format(subj))
 
 
-
     def test__build_y(self):
         '''
         For each subj and ictyp make sure the returned y vector is correct
@@ -582,6 +597,7 @@ class testDataAssembler(unittest.TestCase):
                           subj,
                           'test')
 
+
     def test__build_X(self):
         '''
         For each subj, ictyp check Test _build_x is building X correctly
@@ -599,6 +615,8 @@ class testDataAssembler(unittest.TestCase):
                                  msg="Check that for subj {0} and ictyp {1} "
                                      "X is an right shape".format(subj,
                                                                   ictyp))
+
+
     def test__build_X_ordering(self):
         '''
         Check order of the feature input is preserved by _build_X
@@ -622,8 +640,6 @@ class testDataAssembler(unittest.TestCase):
                             "afterwards".format(subj, ictyp))
 
 
-
-
     def test__build_X_feature_index(self):
         '''
         Check feature index is correctly made by _build_X
@@ -636,8 +652,6 @@ class testDataAssembler(unittest.TestCase):
                          msg="Check that for random subj {0} and ictyp {1} "
                              "feature index is same order as features "
                              "are in settings".format(subj, ictyp))
-
-
 
 
     def test__assemble_feature_pseudo(self):
@@ -744,14 +758,6 @@ class testDataAssembler(unittest.TestCase):
         self.assertEqual(self.DataAssemblerInstance.settings, self.settings)
         self.assertEqual(self.DataAssemblerInstance.data, self.data)
         self.assertEqual(self.DataAssemblerInstance.metadata, self.metadata)
-
-
-    def tearDown(self):
-        pass
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
 
 if __name__=='__main__':
 
