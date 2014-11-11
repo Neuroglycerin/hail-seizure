@@ -924,3 +924,27 @@ def output_auc_scores(auc_scores, settings):
             writer = csv.writer(auc_csv, delimiter="\t")
             writer.writerow([''] + colnames)
             writer.writerow(auc_row)
+
+def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
+    """
+    Takes the parameters of two multivariate normal distributions
+    and calculates the KL divergence between them.
+    Equation taken straight from [Wikipedia][].
+    Input:
+    * mu_0 - mean vector of first distribution
+    * mu_1 - mean vector of second distribution
+    Output:
+    * Sigma_0 - covariance matrix of first distribution
+    * Sigma_1 - covariance matrix of second distribution
+    
+    [wikipedia]: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Kullback.E2.80.93Leibler_divergence
+    """
+    if len(mu_0.shape) < 2 or len(mu_1.shape) < 2:
+        raise ValueError("Mean vectors must be column vectors.")
+    K = mu_0.shape[0]
+    if mu_1.shape[0] != K:
+        raise ValueError("Mean vectors must share the same dimension.")
+    return float(0.5*(np.trace( np.dot( np.linalg.inv(Sigma_1), Sigma_0 )  ) \
+            + np.dot( (mu_1 - mu_0).T, np.dot(np.linalg.inv(Sigma_1), (mu_1 - mu_0)))  \
+            - K - np.log(np.linalg.det(Sigma_0)/np.linalg.det(Sigma_1) )))
+
