@@ -647,14 +647,14 @@ class DataAssembler:
         * X,y
         """
         # modularity at work
-        Xtrain,_ = self.build_training(subject)
-        Xtest = self.build_test(subject)
+        self.Xtrain,_ = self.build_training(subject)
+        self.Xtest = self.build_test(subject)
 
         # stack the X matrices
-        X = np.vstack([Xtrain,Xtest])
+        X = np.vstack([self.Xtrain,self.Xtest])
 
         # then redefine the y vector based on  test/train
-        y = np.array([0]*Xtrain.shape[0] + [1]*Xtest.shape[0])
+        y = np.array([0]*self.Xtrain.shape[0] + [1]*self.Xtest.shape[0])
 
         return X,y
 
@@ -903,8 +903,12 @@ def output_auc_scores(auc_scores, settings):
             settings
     output: void
     '''
-
-    auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
+    # hacking this to save discriminate results
+    if 'DISCRIMINATE' in settings:
+        auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
+                                'discriminate_scores.csv')
+    else:
+        auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
                                 'AUC_scores.csv')
 
     colnames = [subj for subj in settings['SUBJECTS']] + ['all']
@@ -944,7 +948,13 @@ def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
     K = mu_0.shape[0]
     if mu_1.shape[0] != K:
         raise ValueError("Mean vectors must share the same dimension.")
-    return float(0.5*(np.trace( np.dot( np.linalg.inv(Sigma_1), Sigma_0 )  ) \
-            + np.dot( (mu_1 - mu_0).T, np.dot(np.linalg.inv(Sigma_1), (mu_1 - mu_0)))  \
-            - K - np.log(np.linalg.det(Sigma_0)/np.linalg.det(Sigma_1) )))
+    KL = float(0.5*(np.trace( np.dot( np.linalg.inv(Sigma_1), Sigma_0 )  ) \
+            + np.dot((mu_1 - mu_0).T, np.dot(np.linalg.inv(Sigma_1),(mu_1 - mu_0)))  \
+            - K - (np.prod(np.linalg.slogdet(Sigma_0)) - \
+            np.prod(np.linalg.slogdet(Sigma_1)))))
+    if KL.__repr__() == 'nan':
+        raise ValueError
+    else:
+        return KL
+
 
