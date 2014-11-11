@@ -108,6 +108,8 @@ def get_settings(settings_file):
 
     default_classifier = classifier_objs['SVC']
 
+    # if there is no classifier specified or an unsupport of malformed settings
+    # is provided then set classifier setting to default
     if 'CLASSIFIER' in settings.keys():
         try:
             settings['CLASSIFIER'] = classifier_objs[settings['CLASSIFIER']]
@@ -116,18 +118,13 @@ def get_settings(settings_file):
                           "using default instead: {2}".format(settings['CLASSIFIER'],
                                                               settings_file,
                                                               str(default_classifier)))
-
-    # if the field doesn't exist in settings return the default logistic regression model
-    # todo: change this to best performing classifier
     else:
         settings.update({'CLASSIFIER': default_classifier})
 
     # if there is a settings opt field convert
-    if 'CLASSIFIER_OPTS' in settings.keys():
-        settings['CLASSIFIER_OPTS'] = {}
-
-    else:
+    if 'CLASSIFIER_OPTS' not in settings.keys():
         settings.update({'CLASSIFIER_OPTS': {}})
+
 
     # set the model with the params desired
     try:
@@ -704,7 +701,7 @@ class Sequence_CV:
         y = [self.hour2class[hourID] for hourID in self.hourIDs]
 
         # ensure a good split by putting exactly one hour in test
-        # Divide the no. of preictal hours by the total hours. Returns 
+        # Divide the no. of preictal hours by the total hours. Returns
         # number of samples to have exactly one preictal hour in test
         test_size = int(len(y)/sum(y))
 
@@ -715,11 +712,11 @@ class Sequence_CV:
                                                           random_state=r_seed)
 
         # Some of the datasets only have 3 hours of preictal recordings.
-        # This will provie 10 stratified shuffles, each using 1 of the 
+        # This will provie 10 stratified shuffles, each using 1 of the
         # preictal hours
         # Doesn't guarantee actually using each hour at least once though!
         # We fix the random number generator so we will always
-        # use the same set of splits for this subject across 
+        # use the same set of splits for this subject across
         # multiple CV tests for a fairer comparison.
         return None
 
@@ -751,7 +748,7 @@ def subjsort_prediction(prediction_dict):
     '''
 
     # Loop over all segments
-    #for segment in prediction_dict.keys():
+    # for segment in prediction_dict.keys():
         # Look at segment and take out the subject name
         # Use this to split predictions by subject name
     # Within each subject, sort the segments by prediction value
@@ -833,47 +830,35 @@ def get_selector(settings):
 
     return selector
 
-def get_scaler(**kwargs):
+def build_model_pipe(settings):
     '''
-    Return a sklearn scaler object
-    input: **kwargs for scaler params
-    output sklearn.preprocessing scaler object
+    Function to build and return the classification pipeline
+    based on the values passed in the settings json
     '''
-    scaler = sklearn.preprocessing.StandardScaler(**kwargs)
-    return scaler
 
-def get_model(elements):
-    '''
-    Assemble the pipeline for classification
+    pipe_elements = []
 
-    input: elements in the following structure:
-            [('scl',scaler), ..., ('clf',classifier)]
-    output model - sklearn.pipeline object model
-    '''
-    model = sklearn.pipeline.Pipeline(elements)
-    return model
+    # always use the standard scaler with default params
+    scaler = sklearn.preprocessing.StandardScaler()
+    pipe_elements.append(('scl',scaler))
 
-def fit_model(model_pipe, X, y, cv, **kwargs):
-    '''
-    Fit provided model using pipeline and data
-    input: model_pipe - sklearn.pipeline pipe
-           X - feature vector
-           y - target vector
-           cv - cross validation set
-           **kwargs - for the fitting
-    output: fitted_model - model fitted to the dataset
-    '''
-    model.fit(X, y, **kwargs)
+    # optionally use thresholding and feature selector
+    if 'THRESHOLD' in settings.keys():
+        thresh = sklearn.feature_selection.VarianceThreshold()
+        pipe_elements.append(('thr',thresh))
+
+    if 'SELECTION' in settings.keys():
+        selector = utils.get_selector(settings)
+        pipe_elements.append(('sel',selector))
+
+    # get settings handles the parameterisation of the classifier
+    classifier = settings['CLASSIFIER']
+    pipe_elements.append(('clf',classifier))
+
+    model = sklearn.pipeline.Pipeline(pipe_elements)
 
     return model
 
-def get_thresh(**kwargs):
-    '''
-    Make a sklearn variance thresholder
-    input: kwargs
-    output: sklearn variance threshold object
-    '''
-    return sklearn.feature_selection.VarianceThreshold(**kwargs)
 
 def get_weights(y):
     '''
@@ -894,7 +879,6 @@ def get_metadata():
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
     return metadata
-
 
 def output_auc_scores(auc_scores, settings):
     '''
