@@ -848,7 +848,7 @@ def build_model_pipe(settings):
         pipe_elements.append(('thr',thresh))
 
     if 'SELECTION' in settings.keys():
-        selector = utils.get_selector(settings)
+        selector = get_selector(settings)
         pipe_elements.append(('sel',selector))
 
     # get settings handles the parameterisation of the classifier
