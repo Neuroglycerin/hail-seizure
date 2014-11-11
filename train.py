@@ -21,32 +21,11 @@ def main(opts):
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
-    elements = []
+    model_pipe = utils.build_model_pipe(settings)
 
-    scaler = utils.get_scaler()
-    elements.append(('scl',scaler))
-
-    if 'THRESHOLD' in settings.keys():
-        thresh = utils.get_thresh()
-        elements.append(('thr',thresh))
-
-    if 'SELECTION' in settings.keys():
-        selector = utils.get_selector(settings)
-        elements.append(('sel',selector))
-
-    # get settings should convert class name string to actual classifier
-    # object
-    classifier = settings['CLASSIFIER']
-    elements.append(('clf',classifier))
-
-    # dict of classifier options - not used yet?
-    classifier_settings = settings['CLASSIFIER_OPTS']
-
-    #utils.sklearn.svm.SVC(probability=True)
-
-    model_pipe = utils.get_model(elements)
     utils.print_verbose("=== Model Used ===\n"
-    "{0}\n==================".format(model_pipe),flag=opts.verbose)
+    "{0}\n==================".format(model_pipe),
+                        flag=opts.verbose)
 
     #dictionary to store results
     subject_predictions = {}
