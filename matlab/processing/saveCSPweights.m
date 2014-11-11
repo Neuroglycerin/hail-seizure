@@ -49,8 +49,8 @@ if isempty(modtyp) || strcmp(modtyp,'raw')
 end
 ppfunc = getPreprocFunc(modtyp, subj);
 
-[fnames1, mydir1] = subjtyp2dirs(subj, 'preictal', 'raw');
-[fnames0, mydir0] = subjtyp2dirs(subj, 'interictal', 'raw');
+[fnames1, mydir1] = subjtyp2dirs(subj, 'preictal', modtyp);
+[fnames0, mydir0] = subjtyp2dirs(subj, 'interictal', modtyp);
 
 % Check how many channels for this subject
 Dat = loadSegFile(fullfile(mydir1,fnames1{1}));

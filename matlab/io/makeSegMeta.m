@@ -14,7 +14,7 @@ else
     ispseudo = false;
 end
 % Get a list of the files for this ictal type
-[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp);
+[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp, 'raw');
 nFle = numel(fnames);
 
 % Initialise

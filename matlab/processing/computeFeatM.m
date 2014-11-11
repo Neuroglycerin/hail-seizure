@@ -27,7 +27,7 @@ else
 end
 
 % Get a list of files
-[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp);
+[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp, modtyp);
 nFle = length(fnames);
 
 % Parallelised feature computation ----------------------------------------

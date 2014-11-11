@@ -2,6 +2,9 @@
 % in ascending numeric order
 function [fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp, modtyp)
 
+% Parameters --------------------------------------------------------------
+settingsfname = 'SETTINGS.json';
+
 % DEFAULT INPUTS ----------------------------------------------------------
 if nargin<3 || isempty(modtyp)
     modtyp = 'raw';
@@ -15,13 +18,17 @@ end
 % Convert shorthand ictyp to cannonical
 ictyp = ictyp2ictyp(ictyp);
 
+% Load the settings file
+settings = json.read(settingsfname);
+
 % MAIN --------------------------------------------------------------------
 mydir = getDataDir();
 
 % Load cleaning parameters
 ClnMeta = loadClnMeta(subj);
 
-if ~isempty(strfind(modtyp,'cln')) && ClnMeta.needcln
+if ~isempty(strfind(modtyp,'cln')) && ClnMeta.needcln && ...
+        ~strcmp(settings.VERSION,'_v1') && ~strcmp(settings.VERSION,'_v2')
     % Pre-cleaned file
     mydir = fullfile(mydir,'cln');
     fname_format = ['cln_' subj '_' ictyp '_*.mat'];

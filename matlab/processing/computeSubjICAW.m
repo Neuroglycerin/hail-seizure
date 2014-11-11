@@ -48,7 +48,7 @@ ppfunc = getPreprocFunc(modtyp, subj);
 % Get a list of all the filenames in the ictypes we will use --------------
 fnamelist = {};
 for iTyp=1:length(ictypuse)
-    icfnamelist = dircat(subj, ictypuse{iTyp});
+    icfnamelist = dircat(subj, ictypuse{iTyp}, modtyp);
     fnamelist = [fnamelist(:); icfnamelist(:)];
 end
 
@@ -117,7 +117,7 @@ end;
 % Get a list of all the filenames in all the ictypes ----------------------
 fnamelist = {};
 for iTyp=1:length(ictypall)
-    icfnamelist = dircat(subj, ictypall{iTyp});
+    icfnamelist = dircat(subj, ictypall{iTyp}, modtyp);
     fnamelist = [fnamelist(:); icfnamelist(:)];
 end
 
@@ -1547,9 +1547,9 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function x = dircat(subj, ictyp)
+function x = dircat(subj, ictyp, modtyp)
 
-[fnames, mydir] = subjtyp2dirs(subj, ictyp, 'raw');
+[fnames, mydir] = subjtyp2dirs(subj, ictyp, modtyp);
 nFle = length(fnames);
 x = cell(nFle,1);
 for iFle=1:nFle;

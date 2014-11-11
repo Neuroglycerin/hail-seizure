@@ -411,7 +411,7 @@ end
 function p = getFeatMeta(featname,subj)
 
     % Load and process data for one file
-    [fnames, mydir] = subjtyp2dirs(subj, 'pre');
+    [fnames, mydir] = subjtyp2dirs(subj, 'pre', 'raw');
     if isempty(fnames);
         p = struct([]);
         return;
