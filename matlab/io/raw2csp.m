@@ -39,7 +39,7 @@ else
     Wfname = ['csp_weights_' subj '_' fullmodlst(1:k-2) '.mat'];
 end
 
-Wfnamefull = fullfile(mydir,Wfname)
+Wfnamefull = fullfile(mydir,Wfname);
 
 % Check the file exists
 if ~exist(Wfnamefull,'file');
