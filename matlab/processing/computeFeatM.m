@@ -143,6 +143,10 @@ parfor iFle=1:nFle
                 featfunc(splitPart(Dat,iPrt,prtlen), inparams);
         end
     end
+    % Remove cln_ from beginning of filename
+    if strncmp(myfname,'cln_',4)
+        myfname = myfname(5:end);
+    end
     % Add to the cell
     featM(iFle, :) = {myfname, feat_vec};
     % Note that we managed to do this file
