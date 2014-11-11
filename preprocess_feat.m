@@ -6,15 +6,20 @@ addpath(genpath('matlab'));
 logfname = fullfile('train',sprintf('featureprocessinglog-%s.txt',datestr(now,30)));
 
 subj = subjnames();
+subj = {'Patient_2'};
 
-modtyps = {'raw','ica'};
+% modtyps = {'raw','ica'};
 % modtyps = {'ica'};
+% modtyps = {'csp'};
+% modtyps = {'cln,raw,dwn','ica,raw,dwn','cln,csp,dwn'};
+% modtyps = {'cln,raw,dwn'};
+modtyps = {'cln,csp,dwn'};
 
 % ictypes = {'preictal'; 'interictal'; 'test'};
 % ictypes = {'pseudopreictal'; 'pseudointerictal';};
 ictypes = {'preictal'; 'interictal'; 'test'; 'pseudopreictal'; 'pseudointerictal';};
 
-nSplits = 1;
+nSplits = 10;
 
 feature_funcs = {
     @feat_var;
@@ -22,33 +27,33 @@ feature_funcs = {
     @feat_lmom;
     @feat_corrcoef;
     @feat_corrcoefeig;
-    @feat_pib;
     @feat_pib_ratioBB;
-    @feat_pib_ratio;
+    @feat_mvar;
+    @feat_phase;
+    @feat_ampcorrcoef
     @feat_psd_logf;
     @feat_coher_logf;
+    @feat_pib
+    @feat_pib_ratio
     @feat_act;
     @feat_xcorr;
     @feat_PSDlogfcorrcoef;
     @feat_PSDlogfcorrcoefeig;
+    @feat_pwling4
+    @feat_spearman
     @feat_PSDcorrcoef;
     @feat_PSDcorrcoefeig;
-    @feat_FFT;
     @feat_FFTcorrcoef;
     @feat_FFTcorrcoefeig;
-    @feat_pwling4;
     @feat_pwling5;
     @feat_pwling2;
     @feat_pwling1;
     @feat_ilingam;
+    @feat_emvar
+    @feat_FFT;
     @feat_psd;
     @feat_coher;
     };
-
-feature_funcs = {
-    @feat_pwling1;
-%    @feat_ilingam;
-     };
 
 matlabpool('local',12);
 
@@ -77,7 +82,7 @@ for iFun = 1:numel(feature_funcs)
         if nSplits~=1
             myfeat = [num2str(nSplits) myfeat];
         end
-	%computeInfoAddToHDF5(myfeat, subj{iSub}, modtyp);
+	% computeInfoAddToHDF5(myfeat, subj{iSub}, modtyp);
     end
     tme = toc(tic2);
     tme = tme/60/60;
