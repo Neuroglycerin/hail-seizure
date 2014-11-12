@@ -136,5 +136,35 @@ def main(start=None,verbose=True,logfile=None):
         utils.print_verbose("================================",flag=verbose)
         #otherwise it will not overwrite prevsample, so continue from where it was
 
+def get_parser():
+    '''
+    Generate parser for cmdline options.
+    '''
+    parser = optparse.OptionParser()
+
+    parser.add_option("-v", "--verbose",
+                      action="store_true",
+                      dest="verbose",
+                      default=False,
+                      help="Print verbose output")
+
+    parser.add_option("-s", "--start",
+                      action="store",
+                      dest="start",
+                      default="SETTINGS.json",
+                      help="Settings file to start at in JSON format"
+                      "(default=SETTINGS.json)")
+
+    parser.add_option("-l", "--log",
+                      action="store",
+                      dest="log",
+                      default="stoch_opt.log",
+                      help="Log file for verbose output of script"
+                      "(default=stoch_opt.log)")
+    return parser
+
+
 if __name__ == "__main__":
-    main()
+    parser = utils.get_parser()
+    (opts, args) = parser.parse_args()
+    main(start=opts.start,verbose=opts.verbose,logfile=opts.log)
