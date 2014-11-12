@@ -9,6 +9,7 @@ import numpy as np
 import copy
 import hashlib
 import glob
+from python import utils
 
 def main(start=None,verbose=True):
     """
@@ -53,11 +54,13 @@ def main(start=None,verbose=True):
             random.shuffle(features)
             dropped = features.pop()
             sample['FEATURES'] = features
+            utils.print_verbose("Dropped feature {0}".format(dropped),flag=verbose)
         elif u > 0.25 and u < 0.5:
             # push a new feature, but don't remove an old one
             newfeature = random.sample(featlist,1)[0]
             newmod = random.sample(modlist,1)[0]
-            sample['FEATURES'].append('{0}_{1}_'.format(newmod, newfeature))           
+            sample['FEATURES'].append('{0}_{1}_'.format(newmod, newfeature)) 
+            utils.print_verbose("Added feature {0}".format(dropped),flag=verbose)
         elif u > 0.5:
             # push a new feature and remove an old one
             features = sample['FEATURES'][:]
@@ -65,8 +68,11 @@ def main(start=None,verbose=True):
             dropped = features.pop()
             newfeature = random.sample(featlist,1)[0]
             newmod = random.sample(modlist,1)[0]
-            features.append('{0}_{1}_'.format(newmod, newfeature))
+            added = '{0}_{1}_'.format(newmod, newfeature)
+            features.append(added)
             sample['FEATURES'] = features
+            utils.print_verbose("Switched feature {0} for "
+                    "{1}".format(dropped,added),flag=verbose)
 
         # ensure that ordering of the features is the same between jsons
         sample['FEATURES'].sort()
@@ -81,6 +87,8 @@ def main(start=None,verbose=True):
             # then load the results of that run
             with open(os.path.join(mcmcdir,"AUC_scores.csv"),"r") as fh:
                 c = csv.reader(fh, delimiter="\t")
+                utils.print_verbose("Already ran {0},"
+                        "reading from results.".format(md5name),flag=verbose)
                 for line in c:
                     # look for that md5sum
                     if md5name in line[0]:
@@ -88,6 +96,8 @@ def main(start=None,verbose=True):
         else:
             # save a json with this name and run train.py on it
             samplefname = os.path.join(mcmcdir,md5name+".json")
+            utils.print_verbose("Creating new settings"
+                    " file for {0}".format(samplefname))
             with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
             # call train.py
@@ -103,13 +113,15 @@ def main(start=None,verbose=True):
         # compute acceptance probability from AUC:
         #     r = min(1,AUC/(previous AUC))
         acceptance = np.max([np.min([1,(auc_score-0.5)/(prevauc-0.5)]), 0])
-        # save current auc
-        prevauc = auc_score
+        utils.print_verbose("accepting new settings with probability "
+                "{0}".format(acceptance),flag=verbose)
 
         u = np.random.rand()
         # accept new point with probability r
         if u < acceptance:
             prevsample = sample
+            # save current auc
+            prevauc = auc_score
         
         #otherwise it will not overwrite prevsample, so continue from where it was
 
