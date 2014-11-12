@@ -4,7 +4,7 @@ import python.utils as utils
 import os
 import pickle
 
-def main(opts):
+def main(settings,verbose=False):
 
     settings = utils.get_settings(opts.settings)
 
@@ -118,4 +118,4 @@ if __name__=='__main__':
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
-    main(opts)
+    main(opts.settings,verbose=settings.verbose)
