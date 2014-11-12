@@ -10,7 +10,7 @@ import copy
 import hashlib
 import glob
 
-def main(start=None,verbose=False):
+def main(start=None,verbose=True):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
@@ -49,7 +49,7 @@ def main(start=None,verbose=False):
         u = np.random.rand()
         if u < 0.25:
             # drop an element at random
-            features = sample['features'][:]
+            features = sample['FEATURES'][:]
             random.shuffle(features)
             dropped = features.pop()
             sample['FEATURES'] = features
@@ -57,15 +57,15 @@ def main(start=None,verbose=False):
             # push a new feature, but don't remove an old one
             newfeature = random.sample(featlist,1)[0]
             newmod = random.sample(modlist,1)[0]
-            sample['FEATURES'].append('{0}_{1}_'.format(modtyp, feature))           
+            sample['FEATURES'].append('{0}_{1}_'.format(newmod, newfeature))           
         elif u > 0.5:
             # push a new feature and remove an old one
-            features = sample['features'][:]
+            features = sample['FEATURES'][:]
             random.shuffle(features)
             dropped = features.pop()
             newfeature = random.sample(featlist,1)[0]
             newmod = random.sample(modlist,1)[0]
-            features.append('{0}_{1}_'.format(modtyp, feature))
+            features.append('{0}_{1}_'.format(newmod, newfeature))
             sample['FEATURES'] = features
 
         # ensure that ordering of the features is the same between jsons
@@ -87,15 +87,16 @@ def main(start=None,verbose=False):
                         auc_score = line[-1]
         else:
             # save a json with this name and run train.py on it
-            with open(os.path.join(mcmcdir,md5name+".json"), "w") as fh:
+            samplefname = os.path.join(mcmcdir,md5name+".json")
+            with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
             # call train.py
-            auc_score_dict = train(sample,verbose=verbose)
+            auc_score_dict = train.main(samplefname,verbose=verbose)
             auc_score = auc_score_dict['all']
 
         # compute acceptance probability from AUC:
         #     r = min(1,AUC/(previous AUC))
-        acceptance = np.max([np.min([1,(auc_score-0.5)/(prevauc-0.5)]), 0]
+        acceptance = np.max([np.min([1,(auc_score-0.5)/(prevauc-0.5)]), 0])
         # save current auc
         prevauc = auc_score
 
