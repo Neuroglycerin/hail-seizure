@@ -112,6 +112,8 @@ def main(settings,verbose=False):
 
     utils.output_auc_scores(auc_scores, settings)
 
+    return auc_scores
+
 if __name__=='__main__':
 
     #get and parse CLI options
