@@ -27,8 +27,7 @@ def get_default_settings():
                           "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
         }
     return defaultsettings
-    
-    
+
 def get_featlist():
     '''
     Provides a list of all feature names.
@@ -113,8 +112,7 @@ def get_featlist():
                 'feat_xcorr-ypeak',
                 ]
     return featlist
-    
-    
+
 def get_modlist():
     '''
     Provides a list of all proprocessing models which can be used.
