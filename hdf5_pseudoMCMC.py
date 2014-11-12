@@ -126,7 +126,8 @@ def main(start=None,verbose=True):
             prevauc = auc_score
             utils.print_verbose("accepting new settings with probability "
                 "{0}".format(acceptance),flag=verbose)       
-        utils.print_verbose("rejecting new settings with probability "
+        else:
+            utils.print_verbose("rejecting new settings with probability "
                 "{0}".format(1.0-acceptance),flag=verbose)       
         utils.print_verbose("================================",flag=verbose)
         #otherwise it will not overwrite prevsample, so continue from where it was
