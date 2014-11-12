@@ -91,8 +91,14 @@ def main(start=None,verbose=True):
             with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
             # call train.py
-            auc_score_dict = train.main(samplefname,verbose=verbose)
-            auc_score = auc_score_dict['all']
+            try:
+                auc_score_dict = train.main(samplefname,verbose=verbose)
+                auc_score = auc_score_dict['all']
+            except IndexError:
+                print("Warning: accidentally added invalid feature.")
+                os.remove(samplefname) 
+                # set auc to zero so these settings are not accepted
+                auc_score = 0
 
         # compute acceptance probability from AUC:
         #     r = min(1,AUC/(previous AUC))
