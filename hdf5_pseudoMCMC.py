@@ -47,6 +47,8 @@ def main(start=None,verbose=True):
         sample = copy.deepcopy(prevsample)
         # Sample a new hdf5 and replace existing at random
         #   Or, just push it in, or just drop a hdf5 at random
+        utils.print_verbose("##### Sampling new proposal "
+                "settings ######",flag=verbose)
         u = np.random.rand()
         if u < 0.25:
             # drop an element at random
@@ -73,7 +75,8 @@ def main(start=None,verbose=True):
             sample['FEATURES'] = features
             utils.print_verbose("Switched feature {0} for "
                     "{1}".format(dropped,added),flag=verbose)
-
+        utils.print_verbose("############################"
+                "###############",flag=verbose)
         # ensure that ordering of the features is the same between jsons
         sample['FEATURES'].sort()
 
@@ -110,11 +113,10 @@ def main(start=None,verbose=True):
                 # set auc to zero so these settings are not accepted
                 auc_score = 0
 
+        utils.print_verbose("#### Acceptance calculation ####",flag=verbose)
         # compute acceptance probability from AUC:
         #     r = min(1,AUC/(previous AUC))
         acceptance = np.max([np.min([1,(auc_score-0.5)/(prevauc-0.5)]), 0])
-        utils.print_verbose("accepting new settings with probability "
-                "{0}".format(acceptance),flag=verbose)
 
         u = np.random.rand()
         # accept new point with probability r
@@ -122,7 +124,11 @@ def main(start=None,verbose=True):
             prevsample = sample
             # save current auc
             prevauc = auc_score
-        
+            utils.print_verbose("accepting new settings with probability "
+                "{0}".format(acceptance),flag=verbose)       
+        utils.print_verbose("rejecting new settings with probability "
+                "{0}".format(1.0-acceptance),flag=verbose)       
+        utils.print_verbose("################################",flag=verbose)
         #otherwise it will not overwrite prevsample, so continue from where it was
 
 if __name__ == "__main__":
