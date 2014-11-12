@@ -6,11 +6,11 @@ import pickle
 
 def main(settings,verbose=False):
 
-    settings = utils.get_settings(opts.settings)
+    settings = utils.get_settings(settings)
 
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(settings, verbose=opts.verbose)
+    data = utils.get_data(settings, verbose=verbose)
 
     metadata = utils.get_metadata()
 
@@ -19,13 +19,13 @@ def main(settings,verbose=False):
 
     settings['FEATURES'] = features_that_parsed
 
-    utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
+    utils.print_verbose("=====Feature HDF5s parsed=====", flag=verbose)
 
     model_pipe = utils.build_model_pipe(settings)
 
     utils.print_verbose("=== Model Used ===\n"
     "{0}\n==================".format(model_pipe),
-                        flag=opts.verbose)
+                        flag=verbose)
 
     #dictionary to store results
     subject_predictions = {}
@@ -34,7 +34,7 @@ def main(settings,verbose=False):
 
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
-                            flag=opts.verbose)
+                            flag=verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -91,7 +91,7 @@ def main(settings,verbose=False):
         utils.serialise_trained_model(model_pipe,
                                       subject,
                                       settings,
-                                      verbose=opts.verbose)
+                                      verbose=verbose)
 
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
@@ -118,4 +118,4 @@ if __name__=='__main__':
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
-    main(opts.settings,verbose=settings.verbose)
+    main(opts.settings,verbose=opts.verbose)
