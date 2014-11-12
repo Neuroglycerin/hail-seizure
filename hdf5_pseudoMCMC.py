@@ -10,14 +10,17 @@ import copy
 import hashlib
 import glob
 from python import utils
+import sys
 
-def main(start=None,verbose=True):
+def main(start=None,verbose=True,logfile=None):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
     combinations of HDF5s.
     start - location of json file settings to begin at
     """
+    if logfile != None:
+        sys.stdout = open(logfile,"w")
     # pseudo-code for the MCMC iteration
     # want it to start with the probably good features
     if start == None:

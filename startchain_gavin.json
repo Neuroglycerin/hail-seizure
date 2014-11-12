@@ -1,6 +1,6 @@
 {   
     "R_SEED" : 5440,
-    "TRAIN_DATA_PATH": "/home/gavin/drive/neuroglycerin-data/",
+    "TRAIN_DATA_PATH": "/disk/data2/neuroglycerin/hail-seizure/train",
     "MODEL_PATH": "model",
     "SUBJECTS": ["Dog_1",
                  "Dog_2",
