@@ -4,7 +4,7 @@ import python.utils as utils
 import os
 import pickle
 
-def main(settings,verbose=False):
+def main(settings,verbose=False,store_models=True):
 
     settings = utils.get_settings(settings)
 
@@ -83,15 +83,16 @@ def main(settings,verbose=False):
         # add AUC scores to a subj dict
         auc_scores.update({subject: auc})
 
-        # fit the final model
-        weights = utils.get_weights(y)
+        if store_models:
+            # fit the final model
+            weights = utils.get_weights(y)
 
-        # save it
-        model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(model_pipe,
-                                      subject,
-                                      settings,
-                                      verbose=verbose)
+            # save it
+            model_pipe.fit(X,y,clf__sample_weight=weights)
+            utils.serialise_trained_model(model_pipe,
+                                          subject,
+                                          settings,
+                                          verbose=verbose)
 
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
