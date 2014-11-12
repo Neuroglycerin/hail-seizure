@@ -61,8 +61,9 @@ def main(start=None,verbose=True):
             # push a new feature, but don't remove an old one
             newfeature = random.sample(featlist,1)[0]
             newmod = random.sample(modlist,1)[0]
-            sample['FEATURES'].append('{0}_{1}_'.format(newmod, newfeature)) 
-            utils.print_verbose("Added feature {0}".format(dropped),flag=verbose)
+            added = '{0}_{1}_'.format(newmod, newfeature)
+            sample['FEATURES'].append(added)
+            utils.print_verbose("Added feature {0}".format(added),flag=verbose)
         elif u > 0.5:
             # push a new feature and remove an old one
             features = sample['FEATURES'][:]
