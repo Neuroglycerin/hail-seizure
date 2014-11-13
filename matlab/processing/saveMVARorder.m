@@ -28,8 +28,8 @@ function [allsbc, allfpe, allavg, avgorder, avgorder1, avgorder0] = computeMVARo
 ppfunc = getPreprocFunc(modtyp, subj);
 
 % Get a list of files
-[fnames1       ] = subjtyp2dirs(subj, 'preictal');
-[fnames0, mydir] = subjtyp2dirs(subj, 'interictal');
+[fnames1       ] = subjtyp2dirs(subj, 'preictal', modtyp);
+[fnames0, mydir] = subjtyp2dirs(subj, 'interictal', modtyp);
 
 fnames = [fnames1(:); fnames0(:)];
 nFle = length(fnames);

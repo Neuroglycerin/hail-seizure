@@ -256,7 +256,7 @@ end
 function [x,nChn,xscl,xlbl,ylbl] = getFeatMeta(featname,subj)
 
     % Load and process data for one file
-    [fnames, mydir] = subjtyp2dirs(subj, 'pre');
+    [fnames, mydir] = subjtyp2dirs(subj, 'pre', 'raw');
     if isempty(fnames); return; end;
     Dat = loadSegFile(fullfile(mydir,fnames{1}));
     nChn = size(Dat.data,1);

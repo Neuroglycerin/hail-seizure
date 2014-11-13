@@ -7,6 +7,11 @@ settingsfname = 'SETTINGS.json';
 % Load the settings file
 settings = json.read(settingsfname);
 
+% Versions 3 and higher load precleaned files from disk
+if ~strcmp(settings.VERSION,'_v1') && ~strcmp(settings.VERSION,'_v2')
+    fullmodlst = strrep(fullmodlst,'cln','precln');
+end
+
 % Look up where the settings file is: that is the root directory and
 % paths inside it are relative to its locations
 distrodir = fileparts(which(settingsfname));
