@@ -5,6 +5,7 @@ import json
 import glob
 import train
 import csv
+import numpy as np
 
 def main(settings_file='SETTINGS.json'):
 
@@ -23,6 +24,17 @@ def main(settings_file='SETTINGS.json'):
     features_that_parsed = list(data.keys())
     settings['FEATURES'] = [feature for feature in settings['FEATURES'] \
             if feature in features_that_parsed]
+    
+    # check if features are 1-minute
+    if all('10feat' in feature for feature in settings['FEATURES']):
+        # set the flage
+        minutefeatures = True
+    elif not all('10feat' in feature for feature in settings['FEATURES']) and \
+        any('10feat' in feature for feature in settings['FEATURES']):
+        raise ValueError("Cannot mix 1-minute and 10-minute features.")
+    else:
+        minutefeatures = False
+
     # iterate over subjects
     prediction_dict = {}
 
@@ -37,6 +49,21 @@ def main(settings_file='SETTINGS.json'):
 
         # make predictions
         predictions = model.predict_proba(X)
+
+        # if using minute features combine the estimates
+        # on each segment by averaging
+        if minutefeatures:
+            segmentdict = {}
+            for segment,prediction in zip(assembler.test_segments, predictions):
+                if segment not in segmentdict:
+                    segmentdict[segment] = []
+                segmentdict[segment].append(prediction)
+            # gathered all predictions corresponding to a segment together
+            # now average them along their columns
+            for segment in assembler.test_segments:
+                segmentdict[segment] = np.vstack(segmentdict[segment])
+                segmentdict[segment] = np.mean(segmentdict[segment],axis=0)
+
         for segment, prediction in zip(assembler.test_segments, predictions):
             prediction_dict[segment] = prediction
 
