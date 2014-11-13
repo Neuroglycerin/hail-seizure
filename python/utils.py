@@ -38,6 +38,13 @@ def get_parser():
                       default="SETTINGS.json",
                       help="Settings file to use in JSON format (default="
                             "SETTINGS.json)")
+
+    parser.add_option("-p", "--pickle",
+                      action="store",
+                      dest="pickle_detailed",
+                      default=False,
+                      help="Pickle file to save detailed training results"
+                      " for further analysis (default=False)")
     return parser
 
 def get_settings(settings_file):
@@ -301,6 +308,15 @@ class DataAssembler:
         self.data = data
         self.metadata = metadata
 
+        # check if we're using minute long features
+        if all('10feat' in feature for feature in settings['FEATURES']):
+            self.minutefeatures = True
+        elif any('10feat' in feature for feature in settings['FEATURES']) and not \
+             all('10feat' in feature for feature in settings['FEATURES']):
+            raise ValueError("Cannot mix 1 minute and 10 minute features.")
+        else:
+            self.minutefeatures = False
+
         # parse for segment tuple/list
         self.segments = self._parse_segment_names()
 
@@ -325,10 +341,24 @@ class DataAssembler:
             segments[subject] = {}
             for ictyp in self.settings['DATA_TYPES']:
                 segments[subject][ictyp] = []
+        # get full list of possible segments
         all_segments = self._scrape_segments()
+        
+        # check flag for 1-minute segment features
+        if self.minutefeatures:
+            # there are 9 minute samples in pseudo segments
+            # and 10 in regular segments
+            self.minutemod = {'preictal':10,'interictal':10,
+                    'test':10,'pseudopreictal':9,'pseudointerictal':9}
+        else:
+            self.minutemod = {'preictal':1,'interictal':1,
+                    'test':1,'pseudopreictal':1,'pseudointerictal':1}
+
         # This will fix the order of the segments
         # iterate over all possible segments
         for segment in all_segments:
+            # ensure test is specified as ictyp
+            # and the subject is correct for test segments
             if 'test' in segment:
                 ictyp = 'test'
                 subject = [subject for subject in self.settings['SUBJECTS'] \
@@ -342,7 +372,7 @@ class DataAssembler:
                 ictyp = self.metadata[segment_key]['ictyp']
                 # store in the dictionary of dictionaries
             if ictyp in self.settings['DATA_TYPES']:
-                segments[subject][ictyp] += [segment]
+                segments[subject][ictyp] += [segment]*self.minutemod[ictyp]
 
         # then enforce tuple
         for subject in segments.keys():
@@ -423,13 +453,34 @@ class DataAssembler:
         Output:
         * X_part - part of the X matrix
         """
+        if self.minutefeatures:
+            # initialise dictionary for features
+            segment10feature = {}
+        
         # iterate over segments and build the X_part matrix
         rows = []
         for segment in self.segments[subject][ictyp]:
-            # first flatten whatever is in the array returned
-            row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
-            # gather up all the rows in the right order
-            rows += [row]
+            # check if the flag for 1-minute segments is set
+            if self.minutefeatures:
+                # if new segment initialise dictionary item
+                if segment not in segment10feature:
+                    # list of arrays for each minute
+                    minute_segment_list = [ \
+                            self.data[feature][subject][ictyp][segment][:,:,i] \
+                            for i in range(self.minutemod[ictyp])]
+                    segment10feature[segment] = minute_segment_list
+                    # pop an element off the list and flatten
+                    row = np.ndarray.flatten(segment10feature[segment].pop())
+                    rows += [row]
+                # if not pop another array off the dictionary
+                else:
+                    row = np.ndarray.flatten(segment10feature[segment].pop())
+                    rows += [row]
+            else:
+                # first flatten whatever is in the array returned
+                row = np.ndarray.flatten(self.data[feature][subject][ictyp][segment])
+                # gather up all the rows in the right order
+                rows += [row]
         # stack up all the rows
         X_part = np.vstack(rows)
 
@@ -947,4 +998,38 @@ def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
     else:
         return KL
 
+def reliability_plot(predictions, labels):
+    """
+    Returns lists for plotting a reliability chart.
+    Does not actually plot it for you.
+    Splits into bins and plots the mean predicted value
+    against the true fraction of positive cases.
+    Input:
+    * predictions
+    * labels
+    Output:
+    * x
+    * y
+    """
+    # split both arrays into bins:
+    edges = np.linspace(0,1,21)
+    # store results in nice simple lists
+    x = []
+    y = []
+    # this is very inefficient, but it doesn't matter
+    # improves readability
+    for ledge, hedge in zip(edges[:-1],edges[1:]):
+        binned_predictions = []
+        binned_labels = []
+        for prediction, label in zip(predictions,labels):
+            if prediction > ledge and prediction < hedge:
+                binned_predictions.append(prediction)
+                binned_labels.append(label)
+        # avoid empty bins
+        if binned_predictions != []:
+            mean_predicted = np.mean(binned_predictions)
+            fraction_positive = sum(binned_labels)/len(binned_labels)
+            x.append(mean_predicted)
+            y.append(fraction_positive)
 
+    return x,y
