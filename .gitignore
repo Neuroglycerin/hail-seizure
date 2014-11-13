@@ -1,4 +1,5 @@
 # Folders
+binary_combos/*.json
 train/*
 plots/*
 model/*
