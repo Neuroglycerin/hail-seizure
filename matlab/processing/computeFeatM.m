@@ -27,7 +27,7 @@ else
 end
 
 % Get a list of files
-[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp);
+[fnames, mydir, segIDs] = subjtyp2dirs(subj, ictyp, modtyp);
 nFle = length(fnames);
 
 % Parallelised feature computation ----------------------------------------
@@ -142,6 +142,10 @@ parfor iFle=1:nFle
             feat_vec(part_siz(1)*(iPrt-1)+(1:part_siz(1)), cln{:}) = ...
                 featfunc(splitPart(Dat,iPrt,prtlen), inparams);
         end
+    end
+    % Remove cln_ from beginning of filename
+    if strncmp(myfname,'cln_',4)
+        myfname = myfname(5:end);
     end
     % Add to the cell
     featM(iFle, :) = {myfname, feat_vec};
