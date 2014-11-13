@@ -26,7 +26,7 @@ switch lower(submodtyp)
         func = @(x)x;
     case 'cln'
         % Clean. Remove line noise and really low frequencies.
-        func = @(x) raw2cln(x);
+        func = @(x) raw2cln(x, subj);
     case 'dwn'
         % Downsample to 400Hz
         func = @(x) raw2dwn(x);

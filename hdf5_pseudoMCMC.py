@@ -11,8 +11,9 @@ import hashlib
 import glob
 from python import utils
 import sys
+import optparse
 
-def main(start=None,verbose=True,logfile=None):
+def main(start=None,start_auc=None,verbose=True,logfile=None):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
@@ -23,9 +24,9 @@ def main(start=None,verbose=True,logfile=None):
         sys.stdout = open(logfile,"w")
     # pseudo-code for the MCMC iteration
     # want it to start with the probably good features
-    if start == None:
-        with open("startchain_gavin.json") as f:
-            start = json.load(f)
+    with open(start) as f:
+        start = json.load(f)
+    if start_auc == None:
         startauc = 0.86575473285
     mcmcdir = "hdf5mcmc"
 
@@ -43,6 +44,7 @@ def main(start=None,verbose=True,logfile=None):
     # initialise auc
     prevauc = startauc
 
+    counter = 0
     converged = False
     # will decide what constitutes converged later
     while not converged:
@@ -109,7 +111,7 @@ def main(start=None,verbose=True,logfile=None):
                 json.dump(sample, fh)
             # call train.py
             try:
-                auc_score_dict = train.main(samplefname,verbose=verbose)
+                auc_score_dict = train.main(samplefname,verbose=verbose,store_models=False)
                 auc_score = auc_score_dict['all']
             except IndexError:
                 print("Warning: accidentally added invalid feature.")
@@ -136,6 +138,11 @@ def main(start=None,verbose=True,logfile=None):
         utils.print_verbose("================================",flag=verbose)
         #otherwise it will not overwrite prevsample, so continue from where it was
 
+        # as it may be bad manners to run infinite loops
+        counter += 1
+        if counter > 100:
+            converged = True
+
 def get_parser():
     '''
     Generate parser for cmdline options.
@@ -151,20 +158,27 @@ def get_parser():
     parser.add_option("-s", "--start",
                       action="store",
                       dest="start",
-                      default="SETTINGS.json",
+                      default="startchain_gavin.json",
                       help="Settings file to start at in JSON format"
-                      "(default=SETTINGS.json)")
+                      "(default=startchain_gavin.json)")
+
+    parser.add_option("-a", "--start_auc",
+                      action="store",
+                      dest="start_auc",
+                      default=None,
+                      help="AUC score of settings file starting the chain at"
+                      "(default=None)")
 
     parser.add_option("-l", "--log",
                       action="store",
                       dest="log",
-                      default="stoch_opt.log",
+                      default=None,
                       help="Log file for verbose output of script"
-                      "(default=stoch_opt.log)")
+                      "(default=None)")
     return parser
 
 
 if __name__ == "__main__":
-    parser = utils.get_parser()
+    parser = get_parser()
     (opts, args) = parser.parse_args()
-    main(start=opts.start,verbose=opts.verbose,logfile=opts.log)
+    main(start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)

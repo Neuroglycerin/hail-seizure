@@ -48,7 +48,7 @@ ppfunc = getPreprocFunc(modtyp, subj);
 % Get a list of all the filenames in the ictypes we will use --------------
 fnamelist = {};
 for iTyp=1:length(ictypuse)
-    icfnamelist = dircat(subj, ictypuse{iTyp});
+    icfnamelist = dircat(subj, ictypuse{iTyp}, modtyp);
     fnamelist = [fnamelist(:); icfnamelist(:)];
 end
 
@@ -62,20 +62,18 @@ for iFle=1:nFle
         fprintf('Loading file %3d/%3d\n',iFle,nFle);
     end
     % Load the saved matfile
-    Dat = load(fnamelist{iFle});
-    % Matfile contains a structure named the same as the file
-    f = fieldnames(Dat);
+    Dat = loadSegFile(fnamelist{iFle});
     % Apply the preprocessing function
-    Dat.(f{1}) = ppfunc(Dat.(f{1}));
+    Dat = ppfunc(Dat);
     % Check how many datapoints there are
-    datlen = size(Dat.(f{1}).data,2);
+    datlen = size(Dat.data,2);
     % Initialise the holding matrix
     if iFle==1
         if dbgmde; fprintf('Making RAM available for large dataset\n'); end
-        mixedsig = nan(size(Dat.(f{1}).data,1), datlen*nFle);
+        mixedsig = nan(size(Dat.data,1), datlen*nFle);
     end
     % Take the data out of the structure in the structure
-    mixedsig(:,fleSrtIdx(iFle)+(0:datlen-1)) = Dat.(f{1}).data;
+    mixedsig(:,fleSrtIdx(iFle)+(0:datlen-1)) = Dat.data;
     % Note where the next file should start its entry
     fleSrtIdx(iFle+1) = fleSrtIdx(iFle) + datlen;
 end
@@ -119,7 +117,7 @@ end;
 % Get a list of all the filenames in all the ictypes ----------------------
 fnamelist = {};
 for iTyp=1:length(ictypall)
-    icfnamelist = dircat(subj, ictypall{iTyp});
+    icfnamelist = dircat(subj, ictypall{iTyp}, modtyp);
     fnamelist = [fnamelist(:); icfnamelist(:)];
 end
 
@@ -129,11 +127,11 @@ nFle = length(fnamelist);
 for iFle=1:nFle
     if dbgmde && mod(iFle,100)==0; fprintf('Processing file %3d/%3d\n',iFle,nFle); end
     % Load the saved matfile
-    Dat = load(fnamelist{iFle});
+    Cntr = load(fnamelist{iFle});
     % Matfile contains a structure named the same as the file
-    f = fieldnames(Dat);
+    f = fieldnames(Cntr);
     % Transform the data in the structure in the structure
-    Dat.(f{1}).data = W * Dat.(f{1}).data;
+    Cntr.(f{1}).data = W * Cntr.(f{1}).data;
     % Get new file name
     icafname = raw2icafname(fnamelist{iFle});
     % Make directory if necessary
@@ -1549,9 +1547,9 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function x = dircat(subj, ictyp)
+function x = dircat(subj, ictyp, modtyp)
 
-[fnames, mydir] = subjtyp2dirs(subj, ictyp, 'raw');
+[fnames, mydir] = subjtyp2dirs(subj, ictyp, modtyp);
 nFle = length(fnames);
 x = cell(nFle,1);
 for iFle=1:nFle;
@@ -1575,6 +1573,10 @@ else
     modtyp = ['_' modtyp];
 end
 
+% Versions 3 and higher load precleaned files from disk
+if ~strcmp(settings.VERSION,'_v1') && ~strcmp(settings.VERSION,'_v2')
+    modtyp = strrep(modtyp,'cln','precln');
+end
 mydir = fullfile(getRepoDir(), settings.MODEL_PATH);
 Wfname = ['ica_weights_' subj modtyp];
 
