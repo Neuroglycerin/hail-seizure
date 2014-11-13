@@ -1,7 +1,31 @@
-function Dat = raw2cln(Dat)
+function Dat = raw2cln(Dat, subj)
 
-% Parameters
+% Parameters --------------------------------------------------------------
+settingsfname = 'SETTINGS.json';
 order = 2;
+
+% Main --------------------------------------------------------------------
+% Load the settings file
+settings = json.read(settingsfname);
+
+% =========================================================================
+% Versions 3 and higher load precleaned files from disk
+if ~strcmp(settings.VERSION,'_v1') && ~strcmp(settings.VERSION,'_v2')
+    ClnMeta = loadClnMeta(subj);
+    if ClnMeta.needcln && ~isfield(Dat,'iscln')
+        error('You are in version %s. You should load the pre-cleaned file',settings.VERSION);
+    end
+    if ~ClnMeta.needcln && isfield(Dat,'iscln') && Dat.iscln
+        error('You loaded pre-cleaned data when it did not need cleaning');
+    end
+    % If it was pre-cleaned and supposed to be, we don't need to do anything
+    % If it wasn't pre-cleaned and isn't supposed to be, we don't need to do anything
+    return;
+end
+% =========================================================================
+
+% =========================================================================
+% Versions 2 or lower run this code
 
 % No need to clean if sampling rate is low
 if Dat.sampling_frequency<600

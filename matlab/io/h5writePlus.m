@@ -3,6 +3,9 @@
 % - If dataset already exists, overwrite it
 function h5writePlus(h5fnme, dataset, data)
 
+% fprintf('Going to write to %s the dataset %s\n',h5fnme,dataset);
+% return;
+
 % h5create will throw an error if the dataset already exists
 try
     h5create(h5fnme, dataset, ...

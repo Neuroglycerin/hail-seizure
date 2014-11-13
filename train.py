@@ -4,7 +4,7 @@ import python.utils as utils
 import os
 import pickle
 
-def main(settings,verbose=False,store_models=True):
+def main(settings, verbose=False, store_models=True, save_training_detailed=False):
 
     settings = utils.get_settings(settings)
 
@@ -51,6 +51,7 @@ def main(settings,verbose=False,store_models=True):
         predictions = []
         labels = []
         allweights = []
+        segments = []
 
         # run cross validation and report results
         for train, test in cv:
@@ -66,12 +67,14 @@ def main(settings,verbose=False,store_models=True):
             allweights.append(weights)
             # store true labels
             labels.append(y[test])
-
+            # store segments
+            segments.append(assembler.training_segments[test])
 
         # stack up the results
         predictions = utils.np.vstack(predictions)[:,1]
         labels = utils.np.hstack(labels)
         weights = utils.np.hstack(allweights)
+        segments = utils.np.hstack(segments)
 
         # calculate the total AUC score
         auc = utils.sklearn.metrics.roc_auc_score(labels,
@@ -95,12 +98,16 @@ def main(settings,verbose=False,store_models=True):
                                           verbose=verbose)
 
         #store results from each subject
-        subject_predictions[subject] = (predictions, labels, weights)
+        subject_predictions[subject] = (predictions, labels, weights, segments)
 
 
     #stack subject results (don't worrry about this line)
-    predictions, labels, weights = map(utils.np.hstack,
+    predictions, labels, weights, segments = map(utils.np.hstack,
                                      zip(*list(subject_predictions.values())))
+
+    if save_training_detailed:
+        with open(save_training_detailed, "wb") as fh:
+            pickle.dump((predictions, labels, weights, segments), fh)
 
     # calculate the total AUC score over all subjects
     # not using sample_weight here due to error, should probably be fixed
@@ -121,4 +128,4 @@ if __name__=='__main__':
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
-    main(opts.settings,verbose=opts.verbose)
+    main(opts.settings, verbose=opts.verbose, save_training_detailed=opts.pickle_detailed)
