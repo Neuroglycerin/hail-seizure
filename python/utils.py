@@ -464,10 +464,18 @@ class DataAssembler:
             if self.minutefeatures:
                 # if new segment initialise dictionary item
                 if segment not in segment10feature:
+                    featurearray = self.data[feature][subject][ictyp][segment]
                     # list of arrays for each minute
-                    minute_segment_list = [ \
-                            self.data[feature][subject][ictyp][segment][:,:,i] \
-                            for i in range(self.minutemod[ictyp])]
+                    # how to slice depends on dimensionality
+                    if len(featurearray.shape) == 3:
+                        minute_segment_list = [featurearray[:,:,i] \
+                                for i in range(self.minutemod[ictyp])]
+                    elif len(featurearray.shape) == 2:
+                        minute_segment_list = [featurearray[:,i] \
+                                for i in range(self.minutemod[ictyp])]
+                    else:
+                        raise ValueError("Feature {0} has invalid number of"
+                            " dimensions for a 1-minute feature".format(feature))
                     segment10feature[segment] = minute_segment_list
                     # pop an element off the list and flatten
                     row = np.ndarray.flatten(segment10feature[segment].pop())
