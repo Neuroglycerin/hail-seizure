@@ -4,13 +4,13 @@ import python.utils as utils
 import os
 import pickle
 
-def main(opts):
+def main(settings,verbose=False,store_models=True):
 
-    settings = utils.get_settings(opts.settings)
+    settings = utils.get_settings(settings)
 
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(settings, verbose=opts.verbose)
+    data = utils.get_data(settings, verbose=verbose)
 
     metadata = utils.get_metadata()
 
@@ -19,13 +19,13 @@ def main(opts):
 
     settings['FEATURES'] = features_that_parsed
 
-    utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
+    utils.print_verbose("=====Feature HDF5s parsed=====", flag=verbose)
 
     model_pipe = utils.build_model_pipe(settings)
 
     utils.print_verbose("=== Model Used ===\n"
     "{0}\n==================".format(model_pipe),
-                        flag=opts.verbose)
+                        flag=verbose)
 
     #dictionary to store results
     subject_predictions = {}
@@ -34,7 +34,7 @@ def main(opts):
 
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
-                            flag=opts.verbose)
+                            flag=verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -83,15 +83,16 @@ def main(opts):
         # add AUC scores to a subj dict
         auc_scores.update({subject: auc})
 
-        # fit the final model
-        weights = utils.get_weights(y)
+        if store_models:
+            # fit the final model
+            weights = utils.get_weights(y)
 
-        # save it
-        model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(model_pipe,
-                                      subject,
-                                      settings,
-                                      verbose=opts.verbose)
+            # save it
+            model_pipe.fit(X,y,clf__sample_weight=weights)
+            utils.serialise_trained_model(model_pipe,
+                                          subject,
+                                          settings,
+                                          verbose=verbose)
 
         #store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
@@ -112,10 +113,12 @@ def main(opts):
 
     utils.output_auc_scores(auc_scores, settings)
 
+    return auc_scores
+
 if __name__=='__main__':
 
     #get and parse CLI options
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
-    main(opts)
+    main(opts.settings,verbose=opts.verbose)

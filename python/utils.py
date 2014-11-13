@@ -824,6 +824,9 @@ def get_selector(settings):
     elif 'FOREST' in settings['SELECTION'].keys():
         selector = sklearn.ensemble.ExtraTreesClassifier(\
                 n_estimators=settings['SELECTION']['FOREST'])
+    elif 'SVC' in settings['SELECTION'].keys():
+        # default from sklearn docs
+        selector = sklearn.svm.LinearSVC(C=0.1, penalty="l1", dual=False)
     else:
         raise ValueError("Invalid feature selection"
                 " option: {0}".format(settings['SELECTION']))

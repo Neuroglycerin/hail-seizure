@@ -52,7 +52,6 @@ def main(opts):
     subject_predictions = {}
 
     accuracy_scores = {}
-    KL_scores = {}
 
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
@@ -88,13 +87,12 @@ def main(opts):
             # store true labels
             labels.append(y[test])
 
-
         # stack up the results
         predictions = utils.np.hstack(predictions)
         labels = utils.np.hstack(labels)
         weights = utils.np.hstack(allweights)
 
-        # calculate the total AUC score
+        # calculate the total accuracy
         accuracy = utils.sklearn.metrics.accuracy_score(labels,
                                                   predictions,
                                                   sample_weight=weights)
@@ -117,19 +115,6 @@ def main(opts):
         # store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
-        # calculate KL divergence for this dataset
-        # first calculate parameters of multivariate Gaussian
-        Sigma_train = utils.np.cov(assembler.Xtrain.T)
-        Sigma_test = utils.np.cov(assembler.Xtest.T)
-        mu_train = utils.np.mean(assembler.Xtrain,axis=0)[utils.np.newaxis].T
-        mu_test = utils.np.mean(assembler.Xtest,axis=0)[utils.np.newaxis].T
-        
-        # calculate KL divergence between these two Gaussians and store
-        KL = utils.mvnormalKL(mu_train,mu_test,Sigma_train,Sigma_test)
-        KL_scores.update({subject: KL})
-
-        print("KL divergence between"
-            " training and test for {1}: {0:.3f}".format(KL,subject))
 
     #stack subject results (don't worrry about this line)
     predictions, labels, weights = map(utils.np.hstack,
@@ -147,8 +132,6 @@ def main(opts):
     settings['DISCRIMINATE'] = 'accuracy_scores.csv'
     settings['AUC_SCORE_PATH'] = 'discriminate_scores'
     utils.output_auc_scores(accuracy_scores, settings)
-    settings['DISCRIMINATE'] = 'accuracy_scores.csv'
-    utils.output_auc_scores(KL_scores, settings)
 
 if __name__=='__main__':
 
