@@ -111,7 +111,7 @@ def main(start=None,start_auc=None,verbose=True,logfile=None):
                 json.dump(sample, fh)
             # call train.py
             try:
-                auc_score_dict = train.main(samplefname,verbose=verbose)
+                auc_score_dict = train.main(samplefname,verbose=verbose,store_models=False)
                 auc_score = auc_score_dict['all']
             except IndexError:
                 print("Warning: accidentally added invalid feature.")
