@@ -54,7 +54,7 @@ for iChn1=1:nChn
     % That way when we divide through by it later, we have the error again
     E2(iChn1,iChn1,:) = E1(iChn1,1,:).^2;
     % Only need to do each pair of channels once
-    for iChn2=iChn+1:nChn
+    for iChn2=iChn1+1:nChn
         % Fit an autoregressive model for the pair of channels
         [~, ~, PE] = mvar(Dat.data([iChn1 iChn2],:)', param.modelorder, 2);
         % Find the error for the first channel when both are known
