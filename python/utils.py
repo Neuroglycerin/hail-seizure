@@ -1053,7 +1053,7 @@ def reliability_plot(predictions, labels):
 
     return x,y
 
-def get_feature_ids(names):
+def get_feature_ids(names, pickled=None):
     """
     Takes an array of feature names and
     processes it to create an array of
@@ -1082,4 +1082,7 @@ def get_feature_ids(names):
     indices = np.array(indices)[np.newaxis].T
     names = names[np.newaxis].T
     feature_ids = np.hstack([names,indices])
+    if pickled != None:
+        # add extra pickled ids
+        feature_ids = np.vstack([feature_ids,pickled])
     return feature_ids
