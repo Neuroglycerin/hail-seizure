@@ -21,30 +21,9 @@ def main(opts):
 
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
 
-    elements = []
+    # get model
+    model_pipe = utils.build_model_pipe(settings)
 
-    scaler = utils.get_scaler()
-    elements.append(('scl',scaler))
-
-    if 'THRESHOLD' in settings.keys():
-        thresh = utils.get_thresh()
-        elements.append(('thr',thresh))
-
-    if 'SELECTION' in settings.keys():
-        selector = utils.get_selector(settings)
-        elements.append(('sel',selector))
-
-    # get settings should convert class name string to actual classifier
-    # object
-    classifier = settings['CLASSIFIER']
-    elements.append(('clf',classifier))
-
-    # dict of classifier options - not used yet?
-    classifier_settings = settings['CLASSIFIER_OPTS']
-
-    #utils.sklearn.svm.SVC(probability=True)
-
-    model_pipe = utils.get_model(elements)
     utils.print_verbose("=== Model Used ===\n"
     "{0}\n==================".format(model_pipe),flag=opts.verbose)
 
@@ -102,16 +81,6 @@ def main(opts):
         # add AUC scores to a subj dict
         accuracy_scores.update({subject: accuracy})
 
-        # fit the final model
-        weights = utils.get_weights(y)
-
-        # save it
-        model_pipe.fit(X,y,clf__sample_weight=weights)
-        utils.serialise_trained_model(model_pipe,
-                                      subject,
-                                      settings,
-                                      verbose=opts.verbose)
-
         # store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
@@ -132,6 +101,8 @@ def main(opts):
     settings['DISCRIMINATE'] = 'accuracy_scores.csv'
     settings['AUC_SCORE_PATH'] = 'discriminate_scores'
     utils.output_auc_scores(accuracy_scores, settings)
+
+    return accuracy_scores
 
 if __name__=='__main__':
 
