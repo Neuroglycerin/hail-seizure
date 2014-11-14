@@ -436,11 +436,11 @@ def main():
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
     
-    if len(args.selection)==1
+    if len(args.selection)==1:
         settings["SELECTION"] = {args.selection[1]: None}
-    elif len(args.selection)==2
+    elif len(args.selection)==2:
         settings["SELECTION"] = {args.selection[1]: args.selection[2]}
-    elif not len(args.selection)==0
+    elif not len(args.selection)==0:
         print('Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
     
     settings["THRESHOLD"] = args.threshold
