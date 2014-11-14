@@ -5,9 +5,10 @@ import os
 import pickle
 import pdb
 
-def main(settings, verbose=False, store_models=True, save_training_detailed=False):
+def main(settingsfname, verbose=False, store_models=True,
+        store_features=False, save_training_detailed=False):
 
-    settings = utils.get_settings(settings)
+    settings = utils.get_settings(settingsfname)
 
     subjects = settings['SUBJECTS']
 
@@ -30,6 +31,9 @@ def main(settings, verbose=False, store_models=True, save_training_detailed=Fals
 
     #dictionary to store results
     subject_predictions = {}
+
+    # dictionary to store features in
+    transformed_features = {}
 
     auc_scores = {}
 
@@ -105,7 +109,13 @@ def main(settings, verbose=False, store_models=True, save_training_detailed=Fals
             weights = utils.get_weights(y)
             
             if 'RFE' in settings:
-                utils.serialise_trained_model(rfecv,
+                elements = []
+                elements.append(('scl',model_pipe.named_steps['scl']))
+                if 'thr' in [step[0] for step in model_pipe.steps]:
+                    elements.append(('thr',model_pipe.named_steps['thr']))
+                elements.append(('clf', rfecv))
+                model = utils.sklearn.pipeline.Pipeline(elements)
+                utils.serialise_trained_model(model,
                                               subject,
                                               settings,
                                               verbose=verbose)
@@ -116,6 +126,31 @@ def main(settings, verbose=False, store_models=True, save_training_detailed=Fals
                                               subject,
                                               settings,
                                               verbose=verbose)
+
+        if store_features:
+            # store a transformed version of the features
+            # while at the same time keeping a log of where they came from
+            if 'RFE' in settings:
+                mask = rfecv.support_
+                # Storing as a dictionary using subjects as keys.
+                # Inside each dictionary will be a dictionary
+                # storing the transformed array and an index
+                # describing which feature is which.
+                feature_ids = utils.get_feature_ids(assembler.training_names)
+                feature_ids = feature_ids[mask]
+                Xt = rfecv.transform(Xt)
+                transformed_features[subject] = {'features':Xt, 
+                        'names':feature_ids}
+                # then pickle it
+                if type(store_features) == str:
+                    with open(store_features+".pickle","wb") as fh:
+                        pickle.dump(transformed_features, fh)
+                else:
+                    with open(settingsfname.split(".")[0]
+                            +"_feature_dump.pickle","wb") as fh:
+                        pickle.dump(transformed_features, fh)
+            else:
+                raise ValueError("Storing features without RFE not supported.")
 
         if 'RFE' not in settings:
             #store results from each subject

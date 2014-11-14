@@ -110,7 +110,8 @@ def get_settings(settings_file):
                                sklearn.ensemble.AdaBoostClassifier(\
                                     random_state=settings['R_SEED']),
                        'SVC': sklearn.svm.SVC(probability=True,
-                                              random_state=settings['R_SEED'])}
+                    random_state=settings['R_SEED'])}
+
     # todo: bagging
 
     default_classifier = classifier_objs['SVC']
@@ -123,8 +124,9 @@ def get_settings(settings_file):
         except KeyError:
             warnings.warn("Classifier: {0} (specified in {1}), "
                           "using default instead: {2}".format(settings['CLASSIFIER'],
-                                                              settings_file,
-                                                              str(default_classifier)))
+                                                          settings_file,
+                                                          str(default_classifier)))
+            settings.update({'CLASSIFIER': default_classifier})
     else:
         settings.update({'CLASSIFIER': default_classifier})
 
@@ -800,6 +802,12 @@ class Sequence_CV:
                     warnings.warn("Unable to match {0} to train or test".format(segment))
             yield train, test
 
+    def __len__(self):
+        """
+        Hidden function, should return number of CV folds.
+        """
+        return self.cv.__len__()
+
 def subjsort_prediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
@@ -1041,3 +1049,34 @@ def reliability_plot(predictions, labels):
             y.append(fraction_positive)
 
     return x,y
+
+def get_feature_ids(names):
+    """
+    Takes an array of feature names and
+    processes it to create an array of
+    tuples in which each tuple also contains
+    the index of that feature.
+    Useful for later being able to find this
+    exact feature element.
+    Input:
+    * names - array of feature names
+    Output:
+    * feature_ids - 2d array of feature names and indices
+    """
+    # iterate over array, incrementing counter whenever
+    # feature does not change
+    indices = []
+    counter = 0
+    prevname = names[0]
+    for name in names:
+        if name == prevname:
+            indices.append(counter)
+            counter += 1
+        else:
+            prevname = name
+            counter = 0
+            indices.append(counter)
+    indices = np.array(indices)[np.newaxis].T
+    names = names[np.newaxis].T
+    feature_ids = np.hstack([names,indices])
+    return feature_ids
