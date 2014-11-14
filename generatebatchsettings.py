@@ -317,7 +317,7 @@ def parse_parser():
     
     
 def print_verbose(string, flag=False):
-    '''train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
+    '''
     Print statement only if flag is true
     '''
     if type(flag) is not bool:
@@ -368,7 +368,7 @@ def write_settingsjson(settings, args):
                     shortmodtyp = 'raw'
                 elif modtyp=='cln,ica,dwn':
                     shortmodtyp = 'ica'
-                elif modtyp=='cln,csp,dwn':train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
+                elif modtyp=='cln,csp,dwn':
                     shortmodtyp = 'csp'
                 else:
                     shortmodtyp = modtyp
@@ -406,7 +406,7 @@ def write_settingsjson(settings, args):
             if not args.dosinglemod:
                 fullfeatstrlst = np.array(fullfeatstrlst).flatten()
                 fullfeatstrlst = [fullfeatstrlst]
-                shortfeatstrlst = np.array(shorttrain.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.jsonfeatstrlst).flatten()
+                shortfeatstrlst = np.array(shortfeatstrlst).flatten()
                 shortfeatstrlst = [shortfeatstrlst]
                 
             # Loop over every modtyp
@@ -422,7 +422,7 @@ def write_settingsjson(settings, args):
                     for j in range(args.numcombined):
                         myfeats.append(fullfeatstrlst[iMod][i[j]])
                         myshortfeats.append(shortfeatstrlst[iMod][i[j]])
-                    train.py -s batchallclass_setrain.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.jsonlectBest10/AB_ica_xcorr-twidth.json
+                    
                     settings["FEATURES"] = myfeats
                     
                     ff = '_AND_'.join(myshortfeats)
