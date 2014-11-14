@@ -67,7 +67,7 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
             newmods = [modlist.pop() for i in range(3)]
             # combine the features with the mods
             added = []
-            for feature,mod in zip(newfeatures,newmods)
+            for feature,mod in zip(newfeatures,newmods):
                 added.append('{0}_{1}_'.format(mod, feature))
             # add them to the settings
             sample['FEATURES'] = added
