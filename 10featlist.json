@@ -1,4 +1,4 @@
-"FEATURES": ["cln,csp,dwn_10feat_act_",
+{"FEATURES": ["cln,csp,dwn_10feat_act_",
 "cln,csp,dwn_10feat_ampcorrcoef-alpha-eig_",
 "cln,csp,dwn_10feat_ampcorrcoef-alpha_",
 "cln,csp,dwn_10feat_ampcorrcoef-beta-eig_",
@@ -245,4 +245,4 @@
 "raw_10feat_var_",
 "raw_10feat_xcorr-tpeak_",
 "raw_10feat_xcorr-twidth_",
-"raw_10feat_xcorr-ypeak_"],
+"raw_10feat_xcorr-ypeak_"]}
