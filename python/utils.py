@@ -13,6 +13,7 @@ import sklearn.preprocessing
 import sklearn.cross_validation
 import sklearn.pipeline
 import sklearn.ensemble
+import sklearn.decomposition
 import sklearn.svm
 import sklearn
 import optparse
@@ -345,7 +346,7 @@ class DataAssembler:
                 segments[subject][ictyp] = []
         # get full list of possible segments
         all_segments = self._scrape_segments()
-        
+
         # check flag for 1-minute segment features
         if self.minutefeatures:
             # there are 9 minute samples in pseudo segments
@@ -458,7 +459,7 @@ class DataAssembler:
         if self.minutefeatures:
             # initialise dictionary for features
             segment10feature = {}
-        
+
         # iterate over segments and build the X_part matrix
         rows = []
         for segment in self.segments[subject][ictyp]:
@@ -912,16 +913,18 @@ def build_model_pipe(settings):
     scaler = sklearn.preprocessing.StandardScaler()
     pipe_elements.append(('scl',scaler))
 
-    # optionally use thresholding and feature selector
     if 'THRESHOLD' in settings.keys():
         thresh = sklearn.feature_selection.VarianceThreshold()
         pipe_elements.append(('thr',thresh))
+
+    if 'PCA' in settings.keys():
+        pca_decomp = sklearn.decomposition.PCA(n_components='mle')
+        pipe_elements.append(('pca', pca_decomp))
 
     if 'SELECTION' in settings.keys():
         selector = get_selector(settings)
         pipe_elements.append(('sel',selector))
 
-    # get settings handles the parameterisation of the classifier
     classifier = settings['CLASSIFIER']
     pipe_elements.append(('clf',classifier))
 
