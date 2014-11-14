@@ -63,10 +63,13 @@ def main(start=None,start_auc=None,verbose=True,logfile=None):
             sample['FEATURES'] = features
             utils.print_verbose("Dropped feature {0}".format(dropped),flag=verbose)
         elif u > 0.25 and u < 0.5:
-            # push a new feature, but don't remove an old one
-            newfeature = random.sample(featlist,1)[0]
-            newmod = random.sample(modlist,1)[0]
-            added = '{0}_{1}_'.format(newmod, newfeature)
+            # keep trying to sample a new feature until we 
+            # find one that's not in there already
+            while added in sample['FEATURES']:
+                # push a new feature, but don't remove an old one
+                newfeature = random.sample(featlist,1)[0]
+                newmod = random.sample(modlist,1)[0]
+                added = '{0}_{1}_'.format(newmod, newfeature)
             sample['FEATURES'].append(added)
             utils.print_verbose("Added feature {0}".format(added),flag=verbose)
         elif u > 0.5:
@@ -74,9 +77,12 @@ def main(start=None,start_auc=None,verbose=True,logfile=None):
             features = sample['FEATURES'][:]
             random.shuffle(features)
             dropped = features.pop()
-            newfeature = random.sample(featlist,1)[0]
-            newmod = random.sample(modlist,1)[0]
-            added = '{0}_{1}_'.format(newmod, newfeature)
+            # keep trying to sample a new feature until we 
+            # find one that's not in there already
+            while added in sample['FEATURES']:
+                newfeature = random.sample(featlist,1)[0]
+                newmod = random.sample(modlist,1)[0]
+                added = '{0}_{1}_'.format(newmod, newfeature)
             features.append(added)
             sample['FEATURES'] = features
             utils.print_verbose("Switched feature {0} for "
@@ -106,7 +112,7 @@ def main(start=None,start_auc=None,verbose=True,logfile=None):
             # save a json with this name and run train.py on it
             samplefname = os.path.join(mcmcdir,md5name+".json")
             utils.print_verbose("Creating new settings"
-                    " file for {0}".format(samplefname))
+                    " file for {0}".format(samplefname),flag=verbose)
             with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
             # call train.py
