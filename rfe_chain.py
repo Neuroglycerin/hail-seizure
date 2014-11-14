@@ -52,12 +52,12 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
     while not converged:
 
         sample = copy.deepcopy(prevsample)
-        # Sample a new hdf5 and replace existing at random
-        #   Or, just push it in, or just drop a hdf5 at random
-        utils.print_verbose("===== Sampling new proposal "
-                "settings ======",flag=verbose)
         # If this isn't the first one, sample new settings
         if not first:
+            # Sample a new hdf5 and replace existing at random
+            #   Or, just push it in, or just drop a hdf5 at random
+            utils.print_verbose("===== Sampling new proposal "
+                    "settings ======",flag=verbose)
             # sample new settings
             # shuffle mods and feats
             featlist = random.shuffle(featlist)
@@ -72,8 +72,9 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
             # add them to the settings
             sample['FEATURES'] = added
 
-        utils.print_verbose("============================"
-                "===============",flag=verbose)
+            utils.print_verbose("============================"
+                    "===============",flag=verbose)
+
         # ensure that ordering of the features is the same between jsons
         sample['FEATURES'].sort()
 

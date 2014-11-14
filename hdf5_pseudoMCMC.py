@@ -13,7 +13,8 @@ from python import utils
 import sys
 import optparse
 
-def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,verbose=True,logfile=None):
+def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
+        verbose=True,logfile=None,discriminate=False):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
@@ -119,20 +120,34 @@ def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,verbose=True,logfile=None)
                     " file for {0}".format(samplefname),flag=verbose)
             with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
-            # call train.py
-            try:
-                auc_score_dict = train.main(samplefname,verbose=verbose,store_models=False)
-                auc_score = auc_score_dict['all']
-            except IndexError:
-                print("Warning: accidentally added invalid feature.")
-                os.remove(samplefname) 
-                # set auc to zero so these settings are not accepted
-                auc_score = 0
+            # call train.py or discriminate.py
+            if discriminate:
+                try:
+                    auc_score_dict = discriminate.main(samplefname,
+                            verbose=verbose)
+                    # don't want to rename this variable
+                    # even though it is no longer an AUC score
+                    auc_score = 1 - auc_score_dict['all']
+                except IndexError:
+                    print("Warning: accidentally added invalid feature.")
+                    os.remove(samplefname) 
+                    # set auc to zero so these settings are not accepted
+                    auc_score = 0
+            else:
+                try:
+                    auc_score_dict = train.main(samplefname,
+                            verbose=verbose,store_models=False)
+                    auc_score = auc_score_dict['all'] - 0.5
+                except IndexError:
+                    print("Warning: accidentally added invalid feature.")
+                    os.remove(samplefname) 
+                    # set auc to zero so these settings are not accepted
+                    auc_score = 0
 
         utils.print_verbose("==== Acceptance calculation ====",flag=verbose)
         # compute acceptance probability from AUC:
         #     r = min(1,AUC/(previous AUC))
-        acceptance = np.max([np.min([1,(auc_score-0.5)/(prevauc-0.5)]), 0])
+        acceptance = np.max([np.min([1,auc_score/prevauc]), 0])
 
         u = np.random.rand()
         # accept new point with probability r
@@ -192,10 +207,17 @@ def get_parser():
                       default="hdf5mcmc",
                       help="Directory to store jsons "
                       "(default=hdf5mcmc)")
+
+    parser.add_option("-D", "--disciminate",
+                    action="store_true",
+                    dest="discriminate",
+                    default=False,
+                    help="Instead of training the model using train.py"
+                    " use discrimate.py.")
     return parser
 
 
 if __name__ == "__main__":
     parser = get_parser()
     (opts, args) = parser.parse_args()
-    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)
+    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log, discriminate=opts.discriminate)
