@@ -272,7 +272,7 @@ def get_genbatch_parser():
                       action="store",
                       dest="numcvruns",
                       type=int,
-                      default=10,train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
+                      default=10,
                       help="Number of times to run through the cross-validator")
                       
     parser.add_argument("-s", "--selection",
