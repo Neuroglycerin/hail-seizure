@@ -391,8 +391,14 @@ def write_settingsjson(settings, args):
                         myfull.append('{0}_{1}_'.format(modtyp, feature))
                     else:
                         myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
-                    # The short version does not need "feat_" at beginning
-                    myshort.append('{0}_{1}'.format(shortmodtyp, feature[5:]))
+                    # Check if starts with feat_
+                    if feature[0:5] == 'feat_':
+                        # The short version does not need "feat_" at beginning
+                        myfsh = feature[5:]
+                    else:
+                        # This is a weird feature function...
+                        myfsh = feature
+                    myshort.append('{0}_{1}'.format(shortmodtyp, myfsh))
                 
                 fullfeatstrlst.append(myfull)
                 shortfeatstrlst.append(myshort)
@@ -437,9 +443,9 @@ def main():
     settings["CVITERCOUNT"] = args.numcvruns
     
     if len(args.selection)==1:
-        settings["SELECTION"] = {args.selection[1]: None}
+        settings["SELECTION"] = {args.selection[0]: None}
     elif len(args.selection)==2:
-        settings["SELECTION"] = {args.selection[1]: args.selection[2]}
+        settings["SELECTION"] = {args.selection[0]: args.selection[1]}
     elif not len(args.selection)==0:
         print('Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
     
