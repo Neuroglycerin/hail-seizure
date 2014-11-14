@@ -184,7 +184,7 @@ def get_genbatch_parser():
                       default=False,
                       help="Print verbose output")
 
-    parser.add_argument("-s", "-d", "--dir",
+    parser.add_argument("-d", "--dir",
                       action="store",
                       dest="outputdir",
                       required=True,
@@ -262,7 +262,7 @@ def get_genbatch_parser():
                       default=1,
                       help="Number of features to use at once")
                       
-    parser.add_argument("-t", "--solomod",
+    parser.add_argument("--solomod",
                       action="store_true",
                       dest="dosinglemod",
                       default=False,
@@ -274,6 +274,32 @@ def get_genbatch_parser():
                       type=int,
                       default=10,
                       help="Number of times to run through the cross-validator")
+                      
+    parser.add_argument("-s", "--selection",
+                      action="store",
+                      dest="selection",
+                      default=[],
+                      nargs='+',
+                      help="Key value pair for selection method")
+                      
+    parser.add_argument("-t", "--threshold",
+                      action="store",
+                      dest="threshold",
+                      default=0,
+                      help="Threshold for selection method")
+                      
+    parser.add_argument("--pre",
+                      action="store",
+                      dest="prestr",
+                      default='',
+                      help="String to go in front of all JSON names")
+                      
+    parser.add_argument("--post",
+                      action="store",
+                      dest="poststr",
+                      default='',
+                      help="String to go in at the end of all JSON names")
+                      
     return parser
     
     
@@ -377,8 +403,14 @@ def write_settingsjson(settings, args):
                         myfull.append('{0}_{1}_'.format(modtyp, feature))
                     else:
                         myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
-                    # The short version does not need "feat_" at beginning
-                    myshort.append('{0}_{1}'.format(shortmodtyp, feature[5:]))
+                    # Check if starts with feat_
+                    if feature[0:5] == 'feat_':
+                        # The short version does not need "feat_" at beginning
+                        myfsh = feature[5:]
+                    else:
+                        # This is a weird feature function...
+                        myfsh = feature
+                    myshort.append('{0}_{1}'.format(shortmodtyp, myfsh))
                 
                 fullfeatstrlst.append(myfull)
                 shortfeatstrlst.append(myshort)
@@ -406,7 +438,7 @@ def write_settingsjson(settings, args):
                     settings["FEATURES"] = myfeats
                     
                     ff = '_AND_'.join(myshortfeats)
-                    fname = '{0}_{1}.json'.format(shortclassifier, ff)
+                    fname = '{2}{0}_{1}{3}.json'.format(shortclassifier, ff, args.prestr, args.poststr)
                     
                     # Output to a JSON
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
@@ -422,8 +454,16 @@ def main():
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
     
-    settings["AUC_SCORE_PATH"] = args.outputdir
+    if len(args.selection)==1:
+        settings["SELECTION"] = {args.selection[0]: None}
+    elif len(args.selection)==2:
+        settings["SELECTION"] = {args.selection[0]: int(args.selection[1])}
+    elif not len(args.selection)==0:
+        print('Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
     
+    settings["THRESHOLD"] = args.threshold
+    
+    settings["AUC_SCORE_PATH"] = args.outputdir
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
     
