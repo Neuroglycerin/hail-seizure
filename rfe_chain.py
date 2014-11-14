@@ -80,12 +80,12 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
         # Then save this new json with a descriptive name
         # unless it's already been generated
         md5name = hashlib.md5("".join(sample['FEATURES']).encode('UTF-8')).hexdigest()
-        # get a list of the files in the mcmcdir
-        existingjsons = glob.glob(mcmcdir+"/*.json")
+        # get a list of the files in the run_dir
+        existingjsons = glob.glob(run_dir+"/*.json")
         # check if the md5 exists
         if md5name + ".json" in existingjsons:
             # then load the results of that run
-            with open(os.path.join(mcmcdir,"AUC_scores.csv"),"r") as fh:
+            with open(os.path.join(run_dir,"AUC_scores.csv"),"r") as fh:
                 c = csv.reader(fh, delimiter="\t")
                 utils.print_verbose("Already ran {0},"
                         "reading from results.".format(md5name),flag=verbose)
@@ -95,7 +95,7 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                         auc_score = line[-1]
         else:
             # save a json with this name and run train.py on it
-            samplefname = os.path.join(mcmcdir,md5name+".json")
+            samplefname = os.path.join(run_dir,md5name+".json")
             utils.print_verbose("Creating new settings"
                     " file for {0}".format(samplefname),flag=verbose)
             with open(samplefname, "w") as fh:
@@ -106,8 +106,8 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True)
                 else:
-                    picklefname = prevsamplefname.split(".")[0] + \
-                                    "_feature_dump.pickle"
+                    picklefname = os.path.join(run_dir,
+                        prevsamplefname.split(".")[0] + "_feature_dump.pickle")
                     # load the features saved in the last run
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True, 
@@ -175,4 +175,4 @@ def get_parser():
 if __name__ == "__main__":
     parser = get_parser()
     (opts, args) = parser.parse_args()
-    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)
+    main(run_dir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)
