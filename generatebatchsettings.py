@@ -272,7 +272,7 @@ def get_genbatch_parser():
                       action="store",
                       dest="numcvruns",
                       type=int,
-                      default=10,
+                      default=10,train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
                       help="Number of times to run through the cross-validator")
                       
     parser.add_argument("-s", "--selection",
@@ -317,7 +317,7 @@ def parse_parser():
     
     
 def print_verbose(string, flag=False):
-    '''
+    '''train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
     Print statement only if flag is true
     '''
     if type(flag) is not bool:
@@ -368,7 +368,7 @@ def write_settingsjson(settings, args):
                     shortmodtyp = 'raw'
                 elif modtyp=='cln,ica,dwn':
                     shortmodtyp = 'ica'
-                elif modtyp=='cln,csp,dwn':
+                elif modtyp=='cln,csp,dwn':train.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.json
                     shortmodtyp = 'csp'
                 else:
                     shortmodtyp = modtyp
@@ -406,7 +406,7 @@ def write_settingsjson(settings, args):
             if not args.dosinglemod:
                 fullfeatstrlst = np.array(fullfeatstrlst).flatten()
                 fullfeatstrlst = [fullfeatstrlst]
-                shortfeatstrlst = np.array(shortfeatstrlst).flatten()
+                shortfeatstrlst = np.array(shorttrain.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.jsonfeatstrlst).flatten()
                 shortfeatstrlst = [shortfeatstrlst]
                 
             # Loop over every modtyp
@@ -422,7 +422,7 @@ def write_settingsjson(settings, args):
                     for j in range(args.numcombined):
                         myfeats.append(fullfeatstrlst[iMod][i[j]])
                         myshortfeats.append(shortfeatstrlst[iMod][i[j]])
-                    
+                    train.py -s batchallclass_setrain.py -s batchallclass_selectBest10/AB_ica_xcorr-twidth.jsonlectBest10/AB_ica_xcorr-twidth.json
                     settings["FEATURES"] = myfeats
                     
                     ff = '_AND_'.join(myshortfeats)
@@ -445,7 +445,7 @@ def main():
     if len(args.selection)==1:
         settings["SELECTION"] = {args.selection[0]: None}
     elif len(args.selection)==2:
-        settings["SELECTION"] = {args.selection[0]: args.selection[1]}
+        settings["SELECTION"] = {args.selection[0]: int(args.selection[1])}
     elif not len(args.selection)==0:
         print('Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
     
