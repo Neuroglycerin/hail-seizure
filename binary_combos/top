@@ -1,0 +1,52 @@
+Dog1
+5: pwling_5 
+    2: ica
+    3: csp
+5: ilingham_causalindex 
+    1: raw
+    4: ica
+
+Dog2
+5: mvar-s
+    5: raw
+5: pwling 5
+    1: csp
+    2: ica
+    3: raw
+
+Dog3
+5: mvar-s
+    5: raw
+pwling5
+
+
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,csp,dwn_feat_pwling5_""]"
+"[""cln,ica,dwn_feat_pwling5_"", ""cln,raw,dwn_feat_mvar-S_""]"
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,ica,dwn_feat_pwling5_""]"
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,raw,dwn_feat_pwling5_""]"
+"[""cln,raw,dwn_feat_pwling5_"", ""cln,raw,dwn_feat_mvar-S_""]"
+
+"[""cln,raw,dwn_feat_mvar-COHphs_"", ""cln,ica,dwn_feat_ampcorrcoef-beta-eig_""]"
+"[""cln,ica,dwn_feat_ampcorrcoef-beta-eig_"", ""cln,raw,dwn_feat_ilingam-causalorder_""]"
+"[""cln,raw,dwn_feat_ilingam-causalorder_"", ""cln,ica,dwn_feat_ampcorrcoef-beta-eig_""]"
+"[""cln,ica,dwn_feat_ampcorrcoef-beta-eig_"", ""cln,raw,dwn_feat_ilingam-causalindex_""]"
+"[""cln,raw,dwn_feat_ilingam-causalindex_"", ""cln,ica,dwn_feat_ampcorrcoef-beta-eig_""]"
+
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,csp,dwn_feat_ilingam-causalorder_""]"
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,raw,dwn_feat_PSDcorrcoefeig_""]"
+"[""cln,raw,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_mvar-S_""]"
+"[""cln,ica,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_mvar-S_""]"
+"[""cln,raw,dwn_feat_mvar-S_"", ""cln,ica,dwn_feat_PSDcorrcoefeig_""]"
+
+"[""cln,ica,dwn_feat_PSDcorrcoefeig_"", ""cln,csp,dwn_feat_ilingam-causalorder_""]"
+"[""cln,ica,dwn_feat_ampcorrcoef-beta-eig_"", ""cln,ica,dwn_feat_PSDcorrcoefeig_""]"
+"[""cln,ica,dwn_feat_PSDcorrcoefeig_"", ""cln,ica,dwn_feat_ampcorrcoef-beta-eig_""]"
+"[""cln,ica,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_pwling5_""]"
+"[""cln,raw,dwn_feat_pwling5_"", ""cln,ica,dwn_feat_PSDcorrcoefeig_""]"
+
+"[""cln,raw,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_mvar-COHphs_""]"
+"[""cln,raw,dwn_feat_ilingam-causalorder_"", ""cln,raw,dwn_feat_PSDcorrcoefeig_""]"
+"[""cln,raw,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_ilingam-causalorder_""]"
+"[""cln,raw,dwn_feat_PSDcorrcoefeig_"", ""cln,raw,dwn_feat_pwling5_""]"
+"[""cln,raw,dwn_feat_pwling5_"", ""cln,raw,dwn_feat_PSDcorrcoefeig_""]"
+
