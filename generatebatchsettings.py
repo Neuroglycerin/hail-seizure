@@ -184,7 +184,7 @@ def get_genbatch_parser():
                       default=False,
                       help="Print verbose output")
 
-    parser.add_argument("-s", "-d", "--dir",
+    parser.add_argument("-d", "--dir",
                       action="store",
                       dest="outputdir",
                       required=True,
@@ -262,7 +262,7 @@ def get_genbatch_parser():
                       default=1,
                       help="Number of features to use at once")
                       
-    parser.add_argument("-t", "--solomod",
+    parser.add_argument("--solomod",
                       action="store_true",
                       dest="dosinglemod",
                       default=False,
@@ -274,6 +274,20 @@ def get_genbatch_parser():
                       type=int,
                       default=10,
                       help="Number of times to run through the cross-validator")
+                      
+    parser.add_argument("-s", "--selection",
+                      action="store",
+                      dest="selection",
+                      default=[],
+                      nargs='+',
+                      help="Key value pair for selection method")
+                      
+    parser.add_argument("-t", "--threshold",
+                      action="store",
+                      dest="threshold",
+                      default=0,
+                      help="Threshold for selection method")
+                      
     return parser
     
     
@@ -422,8 +436,16 @@ def main():
         settings["DATA_TYPES"] = ["interictal","preictal","test","pseudointerictal","pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
     
-    settings["AUC_SCORE_PATH"] = args.outputdir
+    if len(args.selection)==1
+        settings["SELECTION"] = {args.selection[1]: None}
+    elif len(args.selection)==2
+        settings["SELECTION"] = {args.selection[1]: args.selection[2]}
+    elif not len(args.selection)==0
+        print('Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
     
+    settings["THRESHOLD"] = args.threshold
+    
+    settings["AUC_SCORE_PATH"] = args.outputdir
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
     
