@@ -21,7 +21,7 @@
         "cln,ica,dwn_10feat_pwling1_"],
     "TEST_DATA_PATH": "test",
     "SUBMISSION_PATH": "output",
-    "VERSION": "_v3",
+    "VERSION": "_v2",
     "RAW_DATA_DIRS": ["/disk/data2/neuroglycerin/hail-seizure-data/",
                       "/disk/data1/neuroglycerin/hail-seizure-data/",
                       "/disk/scratch/s1145806/hail-seizure-data/",
