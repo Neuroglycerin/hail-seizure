@@ -288,6 +288,18 @@ def get_genbatch_parser():
                       default=0,
                       help="Threshold for selection method")
                       
+    parser.add_argument("--pre",
+                      action="store",
+                      dest="prestr",
+                      default='',
+                      help="String to go in front of all JSON names")
+                      
+    parser.add_argument("--post",
+                      action="store",
+                      dest="poststr",
+                      default='',
+                      help="String to go in at the end of all JSON names")
+                      
     return parser
     
     
@@ -426,7 +438,7 @@ def write_settingsjson(settings, args):
                     settings["FEATURES"] = myfeats
                     
                     ff = '_AND_'.join(myshortfeats)
-                    fname = '{0}_{1}.json'.format(shortclassifier, ff)
+                    fname = '{2}{0}_{1}{3}.json'.format(shortclassifier, ff, args.prestr, args.poststr)
                     
                     # Output to a JSON
                     with open(args.outputdir+'/'+fname, 'w') as outfile:
