@@ -13,7 +13,7 @@ from python import utils
 import sys
 import optparse
 
-def main(start=None,start_auc=None,verbose=True,logfile=None):
+def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,verbose=True,logfile=None):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
@@ -27,14 +27,18 @@ def main(start=None,start_auc=None,verbose=True,logfile=None):
     with open(start) as f:
         start = json.load(f)
     if start_auc == None:
-        startauc = 0.86575473285
-    mcmcdir = "hdf5mcmc"
+        startauc = 0.8
 
     # hardcode AUC results to the hdf5mcmc directory
     start['AUC_SCORE_PATH'] = mcmcdir
 
     # have to load a list of possible features to replace with
-    featlist = get_featlist()
+    if all("10feat" in feature for feature in start['FEATURES']):
+        with open("10featlist.json") as fh:
+            featlist = json.load(fh)['FEATURES']
+    else:
+        featlist = get_featlist()
+
     # and possible preceding modifiers
     modlist  = get_modlist()
 
@@ -175,10 +179,17 @@ def get_parser():
                       default=None,
                       help="Log file for verbose output of script"
                       "(default=None)")
+
+    parser.add_option("-d", "--dir",
+                      action="store",
+                      dest="dir",
+                      default="hdf5mcmc",
+                      help="Directory to store jsons "
+                      "(default=hdf5mcmc)")
     return parser
 
 
 if __name__ == "__main__":
     parser = get_parser()
     (opts, args) = parser.parse_args()
-    main(start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)
+    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log)
