@@ -72,8 +72,11 @@ Icon?
 ehthumbs.db
 Thumbs.db
 
-#ipython notebook checkpoints
+# ipython notebook checkpoints
 *-checkpoint.ipynb
 
-#vim swap files
+# vim swap files
 *.swp
+
+# pickle files
+*.pickle
