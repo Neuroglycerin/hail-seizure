@@ -6,7 +6,8 @@ import pickle
 import pdb
 
 def main(settingsfname, verbose=False, store_models=True,
-        store_features=False, save_training_detailed=False):
+        store_features=False, save_training_detailed=False,
+        load_pickled=False):
 
     settings = utils.get_settings(settingsfname)
 
@@ -35,6 +36,17 @@ def main(settingsfname, verbose=False, store_models=True,
     # dictionary to store features in
     transformed_features = {}
 
+    # if we're loading pickled features then load them
+    if load_pickled:
+        if type(load_pickled) == str:
+            with open(load_pickled,"rb") as fh:
+                Xtra = pickle.load(fh)
+        else:
+            with open(settingsfname.split(".")[0]
+                    +"_feature_dump.pickle","rb") as fh:
+                Xtra = pickle.load(fh)
+
+    # dictionary for final scores
     auc_scores = {}
 
     for subject in subjects:
@@ -45,6 +57,9 @@ def main(settingsfname, verbose=False, store_models=True,
         assembler = utils.DataAssembler(settings, data, metadata)
         X,y = assembler.build_training(subject)
 
+        # if we're loading external features, append those
+        if load_pickled:
+            X = utils.np.hstack([X,Xtra[subject]['features']])
 
         # get the CV iterator
         cv = utils.Sequence_CV(assembler.training_segments,
@@ -136,7 +151,11 @@ def main(settingsfname, verbose=False, store_models=True,
                 # Inside each dictionary will be a dictionary
                 # storing the transformed array and an index
                 # describing which feature is which.
-                feature_ids = utils.get_feature_ids(assembler.training_names)
+                if load_pickled:
+                    feature_ids = utils.get_feature_ids(assembler.training_names,
+                                                pickled=Xtra[subject]['names'])
+                else:
+                    feature_ids = utils.get_feature_ids(assembler.training_names)
                 feature_ids = feature_ids[mask]
                 Xt = rfecv.transform(Xt)
                 transformed_features[subject] = {'features':Xt, 
