@@ -913,20 +913,18 @@ def build_model_pipe(settings):
     scaler = sklearn.preprocessing.StandardScaler()
     pipe_elements.append(('scl',scaler))
 
-    # optionally use thresholding and feature selector
     if 'THRESHOLD' in settings.keys():
         thresh = sklearn.feature_selection.VarianceThreshold()
         pipe_elements.append(('thr',thresh))
-
-    if 'SELECTION' in settings.keys():
-        selector = get_selector(settings)
-        pipe_elements.append(('sel',selector))
 
     if 'PCA' in settings.keys():
         pca_decomp = sklearn.decomposition.PCA(n_components='mle')
         pipe_elements.append(('pca', pca_decomp))
 
-    # get settings handles the parameterisation of the classifier
+    if 'SELECTION' in settings.keys():
+        selector = get_selector(settings)
+        pipe_elements.append(('sel',selector))
+
     classifier = settings['CLASSIFIER']
     pipe_elements.append(('clf',classifier))
 
