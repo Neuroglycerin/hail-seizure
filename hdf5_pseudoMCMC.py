@@ -12,9 +12,10 @@ import glob
 from python import utils
 import sys
 import optparse
+import discriminate
 
 def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
-        verbose=True,logfile=None,discriminate=False):
+        verbose=True,logfile=None,discr_flag=False):
     """
     Contains the main loop for this script.
     Pseudo-MHMCMC to find optimal AUC scoring 
@@ -70,11 +71,13 @@ def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
         elif u > 0.25 and u < 0.5:
             # keep trying to sample a new feature until we 
             # find one that's not in there already
-            while added in sample['FEATURES']:
+            while True:
                 # push a new feature, but don't remove an old one
                 newfeature = random.sample(featlist,1)[0]
                 newmod = random.sample(modlist,1)[0]
                 added = '{0}_{1}_'.format(newmod, newfeature)
+                if added not in sample['FEATURES']:
+                    break
             sample['FEATURES'].append(added)
             utils.print_verbose("Added feature {0}".format(added),flag=verbose)
         elif u > 0.5:
@@ -84,10 +87,13 @@ def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
             dropped = features.pop()
             # keep trying to sample a new feature until we 
             # find one that's not in there already
-            while added in sample['FEATURES']:
+            while True:
+                # push a new feature, but don't remove an old one
                 newfeature = random.sample(featlist,1)[0]
                 newmod = random.sample(modlist,1)[0]
                 added = '{0}_{1}_'.format(newmod, newfeature)
+                if added not in sample['FEATURES']:
+                    break
             features.append(added)
             sample['FEATURES'] = features
             utils.print_verbose("Switched feature {0} for "
@@ -121,7 +127,7 @@ def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
             with open(samplefname, "w") as fh:
                 json.dump(sample, fh)
             # call train.py or discriminate.py
-            if discriminate:
+            if discr_flag:
                 try:
                     auc_score_dict = discriminate.main(samplefname,
                             verbose=verbose)
@@ -220,4 +226,4 @@ def get_parser():
 if __name__ == "__main__":
     parser = get_parser()
     (opts, args) = parser.parse_args()
-    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log, discriminate=opts.discriminate)
+    main(mcmcdir=opts.dir,start=opts.start,start_auc=opts.start_auc,verbose=opts.verbose,logfile=opts.log, discr_flag=opts.discriminate)
