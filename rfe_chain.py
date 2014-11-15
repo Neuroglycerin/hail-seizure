@@ -42,7 +42,7 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
     # creat list of combinations of these two lists
     comblist = []
     for mod in modlist:
-        for features in featlist:
+        for feature in featlist:
             comblist.append('{0}_{1}_'.format(mod, feature))
 
     # define sampled json
