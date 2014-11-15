@@ -80,7 +80,11 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
 
         # Then save this new json with a descriptive name
         # unless it's already been generated
-        md5name = hashlib.md5("".join(sample['FEATURES']).encode('UTF-8')).hexdigest()
+        if first:
+            featurerecord = "".join(sample['FEATURES'])
+        else:
+            featurerecord = featurerecord + "".join(sample['FEATURES'])
+        md5name = hashlib.md5(featurerecord.encode('UTF-8')).hexdigest()
         # get a list of the files in the run_dir
         existingjsons = glob.glob(run_dir+"/*.json")
         # check if the md5 exists
