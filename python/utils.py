@@ -1248,8 +1248,8 @@ def combined_auc_score(settings, auc_scores, subj_pred=None):
                                          zip(*list(subj_pred.values())))
 
         # calculate the total AUC score over all subjects
-        combined_auc = sklearn.metrics.roc_auc_score(labels, predictions,
-                                                    sample_weight=weights)
+        combined_auc = sklearn.metrics.roc_auc_score(labels, predictions)
+                                                    #sample_weight=weights)
 
     return combined_auc
 
