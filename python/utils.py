@@ -17,6 +17,7 @@ import sklearn.decomposition
 import sklearn.svm
 import sklearn
 import optparse
+import pdb
 
 def get_parser():
     '''
@@ -1220,8 +1221,8 @@ def train_model(settings, data, metadata, subject, model_pipe,
 
     if store_models:
 
-        weights = get_weights(y)
-        model_pipe.fit(X, y, clf__sample_weight=weights)
+        store_weights = get_weights(y)
+        model_pipe.fit(X, y, clf__sample_weight=store_weights)
         serialise_trained_model(model_pipe,
                                       subject,
                                       settings,
@@ -1247,8 +1248,8 @@ def combined_auc_score(settings, auc_scores, subj_pred=None):
                                          zip(*list(subj_pred.values())))
 
         # calculate the total AUC score over all subjects
-        # not using sample_weight here due to error, should probably be fixed
         combined_auc = sklearn.metrics.roc_auc_score(labels, predictions)
+                                                    #sample_weight=weights)
 
     return combined_auc
 

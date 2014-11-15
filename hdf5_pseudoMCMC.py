@@ -133,6 +133,7 @@ def main(mcmcdir="hdf5mcmc",start=None,start_auc=None,
                             verbose=verbose)
                     # don't want to rename this variable
                     # even though it is no longer an AUC score
+                    # want a low accuracy score, strangely enough
                     auc_score = 1 - auc_score_dict['all']
                 except IndexError:
                     print("Warning: accidentally added invalid feature.")
