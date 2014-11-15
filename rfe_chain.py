@@ -170,7 +170,7 @@ def get_parser():
     parser.add_option("-d", "--dir",
                       action="store",
                       dest="dir",
-                      default="hdf5mcmc",
+                      default="rfe_chain",
                       help="Directory to store jsons "
                       "(default=rfe_chain)")
     return parser
