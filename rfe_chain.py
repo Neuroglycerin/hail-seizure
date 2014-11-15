@@ -107,8 +107,8 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True)
                 else:
-                    picklefname = os.path.join(run_dir,
-                        prevsamplefname.split(".")[0] + "_feature_dump.pickle")
+                    picklefname = prevsamplefname.split(".")[0] + \
+                                "_feature_dump.pickle"
                     # load the features saved in the last run
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True, 
