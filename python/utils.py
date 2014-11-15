@@ -17,6 +17,7 @@ import sklearn.decomposition
 import sklearn.svm
 import sklearn
 import optparse
+import pdb
 
 def get_parser():
     '''
@@ -1220,8 +1221,8 @@ def train_model(settings, data, metadata, subject, model_pipe,
 
     if store_models:
 
-        weights = get_weights(y)
-        model_pipe.fit(X, y, clf__sample_weight=weights)
+        store_weights = get_weights(y)
+        model_pipe.fit(X, y, clf__sample_weight=store_weights)
         serialise_trained_model(model_pipe,
                                       subject,
                                       settings,
