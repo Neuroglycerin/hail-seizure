@@ -124,6 +124,9 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
 
         prevsample = sample
 
+        #can't be first anymore
+        first = 0
+
         # as it may be bad manners to run infinite loops
         counter += 1
         if counter > 100:
