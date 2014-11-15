@@ -918,7 +918,7 @@ def build_model_pipe(settings):
         pipe_elements.append(('thr',thresh))
 
     if 'PCA' in settings.keys():
-        pca_decomp = sklearn.decomposition.PCA(n_components='mle')
+        pca_decomp = sklearn.decomposition.PCA(n_components=0.8)
         pipe_elements.append(('pca', pca_decomp))
 
     if 'SELECTION' in settings.keys():
@@ -1083,3 +1083,160 @@ def get_feature_ids(names):
     names = names[np.newaxis].T
     feature_ids = np.hstack([names,indices])
     return feature_ids
+
+
+def train_RFE(settings, data, metadata, subject, model_pipe,
+              transformed_features, store_models, store_features,
+              settingsfname, verbose):
+
+    # initialise the data assembler
+    assembler = DataAssembler(settings, data, metadata)
+    X,y = assembler.build_training(subject)
+
+
+    # get the CV iterator
+    cv = Sequence_CV(assembler.training_segments,
+                           metadata,
+                           r_seed=settings['R_SEED'],
+                           n_iter=settings['CVITERCOUNT'])
+
+    # initialise lists for cross-val results
+    predictions = []
+    labels = []
+    allweights = []
+    segments = []
+
+    # first have to transform
+    Xt = model_pipe.named_steps['scl'].fit_transform(X)
+    if 'thr' in [step[0] for step in model_pipe.steps]:
+        Xt = model_pipe.named_steps['thr'].fit_transform(Xt)
+    # we might have huge numbers of features, best to remove in large numbers
+    stepsize = int(Xt.shape[1]/20)
+    rfecv = sklearn.feature_selection.RFECV(estimator=model_pipe.named_steps['clf'],
+        step=stepsize, cv=cv, **settings['RFE'])
+    rfecv.fit(Xt,y)
+    # take the best grid score as the max
+    auc = max(rfecv.grid_scores_)
+
+    if store_models:
+        weights = get_weights(y)
+
+        elements = []
+        elements.append(('scl',model_pipe.named_steps['scl']))
+        if 'thr' in [step[0] for step in model_pipe.steps]:
+            elements.append(('thr',model_pipe.named_steps['thr']))
+        elements.append(('clf', rfecv))
+        model = sklearn.pipeline.Pipeline(elements)
+        serialise_trained_model(model,
+                                subject,
+                                settings,
+                                verbose=verbose)
+    if store_features:
+    # store a transformed version of the features
+    # while at the same time keeping a log of where they came from
+        mask = rfecv.support_
+        # Storing as a dictionary using subjects as keys.
+        # Inside each dictionary will be a dictionary
+        # storing the transformed array and an index
+        # describing which feature is which.
+        feature_ids = get_feature_ids(assembler.training_names)
+        feature_ids = feature_ids[mask]
+        Xt = rfecv.transform(Xt)
+        transformed_features[subject] = {'features':Xt,
+                'names':feature_ids}
+        # then pickle it
+        if type(store_features) == str:
+            with open(store_features+".pickle","wb") as fh:
+                pickle.dump(transformed_features, fh)
+        else:
+            with open(settingsfname.split(".")[0]
+                    +"_feature_dump.pickle","wb") as fh:
+                pickle.dump(transformed_features, fh)
+
+    return transformed_features, auc
+
+
+
+def train_model(settings, data, metadata, subject, model_pipe,
+                store_models, verbose):
+    # initialise the data assembler
+    assembler = DataAssembler(settings, data, metadata)
+    X,y = assembler.build_training(subject)
+
+
+    # get the CV iterator
+    cv = Sequence_CV(assembler.training_segments,
+                           metadata,
+                           r_seed=settings['R_SEED'],
+                           n_iter=settings['CVITERCOUNT'])
+
+    # initialise lists for cross-val results
+    predictions = []
+    labels = []
+    allweights = []
+    segments = []
+
+    # run cross validation and report results
+    for train, test in cv:
+
+        # calculate the weights
+        weights = get_weights(y[train])
+        # fit the model to the training data
+        model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
+        # append new predictions
+        predictions.append(model_pipe.predict_proba(X[test]))
+        # append test weights to store (why?) (used to calculate auc below)
+        weights = get_weights(y[test])
+        allweights.append(weights)
+        # store true labels
+        labels.append(y[test])
+        # store segments
+        segments.append(assembler.training_segments[test])
+
+    # stack up the results
+    predictions = np.vstack(predictions)[:,1]
+    labels = np.hstack(labels)
+    weights = np.hstack(allweights)
+    segments = np.hstack(segments)
+
+    # calculate the total AUC score
+    auc = sklearn.metrics.roc_auc_score(labels,
+                                        predictions,
+                                        sample_weight=weights)
+
+    print("predicted AUC score for {1}: {0:.2f}".format(auc, subject))
+
+    if store_models:
+
+        weights = get_weights(y)
+        model_pipe.fit(X, y, clf__sample_weight=weights)
+        serialise_trained_model(model_pipe,
+                                      subject,
+                                      settings,
+                                      verbose=verbose)
+
+    #store results from each subject
+
+    results = (predictions, labels, weights, segments)
+    return results, auc
+
+
+
+def combined_auc_score(settings, auc_scores, subj_pred=None):
+
+    if 'RFE' in settings:
+        combined_auc = np.mean(list(auc_scores.values()))
+    else:
+        if subj_pred is None:
+            raise ValueError('Subject prediction dict needs to not be None')
+
+        #stack subject results (don't worry about this line)
+        predictions, labels, weights, segments = map(np.hstack,
+                                         zip(*list(subj_pred.values())))
+
+        # calculate the total AUC score over all subjects
+        # not using sample_weight here due to error, should probably be fixed
+        combined_auc = sklearn.metrics.roc_auc_score(labels, predictions)
+
+    return combined_auc
+
