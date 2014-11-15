@@ -89,9 +89,9 @@ def main(opts):
     predictions, labels, weights = map(utils.np.hstack,
                                      zip(*list(subject_predictions.values())))
 
-    # calculate the total AUC score over all subjects
-    # not using sample_weight here due to error, should probably be fixed
-    accuracy = utils.sklearn.metrics.accuracy_score(labels, predictions)
+    # calculate global accuracy
+    accuracy = utils.sklearn.metrics.accuracy_score(labels, predictions,
+                                                    sample_weight=weights)
 
     print("predicted accuracy score over all subjects: {0:.2f}".format(accuracy))
 
