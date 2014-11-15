@@ -1053,7 +1053,7 @@ def reliability_plot(predictions, labels):
 
     return x,y
 
-def get_feature_ids(names):
+def get_feature_ids(names, pickled=None):
     """
     Takes an array of feature names and
     processes it to create an array of
@@ -1082,17 +1082,24 @@ def get_feature_ids(names):
     indices = np.array(indices)[np.newaxis].T
     names = names[np.newaxis].T
     feature_ids = np.hstack([names,indices])
+    if pickled != None:
+        # add extra pickled ids
+        feature_ids = np.vstack([feature_ids,pickled])
     return feature_ids
 
 
 def train_RFE(settings, data, metadata, subject, model_pipe,
               transformed_features, store_models, store_features,
-              settingsfname, verbose):
+              load_pickled, settingsfname, verbose, extra_data=None):
 
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
     X,y = assembler.build_training(subject)
 
+    if load_pickled:
+        if extra_data is None:
+            raise ValueError
+        X = np.hstack([X, extra_data[subject]['features']])
 
     # get the CV iterator
     cv = Sequence_CV(assembler.training_segments,
@@ -1158,10 +1165,15 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
 
 
 def train_model(settings, data, metadata, subject, model_pipe,
-                store_models, verbose):
+                store_models, load_pickled, verbose, extra_data=None):
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
     X,y = assembler.build_training(subject)
+
+    if load_pickled:
+        if extra_data is None:
+            raise ValueError
+        X = np.hstack([X, extra_data[subject]['features']])
 
 
     # get the CV iterator

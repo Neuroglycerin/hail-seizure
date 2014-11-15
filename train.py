@@ -6,7 +6,8 @@ import pickle
 import pdb
 
 def main(settingsfname, verbose=False, store_models=True,
-        store_features=False, save_training_detailed=False):
+        store_features=False, save_training_detailed=False,
+        load_pickled=False):
 
     settings = utils.get_settings(settingsfname)
 
@@ -35,6 +36,19 @@ def main(settingsfname, verbose=False, store_models=True,
     # dictionary to store features in
     transformed_features = {}
 
+    # if we're loading pickled features then load them
+    if load_pickled:
+        if type(load_pickled) == str:
+            with open(load_pickled,"rb") as fh:
+                Xtra = pickle.load(fh)
+        else:
+            with open(settingsfname.split(".")[0]
+                    +"_feature_dump.pickle","rb") as fh:
+                Xtra = pickle.load(fh)
+    else:
+        Xtra = None
+
+    # dictionary for final scores
     auc_scores = {}
 
     for subject in subjects:
@@ -50,8 +64,10 @@ def main(settingsfname, verbose=False, store_models=True,
                                                         transformed_features,
                                                         store_models,
                                                         store_features,
+                                                        load_pickled,
                                                         settingsfname,
-                                                        verbose)
+                                                        verbose,
+                                                        extra_data=Xtra)
             subject_predictions = None
 
         else:
@@ -61,7 +77,9 @@ def main(settingsfname, verbose=False, store_models=True,
                                              subject,
                                              model_pipe,
                                              store_models,
-                                             verbose)
+                                             load_pickled,
+                                             verbose,
+                                             extra_data=Xtra)
             subject_predictions[subject] = results
 
         auc_scores.update({subject: auc})
@@ -78,7 +96,6 @@ def main(settingsfname, verbose=False, store_models=True,
 
     print("predicted AUC score over all subjects: {0:.2f}".format(combined_auc))
     auc_scores.update({'all': combined_auc})
-
     utils.output_auc_scores(auc_scores, settings)
 
     return auc_scores
