@@ -60,8 +60,8 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                     "settings ======",flag=verbose)
             # sample new settings
             # shuffle mods and feats
-            featlist = random.shuffle(featlist)
-            modlist = random.shuffle(modlist)
+            random.shuffle(featlist)
+            random.shuffle(modlist)
             # pop 3 features off these
             newfeatures = [featlist.pop() for i in range(3)]
             newmods = [modlist.pop() for i in range(3)]
