@@ -39,6 +39,12 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
     # and possible preceding modifiers
     modlist  = get_modlist()
 
+    # creat list of combinations of these two lists
+    comblist = []
+    for mod in modlist:
+        for features in featlist:
+            comblist.append('{0}_{1}_'.format(mod, feature))
+
     # define sampled json
     prevsample = copy.deepcopy(start)
 
@@ -59,12 +65,12 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
             utils.print_verbose("===== Sampling new proposal "
                     "settings ======",flag=verbose)
             # sample new settings
-            # shuffle mods and feats
-            random.shuffle(featlist)
-            random.shuffle(modlist)
-            # pop 3 features off these
-            newfeatures = [featlist.pop() for i in range(3)]
-            newmods = [modlist.pop() for i in range(3)]
+            # shuffle combinations
+            random.shuffle(comblist)
+
+            # pop 3 features off this
+            newfeatures = [comblist.pop() for i in range(3)]
+            
             # combine the features with the mods
             added = []
             for feature,mod in zip(newfeatures,newmods):
