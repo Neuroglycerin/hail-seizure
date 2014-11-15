@@ -1118,7 +1118,7 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
     if 'thr' in [step[0] for step in model_pipe.steps]:
         Xt = model_pipe.named_steps['thr'].fit_transform(Xt)
     # we might have huge numbers of features, best to remove in large numbers
-    stepsize = int(Xt.shape[1]/20)
+    stepsize = int(Xt.shape[1]/2)
     rfecv = sklearn.feature_selection.RFECV(estimator=model_pipe.named_steps['clf'],
         step=stepsize, cv=cv, **settings['RFE'])
     rfecv.fit(Xt,y)
