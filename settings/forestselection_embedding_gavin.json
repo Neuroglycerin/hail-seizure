@@ -30,5 +30,6 @@
                       "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"],
     "SELECTION": {"FOREST": 1000},
     "TREE_EMBEDDING": {"n_estimators":1000},
+    "CLASSIFIER_OPTS": {"kernel": "linear"},
     "THRESHOLD": 0.0
 }

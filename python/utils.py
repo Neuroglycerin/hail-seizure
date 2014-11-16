@@ -471,12 +471,19 @@ class DataAssembler:
                     featurearray = self.data[feature][subject][ictyp][segment]
                     # list of arrays for each minute
                     # how to slice depends on dimensionality
-                    if len(featurearray.shape) == 3:
-                        minute_segment_list = [featurearray[:,:,i] \
-                                for i in range(self.minutemod[ictyp])]
-                    elif len(featurearray.shape) == 2:
+
+                    if len(featurearray.shape) == 2:
                         minute_segment_list = [featurearray[:,i] \
                                 for i in range(self.minutemod[ictyp])]
+
+                    elif len(featurearray.shape) == 3:
+                        minute_segment_list = [featurearray[:,:,i] \
+                                for i in range(self.minutemod[ictyp])]
+
+                    elif len(featurearray.shape) == 4:
+                        minute_segment_list = [featurearray[:,:,:,i] \
+                                for i in range(self.minutemod[ictyp])]
+
                     else:
                         raise ValueError("Feature {0} has invalid number of"
                             " dimensions for a 1-minute feature".format(feature))
@@ -925,6 +932,11 @@ def build_model_pipe(settings):
     if 'SELECTION' in settings.keys():
         selector = get_selector(settings)
         pipe_elements.append(('sel',selector))
+
+    if 'TREE_EMBEDDING' in settings.keys():
+        tree_embedding = sklearn.ensemble.RandomTreesEmbedding( \
+                **settings['TREE_EMBEDDING'])
+        pipe_elements.append(('embed', tree_embedding))
 
     classifier = settings['CLASSIFIER']
     pipe_elements.append(('clf',classifier))
