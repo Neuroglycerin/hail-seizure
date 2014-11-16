@@ -1,3 +1,4 @@
+addpath(genpath('matlab'))
 
 subjlst = subjnames();
 
