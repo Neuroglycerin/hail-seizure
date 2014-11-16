@@ -1,6 +1,10 @@
 % Get a list of all the datasets within the HDF5 for a given subject and
 % ictal type
-function [fnames, jSub, jIct] = scrapeH5datasets(Info, subj, ictyp)
+function [fnames, jSub, jIct] = scrapeH5datasets(Info, subj, ictyp, needfnmes)
+
+if nargin<4
+    needfnmes = (nargout>0);
+end
 
 % Pool through first level of groups to find which is our subject
 nSub = numel(Info.Groups);
@@ -29,7 +33,7 @@ if isempty(jIct)
 end
 
 % Stop if we only need to know the data is available, not what the fnames are
-if nargout==0; return; end;
+if ~needfnmes; fnames={}; return; end;
 
 % Pool through names of all the datasets and list them
 nSeg = numel(Info.Groups(jSub).Groups(jIct).Datasets);
