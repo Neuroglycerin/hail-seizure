@@ -41,6 +41,13 @@ def get_parser():
                       help="Settings file to use in JSON format (default="
                             "SETTINGS.json)")
 
+    parser.add_option("-j", "--cores",
+                      action="store",
+                      dest="parallel",
+                      default=0,
+                      help="Train subjects in parallel and with specified num"
+                           " of cores")
+
     parser.add_option("-p", "--pickle",
                       action="store",
                       dest="pickle_detailed",
@@ -1173,7 +1180,8 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
 
 
 def train_model(settings, data, metadata, subject, model_pipe,
-                store_models, load_pickled, verbose, extra_data=None):
+                store_models, load_pickled, verbose, extra_data=None,
+                parallel=None):
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
     X,y = assembler.build_training(subject)
@@ -1238,6 +1246,12 @@ def train_model(settings, data, metadata, subject, model_pipe,
     #store results from each subject
 
     results = (predictions, labels, weights, segments)
+
+    if parallel:
+        results = {subject: results}
+        auc = {subject: auc}
+        return (results, auc)
+
     return results, auc
 
 
