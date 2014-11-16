@@ -3,8 +3,8 @@ addpath(genpath('matlab'));
 
 subjlst = subjnames();
 
-pbgf = {'feat_lmom-3','feat_mvar-GPDC','feat_PSDlogfcorrcoef','pwling1',    'xcorr-ypeak'};
-pbgm = {'cln,csp,dwn','cln,ica,dwn',   'cln,ica,dwn',         'cln,ica,dwn','cln,ica,dwn'};
+pbgf = {'feat_lmom-3','feat_mvar-GPDC','feat_PSDlogfcorrcoef','feat_pwling1','feat_xcorr-ypeak'};
+pbgm = {'cln,csp,dwn','cln,ica,dwn',   'cln,ica,dwn',         'cln,ica,dwn', 'cln,ica,dwn'};
 
 test_set = [120 0.05 0.1 0.25 0.333 0.5];
 train_set = [20 0.05 0.1 0.25 0.333 0.5];
@@ -33,10 +33,10 @@ parfor iTest = 1:length(test_set)
             };
         removebest = false;
         
-        outfeatname = [outfeatname ',train' num2str(train_set(iTrain))];
+        outfeatname2 = [outfeatname ',train' num2str(train_set(iTrain))];
         
         for iSbj=1:numel(subjlst)
-            featReduceDimCSP(outfeatname, {outfeatname}, {'combo'}, subjlst{iSbj}, ictypgroupings, train_set(iTrain), removebest);
+            featReduceDimCSP(outfeatname2, {outfeatname}, {'combo'}, subjlst{iSbj}, ictypgroupings, train_set(iTrain), removebest);
         end
         
     end
