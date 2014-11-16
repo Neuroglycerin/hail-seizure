@@ -5,10 +5,13 @@
 %        : str  modtyp       - which preprocessing model was used e.g. raw, ica
 %        : [str featversion] - which version of the feature to use
 %                              (default: current version ID in settings file)
+%        : [bool loadascell] - whether to output as cell instead of matrix
 %        
 % Outputs: array featM       - matrix of features, concatenated along first dim
+%        : cell fnames       - list of segment file names, in same order as
+%                              in dim1 of output
 
-function featM = getFeatFromHDF5(featname, subj, ictyp, modtyp, featversion, loadascell)
+function [featM, fnames] = getFeatFromHDF5(featname, subj, ictyp, modtyp, featversion, loadascell)
 
 % Default inputs
 if nargin<5; featversion = ''; end;
