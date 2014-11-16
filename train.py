@@ -70,6 +70,17 @@ def main(settingsfname, verbose=False, store_models=True,
                                                         extra_data=Xtra)
             subject_predictions = None
 
+        elif 'CUSTOM' in settings:
+            results, auc = utils.train_custom_model(settings,
+                                             data,
+                                             metadata,
+                                             subject,
+                                             model_pipe,
+                                             store_models,
+                                             load_pickled,
+                                             verbose,
+                                             extra_data=Xtra)
+            subject_predictions[subject] = results
         else:
             results, auc = utils.train_model(settings,
                                              data,
