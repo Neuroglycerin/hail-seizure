@@ -4,13 +4,13 @@ import python.utils as utils
 import os
 import pickle
 
-def main(opts):
+def main(settingsfname, verbose=False):
 
-    settings = utils.get_settings(opts.settings)
+    settings = utils.get_settings(settingsfname)
 
     subjects = settings['SUBJECTS']
 
-    data = utils.get_data(settings, verbose=opts.verbose)
+    data = utils.get_data(settings, verbose=verbose)
 
     metadata = utils.get_metadata()
 
@@ -19,13 +19,13 @@ def main(opts):
 
     settings['FEATURES'] = features_that_parsed
 
-    utils.print_verbose("=====Feature HDF5s parsed=====", flag=opts.verbose)
+    utils.print_verbose("=====Feature HDF5s parsed=====", flag=verbose)
 
     # get model
     model_pipe = utils.build_model_pipe(settings)
 
     utils.print_verbose("=== Model Used ===\n"
-    "{0}\n==================".format(model_pipe),flag=opts.verbose)
+    "{0}\n==================".format(model_pipe),flag=verbose)
 
     #dictionary to store results
     subject_predictions = {}
@@ -34,7 +34,7 @@ def main(opts):
 
     for subject in subjects:
         utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
-                            flag=opts.verbose)
+                            flag=verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -99,7 +99,7 @@ def main(opts):
     accuracy_scores.update({'all': accuracy})
 
     settings['DISCRIMINATE'] = 'accuracy_scores.csv'
-    settings['AUC_SCORE_PATH'] = 'discriminate_scores'
+    #settings['AUC_SCORE_PATH'] = 'discriminate_scores'
     utils.output_auc_scores(accuracy_scores, settings)
 
     return accuracy_scores

@@ -60,8 +60,8 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                     "settings ======",flag=verbose)
             # sample new settings
             # shuffle mods and feats
-            featlist = random.shuffle(featlist)
-            modlist = random.shuffle(modlist)
+            random.shuffle(featlist)
+            random.shuffle(modlist)
             # pop 3 features off these
             newfeatures = [featlist.pop() for i in range(3)]
             newmods = [modlist.pop() for i in range(3)]
@@ -80,7 +80,11 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
 
         # Then save this new json with a descriptive name
         # unless it's already been generated
-        md5name = hashlib.md5("".join(sample['FEATURES']).encode('UTF-8')).hexdigest()
+        if first:
+            featurerecord = "".join(sample['FEATURES'])
+        else:
+            featurerecord = featurerecord + "".join(sample['FEATURES'])
+        md5name = hashlib.md5(featurerecord.encode('UTF-8')).hexdigest()
         # get a list of the files in the run_dir
         existingjsons = glob.glob(run_dir+"/*.json")
         # check if the md5 exists
@@ -107,8 +111,8 @@ def main(run_dir="rfe_chain", start=None, start_auc=None,
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True)
                 else:
-                    picklefname = os.path.join(run_dir,
-                        prevsamplefname.split(".")[0] + "_feature_dump.pickle")
+                    picklefname = prevsamplefname.split(".")[0] + \
+                                "_feature_dump.pickle"
                     # load the features saved in the last run
                     auc_score_dict = train.main(samplefname,verbose=verbose,
                     store_models=False, store_features=True, 
