@@ -1,4 +1,6 @@
 
+addpath(genpath('matlab'));
+
 subjlst = subjnames();
 
 pbgf = {'feat_lmom-3','feat_mvar-GPDC','feat_PSDlogfcorrcoef','pwling1',    'xcorr-ypeak'};
