@@ -2,12 +2,13 @@
 
 import python.utils as utils
 import os
+import joblib
 import pickle
 import pdb
 
 def main(settingsfname, verbose=False, store_models=True,
         store_features=False, save_training_detailed=False,
-        load_pickled=False):
+        load_pickled=False, parallel=0):
 
     settings = utils.get_settings(settingsfname)
 
@@ -51,36 +52,56 @@ def main(settingsfname, verbose=False, store_models=True,
     # dictionary for final scores
     auc_scores = {}
 
-    for subject in subjects:
-        utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
-                            flag=verbose)
 
+    if not parallel:
+        for subject in subjects:
+            utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
+                                flag=verbose)
+
+            if 'RFE' in settings:
+                transformed_features, auc = utils.train_RFE(settings,
+                                                            data,
+                                                            metadata,
+                                                            subject,
+                                                            model_pipe,
+                                                            transformed_features,
+                                                            store_models,
+                                                            store_features,
+                                                            load_pickled,
+                                                            settingsfname,
+                                                            verbose,
+                                                            extra_data=Xtra)
+                subject_predictions = None
+            elif 'CUSTOM' in settings:
+                results, auc = utils.train_custom_model(settings,
+                                                 data,
+                                                 metadata,
+                                                 subject,
+                                                 model_pipe,
+                                                 store_models,
+                                                 load_pickled,
+                                                 verbose,
+                                                 extra_data=Xtra)
+                subject_predictions[subject] = results
+
+            else:
+                results, auc = utils.train_model(settings,
+                                                 data,
+                                                 metadata,
+                                                 subject,
+                                                 model_pipe,
+                                                 store_models,
+                                                 load_pickled,
+                                                 verbose,
+                                                 extra_data=Xtra)
+                subject_predictions[subject] = results
+
+            auc_scores.update({subject: auc})
+
+    if parallel:
         if 'RFE' in settings:
-            transformed_features, auc = utils.train_RFE(settings,
-                                                        data,
-                                                        metadata,
-                                                        subject,
-                                                        model_pipe,
-                                                        transformed_features,
-                                                        store_models,
-                                                        store_features,
-                                                        load_pickled,
-                                                        settingsfname,
-                                                        verbose,
-                                                        extra_data=Xtra)
-            subject_predictions = None
+            raise NotImplementedError('Parallel RFE is not implemented')
 
-        elif 'CUSTOM' in settings:
-            results, auc = utils.train_custom_model(settings,
-                                             data,
-                                             metadata,
-                                             subject,
-                                             model_pipe,
-                                             store_models,
-                                             load_pickled,
-                                             verbose,
-                                             extra_data=Xtra)
-            subject_predictions[subject] = results
         else:
             results, auc = utils.train_model(settings,
                                              data,
@@ -92,8 +113,27 @@ def main(settingsfname, verbose=False, store_models=True,
                                              verbose,
                                              extra_data=Xtra)
             subject_predictions[subject] = results
+        output = joblib.Parallel(n_jobs=parallel)(\
+                joblib.delayed(utils.train_model)(settings,
+                                                 data,
+                                                 metadata,
+                                                 subject,
+                                                 model_pipe,
+                                                 store_models,
+                                                 load_pickled,
+                                                 verbose,
+                                                 extra_data=Xtra,
+                                                 parallel=parallel)\
+                                                      for subject in subjects)
 
-        auc_scores.update({subject: auc})
+        results = [x[0] for x in output]
+        aucs = [x[1] for x in output]
+
+        for result in results:
+            subject_predictions.update(result)
+
+        for auc in aucs:
+            auc_scores.update(auc)
 
 
     if save_training_detailed:
@@ -117,4 +157,8 @@ if __name__=='__main__':
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 
-    main(opts.settings, verbose=opts.verbose, save_training_detailed=opts.pickle_detailed)
+
+    main(opts.settings,
+         verbose=opts.verbose,
+         save_training_detailed=opts.pickle_detailed,
+         parallel=int(opts.parallel))
