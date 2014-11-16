@@ -1070,14 +1070,17 @@ def build_model_pipe(settings):
     return model
 
 
-def get_weights(y):
+def get_weights(y, settings={}):
     '''
     Take the y (target) vector and produce weights:
     input: y (target vector)
     output: weights vector
     '''
-    # calculate correct weighting for unbalanced classes
-    weight = len(y)/sum(y)
+    if 'CUSTOM_WEIGHTING' in settings:
+        weight = settings['CUSTOM_WEIGHTING']
+    else:
+        # calculate correct weighting for unbalanced classes
+        weight = len(y)/sum(y)
     # generate vector for this weighting
     weights = np.array([weight if i == 1 else 1 for i in y])
     return weights
@@ -1332,13 +1335,13 @@ def train_model(settings, data, metadata, subject, model_pipe,
     for train, test in cv:
 
         # calculate the weights
-        weights = get_weights(y[train])
+        weights = get_weights(y[train],settings=settings)
         # fit the model to the training data
         model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
         # append new predictions
         predictions.append(model_pipe.predict_proba(X[test]))
         # append test weights to store (why?) (used to calculate auc below)
-        weights = get_weights(y[test])
+        weights = get_weights(y[test],settings=settings)
         allweights.append(weights)
         # store true labels
         labels.append(y[test])
@@ -1360,7 +1363,7 @@ def train_model(settings, data, metadata, subject, model_pipe,
 
     if store_models:
 
-        store_weights = get_weights(y)
+        store_weights = get_weights(y,settings=settings)
         model_pipe.fit(X, y, clf__sample_weight=store_weights)
         serialise_trained_model(model_pipe,
                                       subject,
