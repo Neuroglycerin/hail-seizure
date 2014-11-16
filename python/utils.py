@@ -599,7 +599,7 @@ class DataAssembler:
 
         return X
 
-    def build_custom_test(self, subject, namearray):
+    def build_custom_training(self, subject, featurearray):
         """
         Takes a subject and array of names and feature indexes
         then builds a training set of precisely those feature elements, 
@@ -610,8 +610,98 @@ class DataAssembler:
         Output
         * X,y
         """
+        # for preictal and interictal call build y and build X
+        # and stack them up
+        verification_names = [[],[],[]]
+        X_inter = self._build_custom_X(subject,'interictal',\
+                featurearray)
+        X_pre = self._build_custom_X(subject,'preictal',\
+                featurearray)
+        if self.include_pseudo:
+            X_psinter = self._build_custom_X(subject,\
+                    'pseudointerictal', featurearray)
+            X_pspre = self._build_custom_X(subject,\
+                    'pseudopreictal', featurearray)
+
+        if self.include_pseudo:
+            X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
+        else:
+            X = np.vstack([X_inter,X_pre])
+        if self.include_pseudo:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal'), \
+                           self._build_y(subject,'pseudointerictal'), \
+                           self._build_y(subject,'pseudopreictal')])
+        else:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal')])
+        # storing feature names in self.training_names
+
+        # storing the correct sequence of segments
+        if self.include_pseudo:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal']), \
+                    np.array(self.segments[subject]['pseudointerictal']), \
+                    np.array(self.segments[subject]['pseudopreictal'])   ])
+        else:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal'])])
 
         return X,y
+
+    def _build_custom_X(self, subject, ictyp, featurearray):
+        """
+        Builds a custom x matrix for a subject and ictal type
+        corresponding to the structure defined in the featurearray.
+        Input:
+        * subject
+        * ictyp
+        Output:
+        * X
+        """
+        # iterate over features, calling _assemble feature
+        # to build parts of the full X matrix
+        X_parts = []
+        feature_names = []
+        for feature, index in featurearray:
+            X_part = self._assemble_custom_feature(subject,feature,index,ictyp)
+            X_parts += [X_part]
+
+        # put these together with numpy
+        X = np.hstack(X_parts)
+
+        return X
+
+    def _assemble_custom_feature(self, subject, feature, index, ictyp):
+        """
+        Create a matrix containing a feature vector in the order:
+        Input:
+        * subject
+        * feature - which feature to build the matrix of
+        * index - which index of this feature to use
+        * ictyp
+        Output:
+        * X_part - part of the X matrix
+        """
+        if self.minutefeatures:
+            # initialise dictionary for features
+            segment10feature = {}
+
+        # iterate over segments and build the X_part matrix
+        rows = []
+        for segment in self.segments[subject][ictyp]:
+            row = np.array([self.data[feature][subject][ictyp][segment][index]])
+            # gather up all the rows in the right order
+            rows += [row]
+        # stack up all the rows
+        X_part = np.vstack(rows)
+        print("check if the rows are stacking properly")
+        pdb.set_trace()
+
+        return X_part
+
 
     def build_custom_test(self, subject, namearray):
         """
@@ -626,6 +716,7 @@ class DataAssembler:
         """
 
         return X
+
 
     def _composite_assemble_X(self,X_parts,dimensions):
         """
