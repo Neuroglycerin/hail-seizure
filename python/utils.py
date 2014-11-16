@@ -599,6 +599,34 @@ class DataAssembler:
 
         return X
 
+    def build_custom_test(self, subject, namearray):
+        """
+        Takes a subject and array of names and feature indexes
+        then builds a training set of precisely those feature elements, 
+        in that order.
+        Input:
+        * subject - string
+        * namearray - array of structure [[feature_name, index],...]
+        Output
+        * X,y
+        """
+
+        return X,y
+
+    def build_custom_test(self, subject, namearray):
+        """
+        Takes a subject and array of names and feature indexes
+        then builds a test set of precisely those feature elements, 
+        in that order.
+        Input:
+        * subject - string
+        * namearray - array of structure [[feature_name, index],...]
+        Output
+        * X
+        """
+
+        return X
+
     def _composite_assemble_X(self,X_parts,dimensions):
         """
         Takes the parts of X and assembles into a large tiled X matrix:
