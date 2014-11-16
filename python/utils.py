@@ -471,12 +471,19 @@ class DataAssembler:
                     featurearray = self.data[feature][subject][ictyp][segment]
                     # list of arrays for each minute
                     # how to slice depends on dimensionality
-                    if len(featurearray.shape) == 3:
-                        minute_segment_list = [featurearray[:,:,i] \
-                                for i in range(self.minutemod[ictyp])]
-                    elif len(featurearray.shape) == 2:
+
+                    if len(featurearray.shape) == 2:
                         minute_segment_list = [featurearray[:,i] \
                                 for i in range(self.minutemod[ictyp])]
+
+                    elif len(featurearray.shape) == 3:
+                        minute_segment_list = [featurearray[:,:,i] \
+                                for i in range(self.minutemod[ictyp])]
+
+                    elif len(featurearray.shape) == 4:
+                        minute_segment_list = [featurearray[:,:,:,i] \
+                                for i in range(self.minutemod[ictyp])]
+
                     else:
                         raise ValueError("Feature {0} has invalid number of"
                             " dimensions for a 1-minute feature".format(feature))
