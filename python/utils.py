@@ -940,6 +940,11 @@ def build_model_pipe(settings):
         selector = get_selector(settings)
         pipe_elements.append(('sel',selector))
 
+    if 'TREE_EMBEDDING' in settings.keys():
+        tree_embedding = sklearn.ensemble.RandomTreesEmbedding( \
+                **settings['TREE_EMBEDDING'])
+        pipe_elements.append(('embed', tree_embedding))
+
     classifier = settings['CLASSIFIER']
     pipe_elements.append(('clf',classifier))
 
