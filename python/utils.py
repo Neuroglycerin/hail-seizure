@@ -1063,7 +1063,14 @@ def build_model_pipe(settings):
         pipe_elements.append(('embed', tree_embedding))
 
     classifier = settings['CLASSIFIER']
-    pipe_elements.append(('clf',classifier))
+    
+    if 'BAGGING' in settings.keys():
+        # put the classifier in the bag, and append the bag
+        bagging = sklearn.ensemble.BaggingClassifier(base_estimator=classifier,
+                **settings['BAGGING'])
+        pipe_elements.append(('clf',bagging))
+    else:
+        pipe_elements.append(('clf',classifier))
 
     model = sklearn.pipeline.Pipeline(pipe_elements)
 
