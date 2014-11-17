@@ -72,6 +72,17 @@ def main(settingsfname, verbose=False, store_models=True,
                                                             verbose,
                                                             extra_data=Xtra)
                 subject_predictions = None
+            elif 'CUSTOM' in settings:
+                results, auc = utils.train_custom_model(settings,
+                                                 data,
+                                                 metadata,
+                                                 subject,
+                                                 model_pipe,
+                                                 store_models,
+                                                 load_pickled,
+                                                 verbose,
+                                                 extra_data=Xtra)
+                subject_predictions[subject] = results
 
             else:
                 results, auc = utils.train_model(settings,
@@ -91,6 +102,17 @@ def main(settingsfname, verbose=False, store_models=True,
         if 'RFE' in settings:
             raise NotImplementedError('Parallel RFE is not implemented')
 
+        else:
+            results, auc = utils.train_model(settings,
+                                             data,
+                                             metadata,
+                                             subject,
+                                             model_pipe,
+                                             store_models,
+                                             load_pickled,
+                                             verbose,
+                                             extra_data=Xtra)
+            subject_predictions[subject] = results
         output = joblib.Parallel(n_jobs=parallel)(\
                 joblib.delayed(utils.train_model)(settings,
                                                  data,

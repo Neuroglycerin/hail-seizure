@@ -29,6 +29,5 @@
                       "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
                       "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"],
     "SELECTION": {"FOREST": 1000},
-    "TREE_EMBEDDING": {"n_estimators":1000},
     "THRESHOLD": 0.0
 }

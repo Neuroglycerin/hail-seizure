@@ -606,6 +606,123 @@ class DataAssembler:
 
         return X
 
+    def build_custom_training(self, subject, featurearray):
+        """
+        Takes a subject and array of names and feature indexes
+        then builds a training set of precisely those feature elements, 
+        in that order.
+        Input:
+        * subject - string
+        * namearray - array of structure [[feature_name, index],...]
+        Output
+        * X,y
+        """
+        # for preictal and interictal call build y and build X
+        # and stack them up
+        verification_names = [[],[],[]]
+        X_inter = self._build_custom_X(subject,'interictal',\
+                featurearray)
+        X_pre = self._build_custom_X(subject,'preictal',\
+                featurearray)
+        if self.include_pseudo:
+            X_psinter = self._build_custom_X(subject,\
+                    'pseudointerictal', featurearray)
+            X_pspre = self._build_custom_X(subject,\
+                    'pseudopreictal', featurearray)
+
+        if self.include_pseudo:
+            X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
+        else:
+            X = np.vstack([X_inter,X_pre])
+        if self.include_pseudo:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal'), \
+                           self._build_y(subject,'pseudointerictal'), \
+                           self._build_y(subject,'pseudopreictal')])
+        else:
+            y = np.hstack([self._build_y(subject,'interictal'), \
+                           self._build_y(subject,'preictal')])
+        # storing feature names in self.training_names
+
+        # storing the correct sequence of segments
+        if self.include_pseudo:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal']), \
+                    np.array(self.segments[subject]['pseudointerictal']), \
+                    np.array(self.segments[subject]['pseudopreictal'])   ])
+        else:
+            self.training_segments = np.hstack([ \
+                    np.array(self.segments[subject]['interictal']), \
+                    np.array(self.segments[subject]['preictal'])])
+
+        return X,y
+
+    def _build_custom_X(self, subject, ictyp, featurearray):
+        """
+        Builds a custom x matrix for a subject and ictal type
+        corresponding to the structure defined in the featurearray.
+        Input:
+        * subject
+        * ictyp
+        Output:
+        * X
+        """
+        # iterate over features, calling _assemble feature
+        # to build parts of the full X matrix
+        X_parts = []
+        feature_names = []
+        for feature, index in featurearray:
+            X_part = self._assemble_custom_feature(subject,feature,index,ictyp)
+            X_parts += [X_part]
+
+        # put these together with numpy
+        X = np.hstack(X_parts)
+
+        return X
+
+    def _assemble_custom_feature(self, subject, feature, index, ictyp):
+        """
+        Create a matrix containing a feature vector in the order:
+        Input:
+        * subject
+        * feature - which feature to build the matrix of
+        * index - which index of this feature to use
+        * ictyp
+        Output:
+        * X_part - part of the X matrix
+        """
+
+        # iterate over segments and build the X_part matrix
+        rows = []
+        print("Processing {0} with index {1}".format(feature,index))
+        for segment in self.segments[subject][ictyp]:
+            row = np.ndarray.flatten(self.data[feature][subject]\
+                    [ictyp][segment])[int(index)]
+            # gather up all the rows in the right order
+            rows += [row]
+        # stack up all the rows
+        X_part = np.vstack(rows)
+        pdb.set_trace()
+
+        return X_part
+
+
+    def build_custom_test(self, subject, namearray):
+        """
+        Takes a subject and array of names and feature indexes
+        then builds a test set of precisely those feature elements, 
+        in that order.
+        Input:
+        * subject - string
+        * namearray - array of structure [[feature_name, index],...]
+        Output
+        * X
+        """
+
+        return X
+
+
     def _composite_assemble_X(self,X_parts,dimensions):
         """
         Takes the parts of X and assembles into a large tiled X matrix:
@@ -946,21 +1063,31 @@ def build_model_pipe(settings):
         pipe_elements.append(('embed', tree_embedding))
 
     classifier = settings['CLASSIFIER']
-    pipe_elements.append(('clf',classifier))
+    
+    if 'BAGGING' in settings.keys():
+        # put the classifier in the bag, and append the bag
+        bagging = sklearn.ensemble.BaggingClassifier(base_estimator=classifier,
+                **settings['BAGGING'])
+        pipe_elements.append(('clf',bagging))
+    else:
+        pipe_elements.append(('clf',classifier))
 
     model = sklearn.pipeline.Pipeline(pipe_elements)
 
     return model
 
 
-def get_weights(y):
+def get_weights(y, settings={}):
     '''
     Take the y (target) vector and produce weights:
     input: y (target vector)
     output: weights vector
     '''
-    # calculate correct weighting for unbalanced classes
-    weight = len(y)/sum(y)
+    if 'CUSTOM_WEIGHTING' in settings:
+        weight = settings['CUSTOM_WEIGHTING']
+    else:
+        # calculate correct weighting for unbalanced classes
+        weight = len(y)/sum(y)
     # generate vector for this weighting
     weights = np.array([weight if i == 1 else 1 for i in y])
     return weights
@@ -1119,6 +1246,7 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
     if load_pickled:
         if extra_data is None:
             raise ValueError
+        picklednames =  extra_data[subject]['names']
         X = np.hstack([X, extra_data[subject]['features']])
 
     # get the CV iterator
@@ -1142,7 +1270,7 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
     rfecv = sklearn.feature_selection.RFECV(estimator=model_pipe.named_steps['clf'],
         step=stepsize, cv=cv, **settings['RFE'])
     rfecv.fit(Xt,y)
-    # take the best grid score as the max
+    # take the best grid score as the auc
     auc = max(rfecv.grid_scores_)
 
     if store_models:
@@ -1166,7 +1294,8 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
         # Inside each dictionary will be a dictionary
         # storing the transformed array and an index
         # describing which feature is which.
-        feature_ids = get_feature_ids(assembler.training_names)
+        feature_ids = get_feature_ids(assembler.training_names,\
+                pickled=picklednames)
         feature_ids = feature_ids[mask]
         Xt = rfecv.transform(Xt)
         transformed_features[subject] = {'features':Xt,
@@ -1190,6 +1319,84 @@ def train_model(settings, data, metadata, subject, model_pipe,
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
     X,y = assembler.build_training(subject)
+
+    if load_pickled:
+        if extra_data is None:
+            raise ValueError
+        X = np.hstack([X, extra_data[subject]['features']])
+
+
+    # get the CV iterator
+    cv = Sequence_CV(assembler.training_segments,
+                           metadata,
+                           r_seed=settings['R_SEED'],
+                           n_iter=settings['CVITERCOUNT'])
+
+    # initialise lists for cross-val results
+    predictions = []
+    labels = []
+    allweights = []
+    segments = []
+
+    # run cross validation and report results
+    for train, test in cv:
+
+        # calculate the weights
+        weights = get_weights(y[train],settings=settings)
+        # fit the model to the training data
+        model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
+        # append new predictions
+        predictions.append(model_pipe.predict_proba(X[test]))
+        # append test weights to store (why?) (used to calculate auc below)
+        weights = get_weights(y[test],settings=settings)
+        allweights.append(weights)
+        # store true labels
+        labels.append(y[test])
+        # store segments
+        segments.append(assembler.training_segments[test])
+
+    # stack up the results
+    predictions = np.vstack(predictions)[:,1]
+    labels = np.hstack(labels)
+    weights = np.hstack(allweights)
+    segments = np.hstack(segments)
+
+    # calculate the total AUC score
+    auc = sklearn.metrics.roc_auc_score(labels,
+                                        predictions,
+                                        sample_weight=weights)
+
+    print("predicted AUC score for {1}: {0:.2f}".format(auc, subject))
+
+    if store_models:
+
+        store_weights = get_weights(y,settings=settings)
+        model_pipe.fit(X, y, clf__sample_weight=store_weights)
+        serialise_trained_model(model_pipe,
+                                      subject,
+                                      settings,
+                                      verbose=verbose)
+
+    #store results from each subject
+
+    results = (predictions, labels, weights, segments)
+
+    if parallel:
+        results = {subject: results}
+        auc = {subject: auc}
+        return (results, auc)
+
+    return results, auc
+
+def train_custom_model(settings, data, metadata, subject, model_pipe,
+                store_models, load_pickled, verbose, extra_data=None):
+    # initialise the data assembler
+    assembler = DataAssembler(settings, data, metadata)
+    # load the pickled array
+    with open(settings['CUSTOM'],"rb") as fh:
+        rfe_feature_dict = pickle.load(fh)
+    featurearray = rfe_feature_dict[subject]['names']
+    X,y = assembler.build_custom_training(subject,featurearray)
 
     if load_pickled:
         if extra_data is None:
@@ -1251,14 +1458,7 @@ def train_model(settings, data, metadata, subject, model_pipe,
     #store results from each subject
 
     results = (predictions, labels, weights, segments)
-
-    if parallel:
-        results = {subject: results}
-        auc = {subject: auc}
-        return (results, auc)
-
     return results, auc
-
 
 
 def combined_auc_score(settings, auc_scores, subj_pred=None):
