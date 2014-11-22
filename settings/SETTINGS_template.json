@@ -15,11 +15,7 @@
                   "pseudointerictal",
                   "pseudopreictal"],
     "FEATURES": ["INSERT_FEATS"],
-    "VERSION": "_v3",
-    "RAW_DATA_DIRS": ["/disk/data2/neuroglycerin/hail-seizure-data/",
-                      "/disk/data1/neuroglycerin/hail-seizure-data/",
-                      "/disk/scratch/s1145806/hail-seizure-data/",
-                      "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
-                      "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
+    "VERSION": "INSERT VERSION",
+    "RAW_DATA_DIRS": ["INSERT RAW DATA LOCATION"]
 }
 
