@@ -393,16 +393,24 @@ def write_settingsjson(settings, args):
                 elif modtyp=='dirtycsp':
                     modtyp = 'csp'
                     
+                if not modtyp=='':
+                    mymod = '_'+modtyp
+                else:
+                    mymod = modtyp
                 myfull = []
                 myshort = []
                 
                 # Make a list of all features with this modtyp
                 for iFtr,feature in enumerate(args.featurenames):
+                    if feature[-3:]=='.h5':
+                        feature = feature[:-6]
+                    if feature[-1:]=='_':
+                        feature = feature[:-1]
                     # Have to have a special case for the unsplit segments
                     if split==1:
-                        myfull.append('{0}_{1}_'.format(modtyp, feature))
+                        myfull.append('{0}{1}_'.format(mymod, feature))
                     else:
-                        myfull.append('{0}_{2}{1}_'.format(modtyp, feature, split))
+                        myfull.append('{0}{2}{1}_'.format(mymod, feature, split))
                     # Check if starts with feat_
                     if feature[0:5] == 'feat_':
                         # The short version does not need "feat_" at beginning
