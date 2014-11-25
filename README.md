@@ -8,7 +8,7 @@ http://www.kaggle.com/c/seizure-detection
 This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissionBestPractices
 
 ##Hardware / OS platform used
- * Salmon (server owned by Edinburgh University Informatics Department): 
+ * Various servers owned by Edinburgh University Informatics Department: 
       - 64 AMD Opteron cores, 256GB RAM, 4TB disk 
       - Scientific Linux
  * Various mid-high end desktops and laptops:
@@ -74,9 +74,14 @@ This is achieved by running:
 ./train.py
 ```
 
-##Cross validation
+###Cross validation
 
-TO BE DONE
+Cross validation is run in the process of the `train.py` script.
+The AUC for each subject and over all subjects is calculated and saved to the 
+If the verbose option is set this will also print the calculated values to the command line.
+
+_Important note_: cross validation is run by splitting the data over the hours that it is split into.
+This is very important, as this respects the split between training and test data for the leader board.
 
 ##Make prediction
 
