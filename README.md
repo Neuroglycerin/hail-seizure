@@ -22,10 +22,8 @@ This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissi
  * Python 3.4.1
  * scikit_learn-0.15.2
  * numpy-1.8.1
- * pandas-0.14.0
  * scipy
  * h5py
- * json
 
 ##Generate features
 
