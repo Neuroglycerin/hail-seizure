@@ -191,7 +191,7 @@ merge.json
 ```
 
 ```
-./average.py -s merge.json -o merged_many_v4.csv
+./average.py -s merge.json -o merged_many_v2.csv
 ```
 
 
