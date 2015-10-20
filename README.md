@@ -8,7 +8,7 @@ http://www.kaggle.com/c/seizure-detection
 This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissionBestPractices
 
 ##Hardware / OS platform used
- * Salmon (server owned by Edinburgh University Informatics Department): 
+ * Various servers owned by Edinburgh University Informatics Department: 
       - 64 AMD Opteron cores, 256GB RAM, 4TB disk 
       - Scientific Linux
  * Various mid-high end desktops and laptops:
@@ -22,10 +22,8 @@ This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissi
  * Python 3.4.1
  * scikit_learn-0.15.2
  * numpy-1.8.1
- * pandas-0.14.0
  * scipy
  * h5py
- * json
 
 ##Generate features
 
@@ -76,19 +74,38 @@ This is achieved by running:
 ./train.py
 ```
 
-##Cross validation
+To run alternative models the options can be accessed through the standard
+help interface:
 
-TO BE DONE
+```
+./train.py -h
+```
+
+### Cross validation
+
+Cross validation is run in the process of the `train.py` script.
+The AUC for each subject and over all subjects is calculated and saved to the 
+If the verbose option is set this will also print the calculated values to the command line.
+
+_Important note_: cross validation is run by splitting the data over the hours that it is split into.
+This is very important, as this respects the split between training and test data for the leader board.
 
 ##Make prediction
 
-Run
+After running `train.py` model files will be generated in the default model 
+(`model`) directory. These will be automatically loaded along with the test data
+to classify the test data points. The results will be written to an output
+csv in the default output directory (`output`):
+
 ```
 ./predict.py
 ```
 
-TO BE DONE
+As above, options can be viewed by:
 
+```
+./predict.py -h
+```
 
 ## SETTINGS.json
 
@@ -121,6 +138,7 @@ TO BE DONE
                       "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
 }
 ```
+
 * `SUBJECTS`: list of which subjects to use in the current run
 * `VERSION`: string to indicate version number of this run
 * `RAW_DATA_DIRS`: directory that contains the raw .mat data organised by subject
@@ -129,8 +147,51 @@ TO BE DONE
 * `MODEL_PATH`: directory containing the serialised miodels
 * `TEST_DATA_PATH`: directory containing all output related to model testing (CV etc).
 * `SUBMISSION_PATH`: directory containing the submission csv for the current run
+* `THRESHOLD`: if present will activate VarianceThreshold
+* `PCA`: if present will activate Principle Component analysis transform, options
+not implemented
+* `SELECTION`: if present will activate univariate feature selection. Dictionary
+inside each of these keys will be used as options, keys are:
+    * `KBEST`: Scikit-learn [K-best][kbest] using f-values
+    * `PERCENTILE`: Scikit-learn [percentile best][percentile] using f-values
+    * `FOREST`: Scikit-learn [Extra-tree transformation][extra]
+    * `SVC`: Scikit-learn [linear SVC][lsvc], options are hardcoded
+* `TREE_EMBEDDING`: [Random Tree Embedding][rfembed] transformation
+* `BAGGING`: [meta-bagger][meta] using selected classifier as base, options are 
+set as a dictionary at this key.
+* `RFE`: use [recursive feature elimination][rfe], only works with linear SVC
 
+[kbest]: http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html
+[percentile]: http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectPercentile.html
+[extra]: http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
+[lsvc]: http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
+[rfembed]: http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomTreesEmbedding.html
+[meta]: http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html
+[rfe]: http://scikit-learn.org/stable/auto_examples/plot_rfe_with_cross_validation.html
 
 ## Model documentation
 
-TO BE COMPLETED
+Our final model was a combination of four models, all of which used a support 
+vector machine classifier with feature selection. Notes on this, and the code
+actually used in the competition can be found the [Comparing outputs][comparing]
+IPython notebook. The settings for each of these models can be found in the 
+`settings` directory of the repository.
+
+The important part of this code that can combine the outputs to produce the
+final csv can be found in the `average.py` script. Calling this with the 
+four csvs four csvs found in merge.json will produce our final output csv:
+
+```json
+merge.json
+----------
+["output/forestselection_gavin_submission_using__v2_feats.csv",
+ "output/SVC_best_for_each_subject_in_batchall_with_FS_submission_using__v3_feats.csv",
+ "output/stoch_opt_2nd_submission_using__v2_feats.csv",
+ "output/bbsubj_pg_submission_using__v2_feats.csv"]
+```
+
+```
+./average.py -s merge.json -o merged_many_v1.csv
+```
+
+

@@ -103,17 +103,7 @@ def main(settingsfname, verbose=False, store_models=True,
             raise NotImplementedError('Parallel RFE is not implemented')
 
         else:
-            results, auc = utils.train_model(settings,
-                                             data,
-                                             metadata,
-                                             subject,
-                                             model_pipe,
-                                             store_models,
-                                             load_pickled,
-                                             verbose,
-                                             extra_data=Xtra)
-            subject_predictions[subject] = results
-        output = joblib.Parallel(n_jobs=parallel)(\
+            output = joblib.Parallel(n_jobs=parallel)(\
                 joblib.delayed(utils.train_model)(settings,
                                                  data,
                                                  metadata,
@@ -126,8 +116,8 @@ def main(settingsfname, verbose=False, store_models=True,
                                                  parallel=parallel)\
                                                       for subject in subjects)
 
-        results = [x[0] for x in output]
-        aucs = [x[1] for x in output]
+            results = [x[0] for x in output]
+            aucs = [x[1] for x in output]
 
         for result in results:
             subject_predictions.update(result)

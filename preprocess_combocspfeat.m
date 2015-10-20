@@ -9,6 +9,9 @@ pbgm = {'cln,csp,dwn','cln,ica,dwn',   'cln,ica,dwn',         'cln,ica,dwn', 'cl
 test_set = [120 0.05 0.1 0.25 0.333 0.5];
 train_set = [20 0.05 0.1 0.25 0.333 0.5];
 
+test_set = [0.9 0.95 0.99];
+train_set = [20 0.05 0.1 0.25 0.333 0.5 0.667 0.8 0.99];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 parfor iTest = 1:length(test_set)
@@ -24,6 +27,8 @@ parfor iTest = 1:length(test_set)
     for iSbj=1:numel(subjlst)
         featReduceDimCSP(outfeatname, pbgf, pbgm, subjlst{iSbj}, ictypgroupings, test_set(iTest), removebest);
     end
+
+    fprintf('Finished %s\n',outfeatname);
 
     for iTrain = 1:length(train_set)
         
