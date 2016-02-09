@@ -137,6 +137,7 @@ def get_featlist():
                 'feat_pib_ratioBB',
                 'feat_PSDcorrcoef',
                 'feat_PSDcorrcoefeig',
+                'feat_psd',
                 'feat_psd_logf',
                 'feat_psd_logfBB',
                 'feat_PSDlogfcorrcoef',
