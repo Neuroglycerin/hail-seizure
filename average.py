@@ -6,9 +6,10 @@ import csv
 import json
 import os
 
-def main(settings,output):
+
+def main(settings, output):
     """
-    Function to take a json with a 
+    Function to take a json with a
     list of csvs and average them to
     produce a merged set of predictions.
     Crude bagging.
@@ -36,7 +37,7 @@ def main(settings,output):
     # result, while storing it in the merged dictionary
     merged = {}
     segments = list(outputs[outputcsvs[0]].keys())
-    with open(os.path.join("output",output), "w") as cf:
+    with open(os.path.join("output", output), "w") as cf:
         c = csv.writer(cf)
         c.writerow(fl)
         for s in segments:
@@ -44,7 +45,7 @@ def main(settings,output):
             for fname in outputcsvs:
                 many.append(outputs[fname][s])
             mnval = np.mean(many)
-            c.writerow([s,mnval])
+            c.writerow([s, mnval])
             merged[s] = mnval
 
     return merged
@@ -70,4 +71,4 @@ if __name__ == "__main__":
     (opts, args) = parser.parse_args()
 
     # call the main function with these two options
-    main(opts.settings,opts.output)
+    main(opts.settings, opts.output)

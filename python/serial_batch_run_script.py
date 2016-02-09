@@ -8,6 +8,7 @@ import python.utils as utils
 import warnings
 import glob
 
+
 def get_batch_parser():
     '''
     Generate optparse parser object for batch_run_script.py
@@ -35,6 +36,7 @@ def get_batch_parser():
 
     return parser
 
+
 def get_settings_list(settings_directory, verbose=False):
     '''
     Get list of all settings file in settings directory
@@ -44,16 +46,17 @@ def get_settings_list(settings_directory, verbose=False):
     settings_dir_abs_path = os.path.abspath(settings_directory)
     settings_files = glob.glob(os.path.join(settings_dir_abs_path, '*.json'))
 
-    print_verbose('##Settings directory parsed: {0} files##'.format(\
-            len(settings_files)), flag=verbose)
+    print_verbose('##Settings directory parsed: {0} files##'.format(
+        len(settings_files)), flag=verbose)
 
     return settings_files
+
 
 def print_verbose(string, flag=False):
     '''
     Print statement only if flag is true
     '''
-    if type(flag) is not bool:
+    if not isinstance(flag, bool):
         raise ValueError("verbose flag is not bool")
     if flag:
         print(string)
@@ -65,7 +68,7 @@ def call_train_and_predict(settings_file, verbose=False):
 
     batch_out_dir = "batch_out"
     out = open(os.path.join(
-                     batch_out_dir,
+        batch_out_dir,
                      "{0}_batch_AUC_scores".format(settings['RUN_NAME'])), 'w')
     err = None
 
@@ -82,23 +85,22 @@ def call_train_and_predict(settings_file, verbose=False):
 
     # Raise a warning if it was non-zero and return
     if train_retcode != 0:
-        warnings.warn("train.py -s {0} did not complete successfully".format(\
-                settings_file))
+        warnings.warn("train.py -s {0} did not complete successfully".format(
+            settings_file))
         return None
 
     print_verbose('##Trained {0}##'.format(settings_file), flag=verbose)
-
 
     print_verbose('**Predicting {0}**'.format(settings_file), flag=verbose)
 
     # Start predict proc
     predict_retcode = subprocess.call(['../predict.py', '-s', settings_file],
-                                     stdout=out, stderr=err)
+                                      stdout=out, stderr=err)
 
         # Raise warning if predict failed and return
     if predict_retcode != 0:
-        warnings.warn("predict.py -s {0} did not complete successfully".format(\
-                settings_file))
+        warnings.warn("predict.py -s {0} did not complete successfully".format(
+            settings_file))
         return None
 
     print_verbose('##Predicted {0}##'.format(settings_file), flag=verbose)
@@ -120,13 +122,14 @@ def run_in_serial(all_settings, verbose=False):
     index = 0
 
     for setting in all_settings:
-        index+=1
-        print_verbose('@@Running setting {0} of {1}@@'.format(index, num_settings),
+        index += 1
+        print_verbose(
+            '@@Running setting {0} of {1}@@'.format(index, num_settings),
                      flag=verbose)
 
         call_train_and_predict(setting, verbose=verbose)
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     # note: if you have set relative paths in the jsons then this script must
     # be run in a directory that contains the appropriate output folders
@@ -137,4 +140,3 @@ if __name__=='__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
     run_in_serial(settings_list, verbose=opts.verbose)
-

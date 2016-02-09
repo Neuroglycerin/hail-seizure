@@ -4,6 +4,7 @@ import python.utils as utils
 import os
 import pickle
 
+
 def main(settingsfname, verbose=False):
 
     settings = utils.get_settings(settingsfname)
@@ -14,8 +15,8 @@ def main(settingsfname, verbose=False):
 
     metadata = utils.get_metadata()
 
-    features_that_parsed = [feature for feature in \
-            settings['FEATURES'] if feature in list(data.keys())]
+    features_that_parsed = [feature for feature in
+                            settings['FEATURES'] if feature in list(data.keys())]
 
     settings['FEATURES'] = features_that_parsed
 
@@ -25,24 +26,25 @@ def main(settingsfname, verbose=False):
     model_pipe = utils.build_model_pipe(settings)
 
     utils.print_verbose("=== Model Used ===\n"
-    "{0}\n==================".format(model_pipe),flag=verbose)
+                        "{0}\n==================".format(model_pipe), flag=verbose)
 
-    #dictionary to store results
+    # dictionary to store results
     subject_predictions = {}
 
     accuracy_scores = {}
 
     for subject in subjects:
-        utils.print_verbose("=====Training {0} Model=====".format(str(subject)),
+        utils.print_verbose(
+            "=====Training {0} Model=====".format(str(subject)),
                             flag=verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
-        X,y = assembler.test_train_discrimination(subject)
+        X, y = assembler.test_train_discrimination(subject)
 
         # get the CV iterator
-        cv = utils.sklearn.cross_validation.StratifiedShuffleSplit( \
-                               y,
+        cv = utils.sklearn.cross_validation.StratifiedShuffleSplit(
+            y,
                                random_state=settings['R_SEED'],
                                n_iter=settings['CVITERCOUNT'])
 
@@ -73,8 +75,8 @@ def main(settingsfname, verbose=False):
 
         # calculate the total accuracy
         accuracy = utils.sklearn.metrics.accuracy_score(labels,
-                                                  predictions,
-                                                  sample_weight=weights)
+                                                        predictions,
+                                                        sample_weight=weights)
 
         print("Accuracy score for {1}: {0:.3f}".format(accuracy, subject))
 
@@ -84,29 +86,29 @@ def main(settingsfname, verbose=False):
         # store results from each subject
         subject_predictions[subject] = (predictions, labels, weights)
 
-
-    #stack subject results (don't worrry about this line)
+    # stack subject results (don't worrry about this line)
     predictions, labels, weights = map(utils.np.hstack,
-                                     zip(*list(subject_predictions.values())))
+                                       zip(*list(subject_predictions.values())))
 
     # calculate global accuracy
     accuracy = utils.sklearn.metrics.accuracy_score(labels, predictions,
                                                     sample_weight=weights)
 
-    print("predicted accuracy score over all subjects: {0:.2f}".format(accuracy))
+    print(
+        "predicted accuracy score over all subjects: {0:.2f}".format(accuracy))
 
     # output AUC scores to file
     accuracy_scores.update({'all': accuracy})
 
     settings['DISCRIMINATE'] = 'accuracy_scores.csv'
-    #settings['AUC_SCORE_PATH'] = 'discriminate_scores'
+    # settings['AUC_SCORE_PATH'] = 'discriminate_scores'
     utils.output_auc_scores(accuracy_scores, settings)
 
     return accuracy_scores
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
-    #get and parse CLI options
+    # get and parse CLI options
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()
 

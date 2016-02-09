@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import python.utils as utils #contains mainly parsers
+import python.utils as utils  # contains mainly parsers
 import json
 import glob
 import train
 import csv
 import numpy as np
+
 
 def main(settings_file='SETTINGS.json'):
 
@@ -22,15 +23,15 @@ def main(settings_file='SETTINGS.json'):
     metadata = utils.get_metadata()
 
     features_that_parsed = list(data.keys())
-    settings['FEATURES'] = [feature for feature in settings['FEATURES'] \
-            if feature in features_that_parsed]
-    
+    settings['FEATURES'] = [feature for feature in settings['FEATURES']
+                            if feature in features_that_parsed]
+
     # check if features are 1-minute
     if all('10feat' in feature for feature in settings['FEATURES']):
         # set the flage
         minutefeatures = True
     elif not all('10feat' in feature for feature in settings['FEATURES']) and \
-        any('10feat' in feature for feature in settings['FEATURES']):
+            any('10feat' in feature for feature in settings['FEATURES']):
         raise ValueError("Cannot mix 1-minute and 10-minute features.")
     else:
         minutefeatures = False
@@ -40,7 +41,10 @@ def main(settings_file='SETTINGS.json'):
 
     for subject in subjects:
         # load the trained model:
-        model = utils.read_trained_model(subject, settings, verbose=opts.verbose)
+        model = utils.read_trained_model(
+            subject,
+            settings,
+            verbose=opts.verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -54,7 +58,7 @@ def main(settings_file='SETTINGS.json'):
         # on each segment by averaging
         if minutefeatures:
             segmentdict = {}
-            for segment,prediction in zip(assembler.test_segments, predictions):
+            for segment, prediction in zip(assembler.test_segments, predictions):
                 if segment not in segmentdict:
                     segmentdict[segment] = []
                 segmentdict[segment].append(prediction)
@@ -62,14 +66,14 @@ def main(settings_file='SETTINGS.json'):
             # now average them along their columns
             for segment in assembler.test_segments:
                 segmentdict[segment] = np.vstack(segmentdict[segment])
-                segmentdict[segment] = np.mean(segmentdict[segment],axis=0)
+                segmentdict[segment] = np.mean(segmentdict[segment], axis=0)
 
         for segment, prediction in zip(assembler.test_segments, predictions):
             prediction_dict[segment] = prediction
 
     utils.output_csv(prediction_dict, settings, verbose=opts.verbose)
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     parser = utils.get_parser()
     (opts, args) = parser.parse_args()

@@ -12,9 +12,10 @@ import getopt
 
 
 class H5toText(object):
+
     '''
     Example usage showing default display::
-    
+
         mc = H5toText(filename)
         mc.array_items_shown = 5
         mc.report()
@@ -24,7 +25,7 @@ class H5toText(object):
     isNeXus = False
     array_items_shown = 5
 
-    def __init__(self, filename, makeReport = False):
+    def __init__(self, filename, makeReport=False):
         ''' Constructor '''
         self.requested_filename = filename
         if os.path.exists(filename):
@@ -35,18 +36,19 @@ class H5toText(object):
 
     def report(self):
         ''' reporter '''
-        if self.filename == None: return
+        if self.filename is None:
+            return
         f = h5py.File(self.filename, 'r')
         txt = self.filename
         if self.isNeXus:
             txt += ":NeXus data file"
-        self.showGroup(f, txt, indentation = "")
+        self.showGroup(f, txt, indentation="")
         f.close()
 
     def testIsNeXus(self):
         '''
         test if the selected HDF5 file is a NeXus file
-        
+
         At this time, the code only tests for the existence of
         the NXentry group.  The tests should be extended to require
         a NXdata group and a single dataset containing signal=1 attribute.
@@ -55,21 +57,21 @@ class H5toText(object):
         try:
             f = h5py.File(self.filename, 'r')
             for value in f.values():
-                #print str(type(value))
+                # print str(type(value))
                 if '.Group' not in str(type(value)):
                     continue
-                #print value.attrs.keys()
+                # print value.attrs.keys()
                 if 'NX_class' not in value.attrs:
                     continue
                 v = value.attrs['NX_class']
-                #print type(v), v, type("a string")
+                # print type(v), v, type("a string")
                 possible_types = ["<type 'numpy.string_'>", ]
                 possible_types.append("<type 'str'>")
                 if str(type(v)) not in possible_types:
                     continue
                 if str(v) == str('NXentry'):
                     # TODO: apply more tests
-                    #    for group NXdata 
+                    #    for group NXdata
                     #    and signal=1 attribute on only one dataset
                     result = True
                     break
@@ -78,7 +80,7 @@ class H5toText(object):
             pass
         return result
 
-    def showGroup(self, obj, name, indentation = "  "):
+    def showGroup(self, obj, name, indentation="  "):
         '''print the contents of the group'''
         nxclass = ""
         if 'NX_class' in obj.attrs:
@@ -94,46 +96,49 @@ class H5toText(object):
                 # if the external file is not present, cannot know if
                 # link target is a dataset or a group or another link
                 fmt = '%s  %s --> file="%s", path="%s"'
-                print((fmt % (indentation, itemname, linkref.filename, linkref.path)))
+                print(
+                    (fmt %
+                     (indentation, itemname, linkref.filename, linkref.path)))
             else:
                 classref = obj.get(itemname, getclass=True)
                 value = obj.get(itemname)
                 if '.File' in str(classref) or '.Group' in str(classref):
                     groups.append(value)
                 elif '.Dataset' in str(classref):
-                    self.showDataset(value, itemname, indentation+"  ")
+                    self.showDataset(value, itemname, indentation + "  ")
                 else:
-                    msg = "unidentified %s: %s, %s", itemname, repr(classref), repr(linkref)
+                    msg = "unidentified %s: %s, %s", itemname, repr(
+                        classref), repr(linkref)
                     raise Exception(msg)
         # then show things that look like groups
         for value in groups:
             itemname = value.name.split("/")[-1]
-            self.showGroup(value, itemname, indentation+"  ")
+            self.showGroup(value, itemname, indentation + "  ")
 
-    def showAttributes(self, obj, indentation = "  "):
+    def showAttributes(self, obj, indentation="  "):
         '''print any attributes'''
         for name, value in obj.attrs.items():
             print(("%s  @%s = %s" % (indentation, name, str(value))))
 
-    def showDataset(self, dset, name, indentation = "  "):
+    def showDataset(self, dset, name, indentation="  "):
         '''print the contents and structure of a dataset'''
         shape = dset.shape
         if self.isNeXus:
             if "target" in dset.attrs:
                 if dset.attrs['target'] != dset.name:
-                    print(( "%s%s --> %s" % (indentation, name, 
-                                           dset.attrs['target'])))
+                    print(("%s%s --> %s" % (indentation, name,
+                                            dset.attrs['target'])))
                     return
         txType = self.getType(dset)
         txShape = self.getShape(dset)
         if shape == (1,):
             value = " = %s" % str(dset[0])
-            print(("%s%s:%s%s%s" % (indentation, name, txType, 
-                                   txShape, value)))
+            print(("%s%s:%s%s%s" % (indentation, name, txType,
+                                    txShape, value)))
             self.showAttributes(dset, indentation)
         else:
-            print(("%s%s:%s%s = __array" % (indentation, name, 
-                                       txType, txShape)))
+            print(("%s%s:%s%s = __array" % (indentation, name,
+                                            txType, txShape)))
             # show these before __array
             self.showAttributes(dset, indentation)
             if self.array_items_shown > 2:
@@ -163,7 +168,7 @@ class H5toText(object):
             result = "[%s]" % ",".join(l)
         return result
 
-    def formatArray(self, obj, indentation = '  '):
+    def formatArray(self, obj, indentation='  '):
         ''' nicely format an array up to rank=5 '''
         shape = obj.shape
         r = ""
@@ -175,43 +180,54 @@ class H5toText(object):
 
     def decideNumShown(self, n):
         ''' determine how many values to show '''
-        if self.array_items_shown != None:
+        if self.array_items_shown is not None:
             if n > self.array_items_shown:
                 n = self.array_items_shown - 2
         return n
 
-    def formatNdArray(self, obj, indentation = '  '):
+    def formatNdArray(self, obj, indentation='  '):
         ''' return a list of lower-dimension arrays, nicely formatted '''
         shape = obj.shape
         rank = len(shape)
-        if not rank in (1, 2, 3, 4, 5): return None
-        n = self.decideNumShown( shape[0] )
+        if not rank in (1, 2, 3, 4, 5):
+            return None
+        n = self.decideNumShown(shape[0])
         r = []
         for i in range(n):
-            if rank == 1: item = obj[i]
-            if rank == 2: item = self.formatNdArray(obj[i, :])
-            if rank == 3: item = self.formatNdArray(obj[i, :, :], 
-                                                    indentation + '  ')
-            if rank == 4: item = self.formatNdArray(obj[i, :, :, :], 
-                                                    indentation + '  ')
-            if rank == 5: item = self.formatNdArray(obj[i, :, :, :, :], 
-                                                    indentation + '  ')
-            r.append( item )
+            if rank == 1:
+                item = obj[i]
+            if rank == 2:
+                item = self.formatNdArray(obj[i, :])
+            if rank == 3:
+                item = self.formatNdArray(obj[i, :, :],
+                                          indentation + '  ')
+            if rank == 4:
+                item = self.formatNdArray(obj[i, :, :, :],
+                                          indentation + '  ')
+            if rank == 5:
+                item = self.formatNdArray(obj[i, :, :, :, :],
+                                          indentation + '  ')
+            r.append(item)
         if n < shape[0]:
             # skip over most
             r.append("...")
             #  get the last one
-            if rank == 1: item = obj[-1]
-            if rank == 2: item = self.formatNdArray(obj[-1, :])
-            if rank == 3: item = self.formatNdArray(obj[-1, :, :], 
-                                                    indentation + '  ')
-            if rank == 4: item = self.formatNdArray(obj[-1, :, :, :], 
-                                                    indentation + '  ')
-            if rank == 5: item = self.formatNdArray(obj[-1, :, :, :, :], 
-                                                    indentation + '  ')
-            r.append( item )
+            if rank == 1:
+                item = obj[-1]
+            if rank == 2:
+                item = self.formatNdArray(obj[-1, :])
+            if rank == 3:
+                item = self.formatNdArray(obj[-1, :, :],
+                                          indentation + '  ')
+            if rank == 4:
+                item = self.formatNdArray(obj[-1, :, :, :],
+                                          indentation + '  ')
+            if rank == 5:
+                item = self.formatNdArray(obj[-1, :, :, :, :],
+                                          indentation + '  ')
+            r.append(item)
         if rank == 1:
-            s = str( r )
+            s = str(r)
         else:
             s = "[\n" + indentation + '  '
             s += ("\n" + indentation + '  ').join(r)
@@ -222,7 +238,7 @@ class H5toText(object):
 def do_filelist(filelist, limit=5):
     '''
     interpret the structure of a list of HDF5 files
-    
+
     :param [str] filelist: one or more file names to be interpreted
     :param int limit: maximum number of array items to be shown (default = 5)
     '''
@@ -243,15 +259,21 @@ def do_test():
     filelist.append('../Create/example2.hdf5')
     filelist.append('../Create/example3.hdf5')
     filelist.append('../Create/example4.hdf5')
-    filelist.append('../../../NeXus/definitions/trunk/manual/examples/h5py/prj_test.nexus.hdf5')
-    filelist.append('../../../NeXus/definitions/exampledata/code/hdf5/dmc01.h5')
-    filelist.append('../../../NeXus/definitions/exampledata/code/hdf5/dmc02.h5')
-    filelist.append('../../../NeXus/definitions/exampledata/code/hdf5/focus2007n001335.hdf')
-    filelist.append('../../../NeXus/definitions/exampledata/code/hdf5/NXtest.h5')
-    filelist.append('../../../NeXus/definitions/exampledata/code/hdf5/sans2009n012333.hdf')
+    filelist.append(
+        '../../../NeXus/definitions/trunk/manual/examples/h5py/prj_test.nexus.hdf5')
+    filelist.append(
+        '../../../NeXus/definitions/exampledata/code/hdf5/dmc01.h5')
+    filelist.append(
+        '../../../NeXus/definitions/exampledata/code/hdf5/dmc02.h5')
+    filelist.append(
+        '../../../NeXus/definitions/exampledata/code/hdf5/focus2007n001335.hdf')
+    filelist.append(
+        '../../../NeXus/definitions/exampledata/code/hdf5/NXtest.h5')
+    filelist.append(
+        '../../../NeXus/definitions/exampledata/code/hdf5/sans2009n012333.hdf')
     filelist.append('../Create/simple5.nxs')
     filelist.append('../Create/bad.h5')
-    
+
     do_filelist(filelist, limit)
 
 
@@ -261,8 +283,12 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], "n:")
     except:
         print()
-        print(("usage: ", sys.argv[0], " [-n ##] HDF5_file_name [another_HDF5_file_name]"))
-        print("  -n ## : limit number of displayed array items to ## (must be 3 or more or 'None')")
+        print(
+            ("usage: ",
+             sys.argv[0],
+             " [-n ##] HDF5_file_name [another_HDF5_file_name]"))
+        print(
+            "  -n ## : limit number of displayed array items to ## (must be 3 or more or 'None')")
         print()
     for item in opts:
         if item[0] == "-n":

@@ -86,7 +86,7 @@ def get_settings(settings_file):
                            'AUC_SCORE_PATH': 'auc_scores'}
 
     if 'CVITERCOUNT' not in settings.keys():
-        settings.update({'CVITERCOUNT':10})
+        settings.update({'CVITERCOUNT': 10})
 
     # add missing default and update file paths settings to have full absolute paths
     for settings_field in default_directories.keys():
@@ -177,7 +177,7 @@ def print_verbose(string, flag=False):
     '''
     Print statement only if flag is true
     '''
-    if type(flag) is not bool:
+    if not isinstance(flag, bool):
         raise ValueError("verbose flag is not bool")
     if flag:
         print(string)
@@ -242,16 +242,16 @@ def parse_matlab_HDF5(feat, settings):
                     dataformat = type(h5_from_matlab[subj][typ])
 
                     if dataformat is h5py._hl.group.Group:
-                         # If it is a list of segments then just iterate
-                         # over them and add to dict
-                         for seg in h5_from_matlab[subj][typ]:
-                             feature_dict[subj][typ].update(\
-                                     {seg: h5_from_matlab[subj][typ][seg].value})
+                        # If it is a list of segments then just iterate
+                        # over them and add to dict
+                        for seg in h5_from_matlab[subj][typ]:
+                            feature_dict[subj][typ].update(\
+                                    {seg: h5_from_matlab[subj][typ][seg].value})
 
                     elif dataformat is h5py._hl.dataset.Dataset:
-                         # if it isn't a list of segements just add value
-                         # directly under the typ dict
-                         feature_dict[subj][typ]=h5_from_matlab[subj][typ].value
+                        # if it isn't a list of segements just add value
+                        # directly under the typ dict
+                        feature_dict[subj][typ] = h5_from_matlab[subj][typ].value
 
                 elif typ not in list(h5_from_matlab[subj]):
                     continue
@@ -334,9 +334,9 @@ class DataAssembler:
         # find out if we're dealing with pseudo data
         if 'pseudointerictal' in settings['DATA_TYPES'] and \
                 'pseudopreictal' in settings['DATA_TYPES']:
-            self.include_pseudo=True
+            self.include_pseudo = True
         else:
-            self.include_pseudo=False
+            self.include_pseudo = False
 
         return None
 
@@ -359,11 +359,11 @@ class DataAssembler:
         if self.minutefeatures:
             # there are 9 minute samples in pseudo segments
             # and 10 in regular segments
-            self.minutemod = {'preictal':10,'interictal':10,
-                    'test':10,'pseudopreictal':9,'pseudointerictal':9}
+            self.minutemod = {'preictal': 10, 'interictal': 10,
+                    'test': 10, 'pseudopreictal': 9, 'pseudointerictal': 9}
         else:
-            self.minutemod = {'preictal':1,'interictal':1,
-                    'test':1,'pseudopreictal':1,'pseudointerictal':1}
+            self.minutemod = {'preictal': 1, 'interictal': 1,
+                    'test': 1, 'pseudopreictal': 1, 'pseudointerictal': 1}
 
         # This will fix the order of the segments
         # iterate over all possible segments
@@ -417,8 +417,7 @@ class DataAssembler:
                                  "do not match feature {1}.".format(feature,
                                         self.settings['FEATURES'][0]))
         # turn segments into a tuple
-        all_segments = list(all_segments)
-        all_segments.sort()
+        all_segments = sorted(all_segments)
         all_segments = tuple(all_segments)
         return all_segments
 
@@ -440,7 +439,7 @@ class DataAssembler:
         X_parts = []
         feature_names = []
         for feature in self.settings['FEATURES']:
-            X_part = self._assemble_feature(subject,feature,ictyp)
+            X_part = self._assemble_feature(subject, feature, ictyp)
             X_parts += [X_part]
             # build vector of feature names,
             # with the length of the feature
@@ -480,15 +479,15 @@ class DataAssembler:
                     # how to slice depends on dimensionality
 
                     if len(featurearray.shape) == 2:
-                        minute_segment_list = [featurearray[:,i] \
+                        minute_segment_list = [featurearray[:, i] \
                                 for i in range(self.minutemod[ictyp])]
 
                     elif len(featurearray.shape) == 3:
-                        minute_segment_list = [featurearray[:,:,i] \
+                        minute_segment_list = [featurearray[:,:, i] \
                                 for i in range(self.minutemod[ictyp])]
 
                     elif len(featurearray.shape) == 4:
-                        minute_segment_list = [featurearray[:,:,:,i] \
+                        minute_segment_list = [featurearray[:,:,:, i] \
                                 for i in range(self.minutemod[ictyp])]
 
                     else:
@@ -549,30 +548,30 @@ class DataAssembler:
         """
         # for preictal and interictal call build y and build X
         # and stack them up
-        verification_names = [[],[],[]]
-        X_inter,self.training_names = self._build_X(subject,'interictal')
-        X_pre,verification_names[0] = self._build_X(subject,'preictal')
+        verification_names = [[], [], []]
+        X_inter, self.training_names = self._build_X(subject, 'interictal')
+        X_pre, verification_names[0] = self._build_X(subject, 'preictal')
         if self.include_pseudo:
-            X_psinter,verification_names[1] = self._build_X(subject,\
+            X_psinter, verification_names[1] = self._build_X(subject,\
                     'pseudointerictal')
-            X_pspre,verification_names[2] = self._build_X(subject,\
+            X_pspre, verification_names[2] = self._build_X(subject,\
                     'pseudopreictal')
 
         if all(all(tr != vf for tr in self.training_names for \
                 vf in verification) for verification in verification_names):
             raise ValueError
         if self.include_pseudo:
-            X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
+            X = np.vstack([X_inter, X_pre, X_psinter, X_pspre])
         else:
-            X = np.vstack([X_inter,X_pre])
+            X = np.vstack([X_inter, X_pre])
         if self.include_pseudo:
-            y = np.hstack([self._build_y(subject,'interictal'), \
-                           self._build_y(subject,'preictal'), \
-                           self._build_y(subject,'pseudointerictal'), \
-                           self._build_y(subject,'pseudopreictal')])
+            y = np.hstack([self._build_y(subject, 'interictal'), \
+                           self._build_y(subject, 'preictal'), \
+                           self._build_y(subject, 'pseudointerictal'), \
+                           self._build_y(subject, 'pseudopreictal')])
         else:
-            y = np.hstack([self._build_y(subject,'interictal'), \
-                           self._build_y(subject,'preictal')])
+            y = np.hstack([self._build_y(subject, 'interictal'), \
+                           self._build_y(subject, 'preictal')])
         # storing feature names in self.training_names
 
         # storing the correct sequence of segments
@@ -587,7 +586,7 @@ class DataAssembler:
                     np.array(self.segments[subject]['interictal']), \
                     np.array(self.segments[subject]['preictal'])])
 
-        return X,y
+        return X, y
 
 
     def build_test(self, subject):
@@ -599,7 +598,7 @@ class DataAssembler:
         * X
         """
         # storing names for the features in self.test_names
-        X,self.test_names = self._build_X(subject,'test')
+        X, self.test_names = self._build_X(subject, 'test')
 
         # storing the correct sequence of segments
         self.test_segments = np.array(self.segments[subject]['test'])
@@ -609,7 +608,7 @@ class DataAssembler:
     def build_custom_training(self, subject, featurearray):
         """
         Takes a subject and array of names and feature indexes
-        then builds a training set of precisely those feature elements, 
+        then builds a training set of precisely those feature elements,
         in that order.
         Input:
         * subject - string
@@ -619,10 +618,10 @@ class DataAssembler:
         """
         # for preictal and interictal call build y and build X
         # and stack them up
-        verification_names = [[],[],[]]
-        X_inter = self._build_custom_X(subject,'interictal',\
+        verification_names = [[], [], []]
+        X_inter = self._build_custom_X(subject, 'interictal',\
                 featurearray)
-        X_pre = self._build_custom_X(subject,'preictal',\
+        X_pre = self._build_custom_X(subject, 'preictal',\
                 featurearray)
         if self.include_pseudo:
             X_psinter = self._build_custom_X(subject,\
@@ -631,17 +630,17 @@ class DataAssembler:
                     'pseudopreictal', featurearray)
 
         if self.include_pseudo:
-            X = np.vstack([X_inter,X_pre,X_psinter,X_pspre])
+            X = np.vstack([X_inter, X_pre, X_psinter, X_pspre])
         else:
-            X = np.vstack([X_inter,X_pre])
+            X = np.vstack([X_inter, X_pre])
         if self.include_pseudo:
-            y = np.hstack([self._build_y(subject,'interictal'), \
-                           self._build_y(subject,'preictal'), \
-                           self._build_y(subject,'pseudointerictal'), \
-                           self._build_y(subject,'pseudopreictal')])
+            y = np.hstack([self._build_y(subject, 'interictal'), \
+                           self._build_y(subject, 'preictal'), \
+                           self._build_y(subject, 'pseudointerictal'), \
+                           self._build_y(subject, 'pseudopreictal')])
         else:
-            y = np.hstack([self._build_y(subject,'interictal'), \
-                           self._build_y(subject,'preictal')])
+            y = np.hstack([self._build_y(subject, 'interictal'), \
+                           self._build_y(subject, 'preictal')])
         # storing feature names in self.training_names
 
         # storing the correct sequence of segments
@@ -656,7 +655,7 @@ class DataAssembler:
                     np.array(self.segments[subject]['interictal']), \
                     np.array(self.segments[subject]['preictal'])])
 
-        return X,y
+        return X, y
 
     def _build_custom_X(self, subject, ictyp, featurearray):
         """
@@ -673,7 +672,7 @@ class DataAssembler:
         X_parts = []
         feature_names = []
         for feature, index in featurearray:
-            X_part = self._assemble_custom_feature(subject,feature,index,ictyp)
+            X_part = self._assemble_custom_feature(subject, feature, index, ictyp)
             X_parts += [X_part]
 
         # put these together with numpy
@@ -695,7 +694,7 @@ class DataAssembler:
 
         # iterate over segments and build the X_part matrix
         rows = []
-        print("Processing {0} with index {1}".format(feature,index))
+        print("Processing {0} with index {1}".format(feature, index))
         for segment in self.segments[subject][ictyp]:
             row = np.ndarray.flatten(self.data[feature][subject]\
                     [ictyp][segment])[int(index)]
@@ -711,7 +710,7 @@ class DataAssembler:
     def build_custom_test(self, subject, namearray):
         """
         Takes a subject and array of names and feature indexes
-        then builds a test set of precisely those feature elements, 
+        then builds a test set of precisely those feature elements,
         in that order.
         Input:
         * subject - string
@@ -723,7 +722,7 @@ class DataAssembler:
         return X
 
 
-    def _composite_assemble_X(self,X_parts,dimensions):
+    def _composite_assemble_X(self, X_parts, dimensions):
         """
         Takes the parts of X and assembles into a large tiled X matrix:
          [X_part    X_part       X_part]
@@ -740,10 +739,10 @@ class DataAssembler:
         # assemble this montrosity
         X = np.ones(np.sum(list(zip(*dimensions)), axis=1))*np.nan
         # assign each array within the new array, according to its size
-        offset = [0,0]
+        offset = [0, 0]
         for X_part in X_parts:
             d = X_part.shape
-            X[offset[0]:offset[0]+d[0],offset[1]:offset[1]+d[1]] = X_part
+            X[offset[0]:offset[0]+d[0], offset[1]:offset[1]+d[1]] = X_part
             offset[0] += d[0]
             offset[1] += d[1]
 
@@ -761,13 +760,13 @@ class DataAssembler:
         dimensions = []
         segments = []
         for subject in self.settings['SUBJECTS']:
-            X,y = self.build_training(subject)
+            X, y = self.build_training(subject)
             X_parts += [X]
             y_parts += [y]
             dimensions += [X.shape]
             segments += [self.training_segments[:]]
 
-        X = self._composite_assemble_X(X_parts,dimensions)
+        X = self._composite_assemble_X(X_parts, dimensions)
 
         # stack up y
         y = np.hstack(y_parts)
@@ -777,7 +776,7 @@ class DataAssembler:
 
         # pending record of feature indexes
 
-        return X,y
+        return X, y
 
     def composite_tiled_test(self):
         """
@@ -795,14 +794,14 @@ class DataAssembler:
             dimensions += [X.shape]
             segments += [self.test_segments[:]]
 
-        X = self._composite_assemble_X(X_parts,dimensions)
+        X = self._composite_assemble_X(X_parts, dimensions)
 
         # keep record of feature indexes
         self.composite_test_segments = np.hstack(segments)
 
         return X
 
-    def hour_classification_training(self,subject):
+    def hour_classification_training(self, subject):
         """
         Builds a training set for testing classifiers
         at the task of predicting which hour a segment
@@ -814,7 +813,7 @@ class DataAssembler:
         * X,y
         """
         # modularity at work
-        X,y = self.build_training(subject)
+        X, y = self.build_training(subject)
 
         hourIDs = []
         # then redefine the y vector based on the segments
@@ -822,9 +821,9 @@ class DataAssembler:
             segment = segment.split('.')[0]
             hourIDs.append(self.metadata[segment]['hourID'])
         y = np.array(hourIDs)
-        return X,y
+        return X, y
 
-    def test_train_discrimination(self,subject):
+    def test_train_discrimination(self, subject):
         """
         Builds a training set for testing classifiers
         at the task of predicting whether a segment
@@ -838,16 +837,16 @@ class DataAssembler:
         * X,y
         """
         # modularity at work
-        self.Xtrain,_ = self.build_training(subject)
+        self.Xtrain, _ = self.build_training(subject)
         self.Xtest = self.build_test(subject)
 
         # stack the X matrices
-        X = np.vstack([self.Xtrain,self.Xtest])
+        X = np.vstack([self.Xtrain, self.Xtest])
 
         # then redefine the y vector based on  test/train
         y = np.array([0]*self.Xtrain.shape[0] + [1]*self.Xtest.shape[0])
 
-        return X,y
+        return X, y
 
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None, n_iter=10):
@@ -915,13 +914,13 @@ class Sequence_CV:
         return None
 
     def __iter__(self):
-        for train,test in self.cv:
+        for train, test in self.cv:
             # map these back to the indices of the hourID list
             trainhourIDs = self.hourIDs[train]
             testhourIDs = self.hourIDs[test]
-            train,test = [],[]
+            train, test = [], []
             # Loop over all segments
-            for i,segment in enumerate(self.segments):
+            for i, segment in enumerate(self.segments):
                 # Check if the hourID string is in the train or test partition
                 hourID = self.seg2hour[segment]
                 if hourID in trainhourIDs:
@@ -1043,11 +1042,11 @@ def build_model_pipe(settings):
 
     # always use the standard scaler with default params
     scaler = sklearn.preprocessing.StandardScaler()
-    pipe_elements.append(('scl',scaler))
+    pipe_elements.append(('scl', scaler))
 
     if 'THRESHOLD' in settings.keys():
         thresh = sklearn.feature_selection.VarianceThreshold()
-        pipe_elements.append(('thr',thresh))
+        pipe_elements.append(('thr', thresh))
 
     if 'PCA' in settings.keys():
         pca_decomp = sklearn.decomposition.PCA(n_components=0.8)
@@ -1055,7 +1054,7 @@ def build_model_pipe(settings):
 
     if 'SELECTION' in settings.keys():
         selector = get_selector(settings)
-        pipe_elements.append(('sel',selector))
+        pipe_elements.append(('sel', selector))
 
     if 'TREE_EMBEDDING' in settings.keys():
         tree_embedding = sklearn.ensemble.RandomTreesEmbedding( \
@@ -1063,14 +1062,14 @@ def build_model_pipe(settings):
         pipe_elements.append(('embed', tree_embedding))
 
     classifier = settings['CLASSIFIER']
-    
+
     if 'BAGGING' in settings.keys():
         # put the classifier in the bag, and append the bag
         bagging = sklearn.ensemble.BaggingClassifier(base_estimator=classifier,
                 **settings['BAGGING'])
-        pipe_elements.append(('clf',bagging))
+        pipe_elements.append(('clf', bagging))
     else:
-        pipe_elements.append(('clf',classifier))
+        pipe_elements.append(('clf', classifier))
 
     model = sklearn.pipeline.Pipeline(pipe_elements)
 
@@ -1156,7 +1155,7 @@ def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
     if mu_1.shape[0] != K:
         raise ValueError("Mean vectors must share the same dimension.")
     KL = float(0.5*(np.trace( np.dot( np.linalg.inv(Sigma_1), Sigma_0 )  ) \
-            + np.dot((mu_1 - mu_0).T, np.dot(np.linalg.inv(Sigma_1),(mu_1 - mu_0)))  \
+            + np.dot((mu_1 - mu_0).T, np.dot(np.linalg.inv(Sigma_1), (mu_1 - mu_0)))  \
             - K - (np.prod(np.linalg.slogdet(Sigma_0)) - \
             np.prod(np.linalg.slogdet(Sigma_1)))))
     if KL.__repr__() == 'nan':
@@ -1178,16 +1177,16 @@ def reliability_plot(predictions, labels):
     * y
     """
     # split both arrays into bins:
-    edges = np.linspace(0,1,21)
+    edges = np.linspace(0, 1, 21)
     # store results in nice simple lists
     x = []
     y = []
     # this is very inefficient, but it doesn't matter
     # improves readability
-    for ledge, hedge in zip(edges[:-1],edges[1:]):
+    for ledge, hedge in zip(edges[:-1], edges[1:]):
         binned_predictions = []
         binned_labels = []
-        for prediction, label in zip(predictions,labels):
+        for prediction, label in zip(predictions, labels):
             if prediction > ledge and prediction < hedge:
                 binned_predictions.append(prediction)
                 binned_labels.append(label)
@@ -1198,7 +1197,7 @@ def reliability_plot(predictions, labels):
             x.append(mean_predicted)
             y.append(fraction_positive)
 
-    return x,y
+    return x, y
 
 def get_feature_ids(names, pickled=None):
     """
@@ -1228,10 +1227,10 @@ def get_feature_ids(names, pickled=None):
             indices.append(counter)
     indices = np.array(indices)[np.newaxis].T
     names = names[np.newaxis].T
-    feature_ids = np.hstack([names,indices])
+    feature_ids = np.hstack([names, indices])
     if pickled != None:
         # add extra pickled ids
-        feature_ids = np.vstack([feature_ids,pickled])
+        feature_ids = np.vstack([feature_ids, pickled])
     return feature_ids
 
 
@@ -1241,7 +1240,7 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
 
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
-    X,y = assembler.build_training(subject)
+    X, y = assembler.build_training(subject)
 
     if load_pickled:
         if extra_data is None:
@@ -1269,7 +1268,7 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
     stepsize = int(Xt.shape[1]/20)
     rfecv = sklearn.feature_selection.RFECV(estimator=model_pipe.named_steps['clf'],
         step=stepsize, cv=cv, **settings['RFE'])
-    rfecv.fit(Xt,y)
+    rfecv.fit(Xt, y)
     # take the best grid score as the auc
     auc = max(rfecv.grid_scores_)
 
@@ -1277,9 +1276,9 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
         weights = get_weights(y)
 
         elements = []
-        elements.append(('scl',model_pipe.named_steps['scl']))
+        elements.append(('scl', model_pipe.named_steps['scl']))
         if 'thr' in [step[0] for step in model_pipe.steps]:
-            elements.append(('thr',model_pipe.named_steps['thr']))
+            elements.append(('thr', model_pipe.named_steps['thr']))
         elements.append(('clf', rfecv))
         model = sklearn.pipeline.Pipeline(elements)
         serialise_trained_model(model,
@@ -1301,12 +1300,12 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
         transformed_features[subject] = {'features':Xt,
                 'names':feature_ids}
         # then pickle it
-        if type(store_features) == str:
-            with open(store_features+".pickle","wb") as fh:
+        if isinstance(store_features, str):
+            with open(store_features+".pickle", "wb") as fh:
                 pickle.dump(transformed_features, fh)
         else:
             with open(settingsfname.split(".")[0]
-                    +"_feature_dump.pickle","wb") as fh:
+                    + "_feature_dump.pickle", "wb") as fh:
                 pickle.dump(transformed_features, fh)
 
     return transformed_features, auc
@@ -1318,7 +1317,7 @@ def train_model(settings, data, metadata, subject, model_pipe,
                 parallel=None):
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
-    X,y = assembler.build_training(subject)
+    X, y = assembler.build_training(subject)
 
     if load_pickled:
         if extra_data is None:
@@ -1342,13 +1341,13 @@ def train_model(settings, data, metadata, subject, model_pipe,
     for train, test in cv:
 
         # calculate the weights
-        weights = get_weights(y[train],settings=settings)
+        weights = get_weights(y[train], settings=settings)
         # fit the model to the training data
         model_pipe.fit(X[train], y[train], clf__sample_weight=weights)
         # append new predictions
         predictions.append(model_pipe.predict_proba(X[test]))
         # append test weights to store (why?) (used to calculate auc below)
-        weights = get_weights(y[test],settings=settings)
+        weights = get_weights(y[test], settings=settings)
         allweights.append(weights)
         # store true labels
         labels.append(y[test])
@@ -1356,7 +1355,7 @@ def train_model(settings, data, metadata, subject, model_pipe,
         segments.append(assembler.training_segments[test])
 
     # stack up the results
-    predictions = np.vstack(predictions)[:,1]
+    predictions = np.vstack(predictions)[:, 1]
     labels = np.hstack(labels)
     weights = np.hstack(allweights)
     segments = np.hstack(segments)
@@ -1370,14 +1369,14 @@ def train_model(settings, data, metadata, subject, model_pipe,
 
     if store_models:
 
-        store_weights = get_weights(y,settings=settings)
+        store_weights = get_weights(y, settings=settings)
         model_pipe.fit(X, y, clf__sample_weight=store_weights)
         serialise_trained_model(model_pipe,
                                       subject,
                                       settings,
                                       verbose=verbose)
 
-    #store results from each subject
+    # store results from each subject
 
     results = (predictions, labels, weights, segments)
 
@@ -1393,10 +1392,10 @@ def train_custom_model(settings, data, metadata, subject, model_pipe,
     # initialise the data assembler
     assembler = DataAssembler(settings, data, metadata)
     # load the pickled array
-    with open(settings['CUSTOM'],"rb") as fh:
+    with open(settings['CUSTOM'], "rb") as fh:
         rfe_feature_dict = pickle.load(fh)
     featurearray = rfe_feature_dict[subject]['names']
-    X,y = assembler.build_custom_training(subject,featurearray)
+    X, y = assembler.build_custom_training(subject, featurearray)
 
     if load_pickled:
         if extra_data is None:
@@ -1434,7 +1433,7 @@ def train_custom_model(settings, data, metadata, subject, model_pipe,
         segments.append(assembler.training_segments[test])
 
     # stack up the results
-    predictions = np.vstack(predictions)[:,1]
+    predictions = np.vstack(predictions)[:, 1]
     labels = np.hstack(labels)
     weights = np.hstack(allweights)
     segments = np.hstack(segments)
@@ -1455,7 +1454,7 @@ def train_custom_model(settings, data, metadata, subject, model_pipe,
                                       settings,
                                       verbose=verbose)
 
-    #store results from each subject
+    # store results from each subject
 
     results = (predictions, labels, weights, segments)
     return results, auc
@@ -1469,13 +1468,12 @@ def combined_auc_score(settings, auc_scores, subj_pred=None):
         if subj_pred is None:
             raise ValueError('Subject prediction dict needs to not be None')
 
-        #stack subject results (don't worry about this line)
+        # stack subject results (don't worry about this line)
         predictions, labels, weights, segments = map(np.hstack,
                                          zip(*list(subj_pred.values())))
 
         # calculate the total AUC score over all subjects
         combined_auc = sklearn.metrics.roc_auc_score(labels, predictions)
-                                                    #sample_weight=weights)
+                                                    # sample_weight=weights)
 
     return combined_auc
-

@@ -38,6 +38,7 @@ def get_batch_parser():
 
     return parser
 
+
 def get_settings_list(settings_directory, verbose=False):
     '''
     Get list of all settings file in settings directory
@@ -47,19 +48,21 @@ def get_settings_list(settings_directory, verbose=False):
     settings_dir_abs_path = os.path.abspath(settings_directory)
     settings_files = glob.glob(os.path.join(settings_dir_abs_path, '*.json'))
 
-    print_verbose('##Settings directory parsed: {0} files##'.format(\
-            len(settings_files)), flag=verbose)
+    print_verbose('##Settings directory parsed: {0} files##'.format(
+        len(settings_files)), flag=verbose)
 
     return settings_files
+
 
 def print_verbose(string, flag=False):
     '''
     Print statement only if flag is true
     '''
-    if type(flag) is not bool:
+    if not isinstance(flag, bool):
         raise ValueError("verbose flag is not bool")
     if flag:
         print(string)
+
 
 def batch_run_in_parallel(settings_list, cores, verbose=False):
 
@@ -70,17 +73,18 @@ def batch_run_in_parallel(settings_list, cores, verbose=False):
         while settings_list and len(processes) < cores:
             settings_file = settings_list.pop()
             print_verbose("==Running {0}==".format(settings_file),
-                                                   flag=verbose)
+                          flag=verbose)
             processes.append(subprocess.Popen(['./train_and_predict.py',
-                                                settings_file]))
+                                               settings_file]))
 
         for p in processes:
             if p.poll() is not None:
                 if p.returncode == 0:
                     processes.remove(p)
                     finish_count += 1
-                    print_verbose("**Completed {0} of {1}**".format(finish_count,
-                                                                    num_to_run),
+                    print_verbose(
+                        "**Completed {0} of {1}**".format(finish_count,
+                                                          num_to_run),
                                   flag=verbose)
                 else:
                     sys.exit(1)
@@ -91,8 +95,7 @@ def batch_run_in_parallel(settings_list, cores, verbose=False):
             time.sleep(0.05)
 
 
-if __name__=='__main__':
-
+if __name__ == '__main__':
 
     parser = get_batch_parser()
     (opts, args) = parser.parse_args()
@@ -100,4 +103,3 @@ if __name__=='__main__':
     settings_list = get_settings_list(opts.setting_dir)
 
     batch_run_in_parallel(settings_list, int(opts.cores), verbose=opts.verbose)
-
