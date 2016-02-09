@@ -46,10 +46,11 @@ RAW_DATA_DIR/
 ```
 
 
-Then run:
+Then run `./preprocessing.m` with:
 ```
-./preprocessing.m
+matlab -nodisplay -nosplash -r "preprocessing"
 ```
+or similar.
 
 This will calculate features used the feature functions specified in SETTINGS.json FEATURES field and output them to TRAIN_DATA_PATH directory as HDF5 files.
 
