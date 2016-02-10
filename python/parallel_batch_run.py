@@ -75,7 +75,7 @@ def batch_run_in_parallel(settings_list, cores, verbose=False):
             settings_file = settings_list.pop()
             print_verbose("==Running {0}==".format(settings_file),
                           flag=verbose)
-            processes.append(subprocess.Popen(['./train_and_predict.py',
+            processes.append(subprocess.Popen(['./python/train_and_predict.py',
                                                settings_file]))
 
         for p in processes:
