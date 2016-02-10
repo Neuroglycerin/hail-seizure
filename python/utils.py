@@ -1142,7 +1142,7 @@ def output_auc_scores(auc_scores, settings):
     else:
         with open(auc_csv_path, 'a') as auc_csv:
             writer = csv.writer(auc_csv, delimiter="\t")
-            writer.writerow([''] + colnames)
+            writer.writerow(['RUN_NAME'] + colnames)
             writer.writerow(auc_row)
 
 def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
