@@ -397,7 +397,7 @@ def write_settingsjson(settings, args):
                 elif modtyp == 'dirtycsp':
                     modtyp = 'csp'
 
-                if not modtyp == '':
+                if False and not modtyp == '':
                     mymod = '_' + modtyp
                 else:
                     mymod = modtyp
@@ -412,10 +412,10 @@ def write_settingsjson(settings, args):
                         feature = feature[:-1]
                     # Have to have a special case for the unsplit segments
                     if split == 1:
-                        myfull.append('{0}{1}_'.format(mymod, feature))
+                        myfull.append('{0}_{1}_'.format(mymod, feature))
                     else:
                         myfull.append(
-                            '{0}{2}{1}_'.format(
+                            '{0}_{2}{1}_'.format(
                                 mymod,
                                 feature,
                                 split))
