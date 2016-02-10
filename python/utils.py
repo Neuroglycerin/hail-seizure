@@ -403,15 +403,15 @@ class DataAssembler:
         all_segments = set([])
         for subject in self.settings['SUBJECTS']:
             for ictyp in self.settings['DATA_TYPES']:
-                all_segments |= set(self.data[self.settings['FEATURES'][0]] \
-                        [subject][ictyp].keys())
+                all_segments |= set(
+                    self.data[self.settings['FEATURES'][0]][subject][ictyp].keys())
         # iterate over all features to ensure that the segments are the same
         for feature in self.settings['FEATURES']:
             verification_segments = set([])
             for subject in self.settings['SUBJECTS']:
                 for ictyp in self.settings['DATA_TYPES']:
-                    verification_segments |= set(self.data[feature]\
-                    [subject][ictyp].keys())
+                    verification_segments |= set(
+                        self.data[feature][subject][ictyp].keys())
             if verification_segments != all_segments:
                 raise ValueError("Feature {0} contains segments that "
                                  "do not match feature {1}.".format(feature,
