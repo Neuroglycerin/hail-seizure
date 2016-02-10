@@ -1121,6 +1121,12 @@ def output_auc_scores(auc_scores, settings):
     auc_row = [settings['RUN_NAME']] + scores
 
     # Add more details to the CSV
+    colnames.append('has_pseudo')
+    if any("pseudo" in s for s in settings['DATA_TYPES']):
+        auc_row.append('y')
+    else:
+        auc_row.append('n')
+
     colnames.append('classifier')
     auc_row.append(settings['CLASSIFIER'])
 
