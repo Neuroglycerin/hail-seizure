@@ -2,3 +2,4 @@ numpy>=1.8.1
 scipy
 scikit-learn>=0.15.2
 h5py
+joblib
