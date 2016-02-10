@@ -1120,6 +1120,13 @@ def output_auc_scores(auc_scores, settings):
 
     auc_row = [settings['RUN_NAME']] + scores
 
+    # Add more details to the CSV
+    colnames.append('classifier')
+    auc_row.append(settings['CLASSIFIER'])
+
+    colnames.append('features')
+    auc_row.append(';'.join(settings['FEATURES']))
+
     # if csv exists just append the new auc line for this run
 
     if os.path.exists(auc_csv_path):
