@@ -19,11 +19,12 @@ This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissi
 
 ###Required
 
+ * MATLAB or Octave
  * Python 3.4.1
- * scikit_learn-0.15.2
- * numpy-1.8.1
- * scipy
- * h5py
+    - scikit_learn-0.15.2
+    - numpy-1.8.1
+    - scipy
+    - h5py
 
 ##Generate features
 
