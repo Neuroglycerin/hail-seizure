@@ -1109,10 +1109,10 @@ def output_auc_scores(auc_scores, settings):
     # hacking this to save discriminate results
     if 'DISCRIMINATE' in settings:
         auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
-                                'discriminate_scores.csv')
+                                    'discriminate_scores.csv')
     else:
         auc_csv_path = os.path.join(settings['AUC_SCORE_PATH'],
-                                'AUC_scores.csv')
+                                    'AUC_scores.csv')
 
     colnames = [subj for subj in settings['SUBJECTS']] + ['all']
 

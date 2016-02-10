@@ -34,8 +34,7 @@ def get_featlist():
     '''
     Provides a list of all feature names.
     '''
-    featlist = [
-        'feat_act',
+    featlist = ['feat_act',
                 'feat_ampcorrcoef-alpha',
                 'feat_ampcorrcoef-alpha-eig',
                 'feat_ampcorrcoef-beta',
@@ -472,13 +471,11 @@ def main():
     if args.nopseudo:
         settings["DATA_TYPES"] = ["interictal", "preictal", "test"]
     else:
-        settings[
-            "DATA_TYPES"] = [
-                "interictal",
-                "preictal",
-         "test",
-         "pseudointerictal",
-         "pseudopreictal"]
+        settings["DATA_TYPES"] = ["interictal",
+                                  "preictal",
+                                  "test",
+                                  "pseudointerictal",
+                                  "pseudopreictal"]
     settings["CVITERCOUNT"] = args.numcvruns
 
     if len(args.selection) == 1:
