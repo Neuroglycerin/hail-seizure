@@ -410,15 +410,6 @@ def write_settingsjson(settings, args):
                         feature = feature[:-6]
                     if feature[-1:] == '_':
                         feature = feature[:-1]
-                    # Have to have a special case for the unsplit segments
-                    if split == 1:
-                        myfull.append('{0}_{1}_'.format(mymod, feature))
-                    else:
-                        myfull.append(
-                            '{0}_{2}{1}_'.format(
-                                mymod,
-                                feature,
-                                split))
                     # Check if starts with feat_
                     if feature[0:5] == 'feat_':
                         # The short version does not need "feat_" at beginning
@@ -426,7 +417,18 @@ def write_settingsjson(settings, args):
                     else:
                         # This is a weird feature function...
                         myfsh = feature
-                    myshort.append('{0}_{1}'.format(shortmodtyp, myfsh))
+                    # Have to have a special case for the unsplit segments
+                    if split == 1:
+                        myfull.append('{0}_{1}_'.format(mymod, feature))
+                        myshort.append('{0}_{1}'.format(shortmodtyp, myfsh))
+                    else:
+                        myfull.append(
+                            '{0}_{2}{1}_'.format(
+                                mymod,
+                                feature,
+                                split))
+                        myshort.append('{0}_{1}_{2}'.format(
+                            shortmodtyp, myfsh, split))
 
                 fullfeatstrlst.append(myfull)
                 shortfeatstrlst.append(myshort)
