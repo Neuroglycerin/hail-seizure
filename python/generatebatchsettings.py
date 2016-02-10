@@ -242,13 +242,13 @@ def get_genbatch_parser():
                         dest="modtyps",
                         default=[],
                         nargs='+',
-                        help="Directory holding json settings files")
+                        help="List of modifiers to use")
 
     parser.add_argument("--nopseudo",
                         action="store_true",
                         dest="nopseudo",
                         default=False,
-                        help="Number of features to use at once")
+                        help="Disable using half-offset data")
 
     parser.add_argument("--splits",
                         action="store",
