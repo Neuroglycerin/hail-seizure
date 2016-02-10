@@ -7,7 +7,7 @@ http://www.kaggle.com/c/seizure-detection
 
 This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissionBestPractices
 
-##Hardware / OS platform used
+## Hardware / OS platform used
  * Various servers owned by Edinburgh University Informatics Department: 
       - 64 AMD Opteron cores, 256GB RAM, 4TB disk 
       - Scientific Linux
@@ -15,9 +15,9 @@ This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissi
       - Intel processors (i3 and Xeons), 8-64GB RAM, 0.5-8TB disk
       - Arch Linux
 
-##Dependencies
+## Dependencies
 
-###Required
+### Required
 
  * MATLAB or Octave
  * Python 3.4.1
@@ -26,7 +26,7 @@ This README and repository modelled on https://www.kaggle.com/wiki/ModelSubmissi
     - scipy
     - h5py
 
-##Generate features
+## Generate features
 
 Place path to raw data organised by subject under the RAW_DATA_DIRS key of SETTINGS.json and check the values used in the SETTINGS.json
 ```
@@ -67,7 +67,7 @@ $feature_name.h5 = {$subject: {$type : {$segment_file_name : $feature_vector } }
 * `$segment_file_name`: the filename for the segment from which that vector was generated
 * `$feature_vector`: A 1xNxM feature vector for that segment using the specified feature function
 
-##Train classifier
+## Train classifier
 
 One classifier is trained for each patient and serialised into the directory specific in SETTINGS.json under MODEL_PATH (default is model/).
 
@@ -92,7 +92,7 @@ If the verbose option is set this will also print the calculated values to the c
 _Important note_: cross validation is run by splitting the data over the hours that it is split into.
 This is very important, as this respects the split between training and test data for the leader board.
 
-##Make prediction
+## Make prediction
 
 After running `train.py` model files will be generated in the default model 
 (`model`) directory. These will be automatically loaded along with the test data
