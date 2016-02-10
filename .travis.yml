@@ -53,6 +53,8 @@ before_install:
   # Update the package list
   - travis_retry sudo apt-get update
   - travis_retry sudo apt-get install python3-dev libevent-dev
+  - find -name hdf5 | sort
+  - HDF5_DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial/
   # Install numpy/scipy dependencies with apt-get. We want ATLAS and LAPACK.
   - if [[ "$NUMPY_REQUIREMENT" != "" ]] || [[ "$SCIPY_REQUIREMENT" != "" ]]; then
       travis_retry sudo apt-get install -y libatlas-dev libatlas-base-dev;
