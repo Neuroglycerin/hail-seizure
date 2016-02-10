@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import python.utils as utils
 import os
 import pickle
+
+import utils
 
 
 def main(settingsfname, verbose=False):

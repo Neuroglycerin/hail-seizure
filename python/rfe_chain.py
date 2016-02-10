@@ -8,9 +8,10 @@ import numpy as np
 import copy
 import hashlib
 import glob
-from python import utils
 import sys
 import optparse
+
+import utils
 
 
 def main(run_dir="rfe_chain", start=None, start_auc=None,

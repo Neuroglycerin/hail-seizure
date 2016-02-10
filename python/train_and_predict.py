@@ -4,7 +4,8 @@ import subprocess
 import warnings
 import os
 import sys
-import python.utils as utils
+
+import utils
 
 
 def call_train_and_predict(settings_file, verbose=False):

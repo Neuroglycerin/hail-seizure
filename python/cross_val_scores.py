@@ -3,10 +3,11 @@
 import numpy as np
 import pickle
 import sklearn.metrics
-import python.utils as utils
 import sklearn.preprocessing
 import sklearn.feature_selection
 import sklearn.svm
+
+import utils
 
 
 def main():

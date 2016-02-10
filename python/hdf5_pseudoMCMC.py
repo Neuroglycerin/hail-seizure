@@ -9,10 +9,11 @@ import numpy as np
 import copy
 import hashlib
 import glob
-from python import utils
 import sys
 import optparse
 import discriminate
+
+import utils
 
 
 def main(mcmcdir="hdf5mcmc", start=None, start_auc=None,

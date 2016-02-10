@@ -5,9 +5,10 @@ import time
 import sys
 import os
 import subprocess
-import python.utils as utils
 import warnings
 import glob
+
+import utils
 
 
 def get_batch_parser():
