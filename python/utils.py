@@ -19,6 +19,7 @@ import sklearn
 import optparse
 import pdb
 
+
 def get_parser():
     '''
     Generate optparse parser object for train and predict.py
@@ -55,6 +56,7 @@ def get_parser():
                       help="Pickle file to save detailed training results"
                       " for further analysis (default=False)")
     return parser
+
 
 def get_settings(settings_file):
     '''
@@ -156,6 +158,7 @@ def get_settings(settings_file):
 
     return settings
 
+
 def get_data(settings, verbose=False):
     '''
     Iterate through Feature HDF5s and parse input using
@@ -173,6 +176,7 @@ def get_data(settings, verbose=False):
             data.update({feat_name: parsed_feat})
     return data
 
+
 def print_verbose(string, flag=False):
     '''
     Print statement only if flag is true
@@ -181,6 +185,7 @@ def print_verbose(string, flag=False):
         raise ValueError("verbose flag is not bool")
     if flag:
         print(string)
+
 
 def parse_matlab_HDF5(feat, settings):
     '''
@@ -197,7 +202,6 @@ def parse_matlab_HDF5(feat, settings):
                                   'Dog_2': { ... { ... } }}
                                   }
     '''
-
 
     feature_location = settings['TRAIN_DATA_PATH']
     version = settings['VERSION']
@@ -265,6 +269,7 @@ def parse_matlab_HDF5(feat, settings):
 
     return feature_dict
 
+
 def serialise_trained_model(model, subject, settings, verbose=False):
     '''
     Serialise and compress trained sklearn model to repo
@@ -300,6 +305,7 @@ def read_trained_model(subject, settings, verbose=False):
     model = sklearn.externals.joblib.load(os.path.join(settings['MODEL_PATH'], model_name))
 
     return model
+
 
 class DataAssembler:
     def __init__(self, settings, data, metadata):
@@ -848,6 +854,7 @@ class DataAssembler:
 
         return X, y
 
+
 class Sequence_CV:
     def __init__(self, segments, metadata, r_seed=None, n_iter=10):
         """Takes a list of the segments ordered as they are in the array.
@@ -940,6 +947,7 @@ class Sequence_CV:
         """
         return self.cv.__len__()
 
+
 def subjsort_prediction(prediction_dict):
     '''
     Take the predictions and organise them so they are normalised for the number
@@ -961,6 +969,7 @@ def subjsort_prediction(prediction_dict):
 
     # Replace prediciton values with (index within the sort)/(numsegments-1)
     return None
+
 
 def output_csv(prediction_dict, settings, verbose=False):
     '''
@@ -1005,6 +1014,7 @@ def get_cross_validation_set(y, *params):
 
     return cv
 
+
 def get_selector(settings):
     '''
     Return a sklearn selector object
@@ -1031,6 +1041,7 @@ def get_selector(settings):
                 " option: {0}".format(settings['SELECTION']))
 
     return selector
+
 
 def build_model_pipe(settings):
     '''
@@ -1091,6 +1102,7 @@ def get_weights(y, settings={}):
     weights = np.array([weight if i == 1 else 1 for i in y])
     return weights
 
+
 def get_metadata():
     '''
     Return the metadata.
@@ -1098,6 +1110,7 @@ def get_metadata():
     with open('segmentMetadata.json') as metafile:
         metadata = json.load(metafile)
     return metadata
+
 
 def output_auc_scores(auc_scores, settings):
     '''
@@ -1145,6 +1158,7 @@ def output_auc_scores(auc_scores, settings):
             writer.writerow(['RUN_NAME'] + colnames)
             writer.writerow(auc_row)
 
+
 def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
     """
     Takes the parameters of two multivariate normal distributions
@@ -1175,6 +1189,7 @@ def mvnormalKL(mu_0, mu_1, Sigma_0, Sigma_1):
         raise ValueError
     else:
         return KL
+
 
 def reliability_plot(predictions, labels):
     """
@@ -1211,6 +1226,7 @@ def reliability_plot(predictions, labels):
             y.append(fraction_positive)
 
     return x, y
+
 
 def get_feature_ids(names, pickled=None):
     """
@@ -1324,7 +1340,6 @@ def train_RFE(settings, data, metadata, subject, model_pipe,
     return transformed_features, auc
 
 
-
 def train_model(settings, data, metadata, subject, model_pipe,
                 store_models, load_pickled, verbose, extra_data=None,
                 parallel=None):
@@ -1399,6 +1414,7 @@ def train_model(settings, data, metadata, subject, model_pipe,
         return (results, auc)
 
     return results, auc
+
 
 def train_custom_model(settings, data, metadata, subject, model_pipe,
                 store_models, load_pickled, verbose, extra_data=None):
