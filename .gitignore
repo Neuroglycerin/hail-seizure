@@ -3,6 +3,7 @@ binary_combos/*.json
 train/*
 plots/*
 model/*
+output/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
