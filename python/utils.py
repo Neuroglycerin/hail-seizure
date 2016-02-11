@@ -1,23 +1,24 @@
-import json
-import numpy as np
 import os
-import pickle
-import h5py
 import sys
-import csv
+import optparse
 import warnings
-import sklearn.feature_selection
-import sklearn.externals
-import sklearn.linear_model
+import pdb
+import pickle
+import csv
+import json
+
+import h5py
+import numpy as np
+import sklearn
 import sklearn.preprocessing
+import sklearn.decomposition
+import sklearn.feature_selection
+import sklearn.linear_model
+import sklearn.svm
+import sklearn.ensemble
 import sklearn.cross_validation
 import sklearn.pipeline
-import sklearn.ensemble
-import sklearn.decomposition
-import sklearn.svm
-import sklearn
-import optparse
-import pdb
+import sklearn.externals
 
 
 def get_parser():
