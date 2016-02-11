@@ -1128,7 +1128,7 @@ def output_auc_scores(auc_scores, settings):
         auc_row.append('n')
 
     colnames.append('classifier')
-    auc_row.append(settings['CLASSIFIER'])
+    auc_row.append(re.sub('\s+', ' ', settings['CLASSIFIER'].__str__()))
 
     colnames.append('features')
     auc_row.append(';'.join(settings['FEATURES']))
