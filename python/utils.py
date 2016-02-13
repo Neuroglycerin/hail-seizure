@@ -6,6 +6,7 @@ import pdb
 import pickle
 import csv
 import json
+import re
 
 import h5py
 import numpy as np
