@@ -24,6 +24,9 @@ def main(settingsfname, verbose=False, store_models=True,
 
     settings['FEATURES'] = features_that_parsed
 
+    if not settings['FEATURES']:
+        raise EnvironmentError('No features could be loaded')
+
     utils.print_verbose("=====Feature HDF5s parsed=====", flag=verbose)
 
     model_pipe = utils.build_model_pipe(settings)
