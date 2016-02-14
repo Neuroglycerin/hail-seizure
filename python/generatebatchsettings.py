@@ -124,6 +124,24 @@ FEATURESETS = {
         ],
 }
 
+CLASSIFIERS_BY_OPT = {
+    'n_estimators': [
+        'RandomForest',
+        'ExtraTrees',
+        'AdaBoost',
+        'RandomTreesEmbedding',
+        'GradientBoostingClassifier',
+        ],
+    'C': [
+        'SVC',
+        'LogisticRegression',
+        ],
+    'alpha': [
+        'RidgeClassifier',
+        'SGDClassifier',
+        ],
+}
+
 
 def get_default_settings():
     defaultsettings = {
@@ -399,6 +417,11 @@ def write_settingsjson(settings, args):
             shortclassifier = 'RC'
         else:
             shortclassifier = classifier
+
+        if classifier in CLASSIFIERS_BY_OPT['n_estimators']:
+            settings['CLASSIFIER_OPTIONS'] = {'n_estimators': 1000}
+        else:
+            settings['CLASSIFIER_OPTIONS'] = {}
 
         # Record if we are not using pseudodata
         # Add it to the classifier savename
