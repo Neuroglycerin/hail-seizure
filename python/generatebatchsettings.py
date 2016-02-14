@@ -150,21 +150,25 @@ def get_default_settings():
         "R_SEED": 5440,
         "AUC_SCORE_PATH": "auc_scores",
         "TRAIN_DATA_PATH": "train",
-        "SUBJECTS": ["Dog_1",
-                     "Dog_2",
-                     "Dog_3",
-                     "Dog_4",
-                     "Dog_5",
-                     "Patient_1",
-                     "Patient_2"],
+        "SUBJECTS": [
+            "Dog_1",
+            "Dog_2",
+            "Dog_3",
+            "Dog_4",
+            "Dog_5",
+            "Patient_1",
+            "Patient_2",
+        ],
         "TEST_DATA_PATH": "test",
         "SUBMISSION_PATH": "output",
         "VERSION": "_v3",
-        "RAW_DATA_DIRS": ["/disk/data2/neuroglycerin/hail-seizure-data/",
-                          "/disk/data1/neuroglycerin/hail-seizure-data/",
-                          "/disk/scratch/s1145806/hail-seizure-data/",
-                          "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
-                          "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/"]
+        "RAW_DATA_DIRS": [
+            "/disk/data2/neuroglycerin/hail-seizure-data/",
+            "/disk/data1/neuroglycerin/hail-seizure-data/",
+            "/disk/scratch/s1145806/hail-seizure-data/",
+            "/media/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
+            "/media/scott/SPARROWHAWK/neuroglycerin/hail-seizure-data/",
+        ],
     }
     return defaultsettings
 
