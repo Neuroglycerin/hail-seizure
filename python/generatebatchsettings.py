@@ -292,6 +292,14 @@ def get_genbatch_parser():
                         default=10,
                         help="Number of times to run through the cross-validator")
 
+    parser.add_argument("--pca",
+                        action="store",
+                        dest="pca_ncomp",
+                        default=0,
+                        help="n_components for PCA. If this is <1, this is "
+                             "the proportion of variance to retain. Omit or "
+                             "set to 0 to avoid applying a PCA filter.")
+
     parser.add_argument("-s", "--selection",
                         action="store",
                         dest="selection",
@@ -364,6 +372,9 @@ def write_settingsjson(settings, args):
     '''
     Writes a set of parameters as a .json file
     '''
+    if args.pca_ncomp is not 0:
+        settings["PCA"] = {'n_components': args.pca_ncomp}
+
     for classifier in args.classifiers:
         settings["CLASSIFIER"] = classifier
         # Shorten the classifier name, to save filename space
