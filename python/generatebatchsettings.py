@@ -229,6 +229,13 @@ def get_genbatch_parser():
                            default=False,
                            help="Use all featurenames")
 
+    groupfeat.add_argument("--featureset",
+                           action="store",
+                           dest="featuresets",
+                           default=[],
+                           nargs='+',
+                           help="Use a featureset (or multiple featuresets)")
+
     groupclass = parser.add_mutually_exclusive_group(required=False)
 
     groupclass.add_argument("-c", "--classifier",
@@ -322,6 +329,10 @@ def parse_parser():
     # If we're doing all features, get the list
     if args.doallfeatures:
         args.featurenames = get_featlist()
+    elif args.featuresets:
+        args.featurenames = []
+        for featureset in args.featuresets:
+            args.featurenames += get_featlist(featureset)
     # If we're doing all modtyps, get the list
     if args.modtyps == [] or args.modtyps is None:
         args.modtyps = get_modlist()
