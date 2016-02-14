@@ -175,7 +175,12 @@ def get_classifierlist():
     '''
     Provides a list of available classifiers.
     '''
-    classifierlist = ['SVC', 'RandomForest', 'ExtraTrees', 'AdaBoost']
+    classifierlist = [
+        'SVC',
+        'RandomForest',
+        'ExtraTrees',
+        'AdaBoost',
+    ]
     return classifierlist
 
 
