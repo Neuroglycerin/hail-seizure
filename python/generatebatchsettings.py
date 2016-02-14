@@ -461,6 +461,8 @@ def write_settingsjson(settings, args):
                     modtyp = 'cln,ica,dwn'
                 elif modtyp == 'csp':
                     modtyp = 'cln,csp,dwn'
+                elif modtyp == 'cspdr,ica':
+                    modtyp = 'cln,cspdr,ica,dwn'
 
                 # Save the clean versions without full name to save space
                 if modtyp == 'cln,raw,dwn':
@@ -469,6 +471,8 @@ def write_settingsjson(settings, args):
                     shortmodtyp = 'ica'
                 elif modtyp == 'cln,csp,dwn':
                     shortmodtyp = 'csp'
+                elif modtyp == 'cln,cspdr,ica,dwn':
+                    modtyp = 'cspdr,ica'
                 else:
                     shortmodtyp = modtyp
 
