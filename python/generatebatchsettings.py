@@ -340,6 +340,7 @@ def get_genbatch_parser():
     parser.add_argument("--pca",
                         action="store",
                         dest="pca_ncomp",
+                        type=float,
                         default=0,
                         help="n_components for PCA. If this is <1, this is "
                              "the proportion of variance to retain. Omit or "
