@@ -103,16 +103,6 @@ def get_settings(settings_file):
     # reads the settings classifier field and return the appropriate clf obj
     # using the model mapping dict
 
-
-    # options that don't work as they don't have sampleweights param
-
-    #'RandomTreesEmbedding': sklearn.ensemble.RandomTreesEmbedding(),
-    #'GradientBoosting': sklearn.ensemble.GradientBoostingClassifier(),
-    #'RidgeClassifier': sklearn.linear_model.RidgeClassifier(),
-    #'LogisticRegression': sklearn.linear_model.LogisticRegression(),
-    #'SGDClassifier': sklearn.linear_model.SGDClassifier()}
-
-
     classifier_objs = {
         'RandomForest':
             sklearn.ensemble.RandomForestClassifier(
@@ -129,6 +119,26 @@ def get_settings(settings_file):
         'SVC':
             sklearn.svm.SVC(
                 probability=True,
+                random_state=settings['R_SEED'],
+                ),
+        'LogisticRegression':
+            sklearn.linear_model.LogisticRegression(
+                random_state=settings['R_SEED'],
+                ),
+        'RidgeClassifier':
+            sklearn.linear_model.RidgeClassifier(
+                random_state=settings['R_SEED'],
+                ),
+        'RandomTreesEmbedding':
+            sklearn.ensemble.RandomTreesEmbedding(
+                random_state=settings['R_SEED'],
+                ),
+        'GradientBoostingClassifier':
+            sklearn.ensemble.RandomTreesEmbedding(
+                random_state=settings['R_SEED'],
+                ),
+        'SGDClassifier':
+            sklearn.ensemble.RandomTreesEmbedding(
                 random_state=settings['R_SEED'],
                 ),
     }
