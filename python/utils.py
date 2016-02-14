@@ -1062,7 +1062,7 @@ def build_model_pipe(settings):
         pipe_elements.append(('thr', thresh))
 
     if 'PCA' in settings.keys():
-        pca_decomp = sklearn.decomposition.PCA(n_components=0.8)
+        pca_decomp = sklearn.decomposition.PCA(**settings['PCA'])
         pipe_elements.append(('pca', pca_decomp))
 
     if 'SELECTION' in settings.keys():
