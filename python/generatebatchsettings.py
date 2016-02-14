@@ -180,6 +180,8 @@ def get_classifierlist():
         'RandomForest',
         'ExtraTrees',
         'AdaBoost',
+        'LogisticRegression',
+        'RidgeClassifier',
     ]
     return classifierlist
 
@@ -391,6 +393,10 @@ def write_settingsjson(settings, args):
             shortclassifier = 'XT'
         elif classifier == 'AdaBoost':
             shortclassifier = 'AB'
+        elif classifier == 'LogisticRegression':
+            shortclassifier = 'LR'
+        elif classifier == 'RidgeClassifier':
+            shortclassifier = 'RC'
         else:
             shortclassifier = classifier
 
