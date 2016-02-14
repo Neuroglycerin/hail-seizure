@@ -564,7 +564,7 @@ def write_settingsjson(settings, args):
 
                         if args.featuresets:
                             ff = ','.join(args.featuresets)
-                            ff = shortmodtyp + '_' + ff
+                            ff = shortmodtyp + '_' + ff + '_' + str(split)
                         elif len(settings["FEATURES"]) < 2:
                             ff = '_AND_'.join(myshortfeats)
                         else:
