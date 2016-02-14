@@ -277,7 +277,7 @@ def get_genbatch_parser():
                         dest="numcombined",
                         type=int,
                         default=1,
-                        help="Number of features to use at once")
+                        help="Number of features to use at once. Set to -1 for all.")
 
     parser.add_argument("--solomod",
                         action="store_true",
@@ -456,6 +456,30 @@ def write_settingsjson(settings, args):
                 fullfeatstrlst = [fullfeatstrlst]
                 shortfeatstrlst = np.array(shortfeatstrlst).flatten()
                 shortfeatstrlst = [shortfeatstrlst]
+
+            if args.numcombined == -1:
+                for iMod in range(len(fullfeatstrlst)):
+                    settings["FEATURES"] = list(fullfeatstrlst[iMod])
+
+                    if args.featuresets:
+                        ff = ','.join(args.featuresets)
+                    elif len(settings["FEATURES"]) < 2:
+                        ff = '_AND_'.join(myshortfeats)
+                    else:
+                        ff = ''
+
+                    fname = '{2}{0}_{1}{3}.json'.format(
+                        shortclassifier,
+                        ff,
+                        args.prestr,
+                        args.poststr)
+
+                    # Output to a JSON
+                    with open(args.outputdir + '/' + fname, 'w') as outfile:
+                        json.dump(settings, outfile)
+
+                # Stop this depth now
+                continue
 
             # Loop over every modtyp
             for iMod in range(len(fullfeatstrlst)):
