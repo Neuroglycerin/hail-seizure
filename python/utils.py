@@ -7,6 +7,7 @@ import pickle
 import csv
 import json
 import re
+import math
 
 import h5py
 import numpy as np
@@ -1526,3 +1527,10 @@ def combined_auc_score(settings, auc_scores, subj_pred=None):
                                                     # sample_weight=weights)
 
     return combined_auc
+
+
+def round_sf(x, n=1):
+    '''
+    Round to the nearest significant figure.
+    '''
+    return round(x, -int(math.floor(math.log10(abs(x))))+n-1)

@@ -5,6 +5,8 @@ import argparse
 import itertools
 import numpy as np
 
+from utils import round_sf
+
 
 FEATURESETS = {
     'timesingle' : [
@@ -276,6 +278,20 @@ def get_genbatch_parser():
                             default=False,
                             help="Use all classifiers")
 
+    parser.add_argument("--n_estimators",
+                        action="store",
+                        dest="n_estimators",
+                        default=[],
+                        nargs='+',
+                        help="List of n_estimators values to use")
+
+    parser.add_argument("--regression",
+                        action="store",
+                        dest="regression",
+                        default=[],
+                        nargs='+',
+                        help="List of regression level values to use")
+
     parser.add_argument("-m", "--modtyps",
                         action="store",
                         dest="modtyps",
@@ -502,56 +518,91 @@ def write_settingsjson(settings, args):
                 shortfeatstrlst = np.array(shortfeatstrlst).flatten()
                 shortfeatstrlst = [shortfeatstrlst]
 
-            if args.numcombined == -1:
+            if classifier in CLASSIFIERS_BY_OPT['n_estimators']:
+                classifier_param_name = 'n_estimators'
+                classifier_param_values = [int(r) for r in args.n_estimators]
+                if not classifier_param_values:
+                    classifier_param_values = [None]
+                    
+            elif classifier in CLASSIFIERS_BY_OPT['alpha']:
+                classifier_param_name = 'alpha'
+                classifier_param_values = [float(r) for r in args.regression]
+                if not classifier_param_values:
+                    classifier_param_values = [None]
+
+            elif classifier in CLASSIFIERS_BY_OPT['C']:
+                classifier_param_name = 'C'
+                classifier_param_values = [1. / float(r)
+                                           for r in args.regression]
+                if not classifier_param_values:
+                    classifier_param_values = [None]
+
+
+            for classifier_param_value in classifier_param_values:
+                if classifier_param_value is not None:
+                    settings['CLASSIFIER_OPTIONS'][classifier_param_name] = \
+                        classifier_param_value
+                    classifer_param_str = '_{}={}'.format(
+                        classifier_param_name,
+                        round_sf(classifier_param_value, 4),
+                        )
+                else:
+                    classifer_param_str = ''
+
+                if args.numcombined == -1:
+                    for iMod in range(len(fullfeatstrlst)):
+                        settings["FEATURES"] = list(fullfeatstrlst[iMod])
+
+                        if args.featuresets:
+                            ff = ','.join(args.featuresets)
+                        elif len(settings["FEATURES"]) < 2:
+                            ff = '_AND_'.join(myshortfeats)
+                        else:
+                            ff = ''
+
+                        fname = '{2}{0}{4}_{1}{3}.json'.format(
+                            shortclassifier,
+                            ff,
+                            args.prestr,
+                            args.poststr,
+                            classifer_param_str,
+                            )
+
+                        # Output to a JSON
+                        with open(args.outputdir + '/' + fname, 'w') as outfile:
+                            json.dump(settings, outfile)
+
+                    # Stop this depth now
+                    continue
+
+                # Loop over every modtyp
                 for iMod in range(len(fullfeatstrlst)):
-                    settings["FEATURES"] = list(fullfeatstrlst[iMod])
 
-                    if args.featuresets:
-                        ff = ','.join(args.featuresets)
-                    elif len(settings["FEATURES"]) < 2:
+                    # Make a combinatorial combination of features
+                    for i in itertools.combinations(range(len(fullfeatstrlst[iMod])), args.numcombined):
+
+                        myfeats = []
+                        myshortfeats = []
+
+                        # Add together each feature in this combination
+                        for j in range(args.numcombined):
+                            myfeats.append(fullfeatstrlst[iMod][i[j]])
+                            myshortfeats.append(shortfeatstrlst[iMod][i[j]])
+
+                        settings["FEATURES"] = myfeats
+
                         ff = '_AND_'.join(myshortfeats)
-                    else:
-                        ff = ''
+                        fname = '{2}{0}{4}_{1}{3}.json'.format(
+                            shortclassifier,
+                            ff,
+                            args.prestr,
+                            args.poststr,
+                            classifer_param_str,
+                            )
 
-                    fname = '{2}{0}_{1}{3}.json'.format(
-                        shortclassifier,
-                        ff,
-                        args.prestr,
-                        args.poststr)
-
-                    # Output to a JSON
-                    with open(args.outputdir + '/' + fname, 'w') as outfile:
-                        json.dump(settings, outfile)
-
-                # Stop this depth now
-                continue
-
-            # Loop over every modtyp
-            for iMod in range(len(fullfeatstrlst)):
-
-                # Make a combinatorial combination of features
-                for i in itertools.combinations(range(len(fullfeatstrlst[iMod])), args.numcombined):
-
-                    myfeats = []
-                    myshortfeats = []
-
-                    # Add together each feature in this combination
-                    for j in range(args.numcombined):
-                        myfeats.append(fullfeatstrlst[iMod][i[j]])
-                        myshortfeats.append(shortfeatstrlst[iMod][i[j]])
-
-                    settings["FEATURES"] = myfeats
-
-                    ff = '_AND_'.join(myshortfeats)
-                    fname = '{2}{0}_{1}{3}.json'.format(
-                        shortclassifier,
-                        ff,
-                        args.prestr,
-                        args.poststr)
-
-                    # Output to a JSON
-                    with open(args.outputdir + '/' + fname, 'w') as outfile:
-                        json.dump(settings, outfile)
+                        # Output to a JSON
+                        with open(args.outputdir + '/' + fname, 'w') as outfile:
+                            json.dump(settings, outfile)
 
 
 def main():
