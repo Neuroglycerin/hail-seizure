@@ -440,9 +440,9 @@ def write_settingsjson(settings, args):
             shortclassifier = classifier
 
         if classifier in CLASSIFIERS_BY_OPT['n_estimators']:
-            settings['CLASSIFIER_OPTIONS'] = {'n_estimators': 1000}
+            settings['CLASSIFIER_OPTS'] = {'n_estimators': 1000}
         else:
-            settings['CLASSIFIER_OPTIONS'] = {}
+            settings['CLASSIFIER_OPTS'] = {}
 
         # Record if we are not using pseudodata
         # Add it to the classifier savename
@@ -549,7 +549,7 @@ def write_settingsjson(settings, args):
 
             for classifier_param_value in classifier_param_values:
                 if classifier_param_value is not None:
-                    settings['CLASSIFIER_OPTIONS'][classifier_param_name] = \
+                    settings['CLASSIFIER_OPTS'][classifier_param_name] = \
                         classifier_param_value
                     classifer_param_str = '_{}={}'.format(
                         classifier_param_name,
