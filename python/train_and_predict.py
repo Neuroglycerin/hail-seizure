@@ -27,7 +27,7 @@ def call_train_and_predict(settings_file, verbose=False):
     predict_retcode = subprocess.call(['./predict.py', '-s', settings_file],
                                       stdout=null, stderr=null)
 
-   # Raise warning if predict failed and return
+    # Raise warning if predict failed and return
     if predict_retcode != 0:
         warnings.warn("predict.py -s {0} did not complete successfully".format(
             settings_file))
