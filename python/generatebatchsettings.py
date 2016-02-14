@@ -569,7 +569,8 @@ def write_settingsjson(settings, args):
                             )
 
                         # Output to a JSON
-                        with open(args.outputdir + '/' + fname, 'w') as outfile:
+                        with open(os.path.join(args.outputdir, fname), 'w') \
+                                as outfile:
                             json.dump(settings, outfile)
 
                     # Stop this depth now
@@ -601,7 +602,8 @@ def write_settingsjson(settings, args):
                             )
 
                         # Output to a JSON
-                        with open(args.outputdir + '/' + fname, 'w') as outfile:
+                        with open(os.path.join(args.outputdir, fname), 'w') \
+                                as outfile:
                             json.dump(settings, outfile)
 
 
