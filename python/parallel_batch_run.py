@@ -20,22 +20,26 @@ def get_batch_parser():
     '''
     parser = optparse.OptionParser()
 
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Print verbose output")
-
-    parser.add_option("-s", "--settings_dir",
-                      action="store",
-                      dest="setting_dir",
-                      help="Directory holding json settings files")
-
-    parser.add_option("-j", "--cores",
-                      action="store",
-                      dest="cores",
-                      default=3,
-                      help="Number of cores to use in batch processing")
+    parser.add_option(
+        "-v", "--verbose",
+        action="store_true",
+        dest="verbose",
+        default=False,
+        help="Print verbose output",
+    )
+    parser.add_option(
+        "-s", "--settings_dir",
+        action="store",
+        dest="setting_dir",
+        help="Directory holding json settings files",
+    )
+    parser.add_option(
+        "-j", "--cores",
+        action="store",
+        dest="cores",
+        default=3,
+        help="Number of cores to use in batch processing",
+    )
 
     return parser
 
