@@ -267,6 +267,23 @@ def get_genbatch_parser():
                            nargs='+',
                            help="Use a featureset (or multiple featuresets)")
 
+
+    groupmodtyp = parser.add_mutually_exclusive_group(required=False)
+
+    groupmodtyp.add_argument("-m", "--modtyps",
+                             action="store",
+                             dest="modtyps",
+                             default=[],
+                             nargs='+',
+                             help="List of modifiers to use")
+
+    groupmodtyp.add_argument("--allmodtyps",
+                           action="store_true",
+                           dest="doallmodtyps",
+                           default=False,
+                           help="Use all modifiers")
+
+
     groupclass = parser.add_mutually_exclusive_group(required=False)
 
     groupclass.add_argument("-c", "--classifier",
@@ -296,12 +313,6 @@ def get_genbatch_parser():
                         nargs='+',
                         help="List of regularisation values to use")
 
-    parser.add_argument("-m", "--modtyps",
-                        action="store",
-                        dest="modtyps",
-                        default=[],
-                        nargs='+',
-                        help="List of modifiers to use")
 
     parser.add_argument("--nopseudo",
                         action="store_true",
@@ -388,8 +399,10 @@ def parse_parser():
         for featureset in args.featuresets:
             args.featurenames += get_featlist(featureset)
     # If we're doing all modtyps, get the list
-    if args.modtyps == [] or args.modtyps is None:
+    if args.doallmodtyps:
         args.modtyps = get_modlist()
+    elif not args.modtyps:
+        args.modtyps = ['raw']
     # If we're doing all classifiers, get the list
     if args.doallclassifiers:
         args.classifiers = get_classifierlist()
