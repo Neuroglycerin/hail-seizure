@@ -245,6 +245,7 @@ def get_genbatch_parser():
                           default="",
                           help="Save AUC predictions to a specific folder")
 
+
     groupfeat = parser.add_mutually_exclusive_group(required=True)
 
     groupfeat.add_argument("-f", "--featurenames",
@@ -298,6 +299,7 @@ def get_genbatch_parser():
                             dest="doallclassifiers",
                             default=False,
                             help="Use all classifiers")
+
 
     parser.add_argument("--n_estimators",
                         action="store",
