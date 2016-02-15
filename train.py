@@ -154,9 +154,9 @@ if __name__ == '__main__':
 
     # get and parse CLI options
     parser = utils.get_parser()
-    (opts, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    main(opts.settings,
-         verbose=opts.verbose,
-         save_training_detailed=opts.pickle_detailed,
-         parallel=int(opts.parallel))
+    main(args.settings,
+         verbose=args.verbose,
+         save_training_detailed=args.pickle_detailed,
+         parallel=int(args.parallel))

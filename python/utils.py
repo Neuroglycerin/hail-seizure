@@ -1,6 +1,6 @@
 import os
 import sys
-import optparse
+import argparse
 import warnings
 import pdb
 import pickle
@@ -25,39 +25,42 @@ import sklearn.externals
 
 def get_parser():
     '''
-    Generate optparse parser object for train and predict.py
+    Generate argparse parser object for train and predict.py
     with the relevant options
     input:  void
-    output: optparse parser
+    output: argparse parser
     '''
-    parser = optparse.OptionParser()
+    parser = argparse.ArgumentParser()
 
-    parser.add_option("-v", "--verbose",
-                      action="store_true",
-                      dest="verbose",
-                      default=False,
-                      help="Print verbose output")
-
-    parser.add_option("-s", "--settings",
-                      action="store",
-                      dest="settings",
-                      default="SETTINGS.json",
-                      help="Settings file to use in JSON format (default="
-                            "SETTINGS.json)")
-
-    parser.add_option("-j", "--cores",
-                      action="store",
-                      dest="parallel",
-                      default=0,
-                      help="Train subjects in parallel and with specified num"
-                           " of cores")
-
-    parser.add_option("-p", "--pickle",
-                      action="store",
-                      dest="pickle_detailed",
-                      default=False,
-                      help="Pickle file to save detailed training results"
-                      " for further analysis (default=False)")
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        dest="verbose",
+        default=False,
+        help="Print verbose output",
+    )
+    parser.add_argument(
+        "-s", "--settings",
+        action="store",
+        dest="settings",
+        default="SETTINGS.json",
+        help="Settings file to use in JSON format (default=SETTINGS.json)",
+    )
+    parser.add_argument(
+        "-j", "--cores",
+        action="store",
+        dest="parallel",
+        default=0,
+        help="Train subjects in parallel and with specified num of cores",
+    )
+    parser.add_argument(
+        "-p", "--pickle",
+        action="store",
+        dest="pickle_detailed",
+        default=False,
+        help="Pickle file to save detailed training results for further"
+             " analysis (default=False)",
+    )
     return parser
 
 
