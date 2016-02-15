@@ -679,7 +679,7 @@ def main():
 
     settings["THRESHOLD"] = args.threshold
 
-    settings["AUC_SCORE_PATH"] = args.outputdir
+    settings["AUC_SCORE_PATH"] = args.aucoutput
     if not os.path.exists(args.outputdir):
         os.makedirs(args.outputdir)
 
