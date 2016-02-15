@@ -13,6 +13,12 @@ def main(settingsfname, verbose=False, store_models=True,
 
     settings = utils.get_settings(settingsfname)
 
+    utils.print_verbose('=== Settings file   ===', flag=verbose)
+    utils.print_verbose(settingsfname, flag=verbose)
+    utils.print_verbose('=== Settings loaded ===', flag=verbose)
+    utils.print_verbose(settings, flag=verbose)
+    utils.print_verbose('=======================', flag=verbose)
+
     subjects = settings['SUBJECTS']
 
     data = utils.get_data(settings, verbose=verbose)
