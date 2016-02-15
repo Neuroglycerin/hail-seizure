@@ -136,6 +136,7 @@ CLASSIFIERS_BY_OPT = {
         ],
     'C': [
         'SVC',
+        'LinearSVC',
         'LogisticRegression',
         ],
     'alpha': [
@@ -201,6 +202,7 @@ def get_classifierlist():
     '''
     classifierlist = [
         'SVC',
+        'LinearSVC',
         'RandomForest',
         'ExtraTrees',
         'AdaBoost',

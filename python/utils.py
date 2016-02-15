@@ -125,6 +125,14 @@ def get_settings(settings_file):
                 probability=True,
                 random_state=settings['R_SEED'],
                 ),
+        'LinearSVC':
+            # Use this instead of svm.LinearSVC even though it is
+            # slower, because we use the sample_weights input
+            sklearn.svm.SVC(
+                random_state=settings['R_SEED'],
+                kernel='linear',
+                probability=True,
+                ),
         'LogisticRegression':
             sklearn.linear_model.LogisticRegression(
                 random_state=settings['R_SEED'],
