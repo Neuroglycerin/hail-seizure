@@ -8,7 +8,7 @@ import csv
 import numpy as np
 
 
-def main(settings_file='SETTINGS.json'):
+def main(settings_file='SETTINGS.json', verbose=False):
 
     # load the settings
     settings = utils.get_settings(settings_file)
@@ -44,7 +44,7 @@ def main(settings_file='SETTINGS.json'):
         model = utils.read_trained_model(
             subject,
             settings,
-            verbose=opts.verbose)
+            verbose=verbose)
 
         # initialise the data assembler
         assembler = utils.DataAssembler(settings, data, metadata)
@@ -71,11 +71,11 @@ def main(settings_file='SETTINGS.json'):
         for segment, prediction in zip(assembler.test_segments, predictions):
             prediction_dict[segment] = prediction
 
-    utils.output_csv(prediction_dict, settings, verbose=opts.verbose)
+    utils.output_csv(prediction_dict, settings, verbose=verbose)
 
 if __name__ == '__main__':
 
     parser = utils.get_parser()
     args = parser.parse_args()
 
-    main(settings_file=args.settings)
+    main(settings_file=args.settings, verbose=args.verbose)
