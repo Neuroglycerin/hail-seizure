@@ -219,170 +219,192 @@ def get_genbatch_parser():
     '''
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-v", "--verbose",
-                        action="store_true",
-                        dest="verbose",
-                        default=False,
-                        help="Print verbose output")
-
-    parser.add_argument("-d", "--dir",
-                        action="store",
-                        dest="outputdir",
-                        required=True,
-                        help="Directory holding json settings files")
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        dest="verbose",
+        default=False,
+        help="Print verbose output",
+    )
+    parser.add_argument(
+        "-d", "--dir",
+        action="store",
+        dest="outputdir",
+        required=True,
+        help="Directory holding json settings files",
+    )
 
     groupout = parser.add_mutually_exclusive_group(required=False)
-
-    groupout.add_argument("-g", "--globaloutput",
-                          action="store_true",
-                          dest="useglobaloutput",
-                          default=False,
-                          help="Save AUC predictions to the global AUC csv folder")
-
-    groupout.add_argument("-o", "--aucoutput",
-                          action="store",
-                          dest="aucoutput",
-                          default="",
-                          help="Save AUC predictions to a specific folder")
-
+    groupout.add_argument(
+        "-g", "--globaloutput",
+        action="store_true",
+        dest="useglobaloutput",
+        default=False,
+        help="Save AUC predictions to the global AUC csv folder",
+    )
+    groupout.add_argument(
+        "-o", "--aucoutput",
+        action="store",
+        dest="aucoutput",
+        default="",
+        help="Save AUC predictions to a specific folder",
+    )
 
     groupfeat = parser.add_mutually_exclusive_group(required=True)
-
-    groupfeat.add_argument("-f", "--featurenames",
-                           action="store",
-                           dest="featurenames",
-                           default=[],
-                           nargs='+',
-                           help="List of feature names")
-
-    groupfeat.add_argument("-a", "--allfeatures",
-                           action="store_true",
-                           dest="doallfeatures",
-                           default=False,
-                           help="Use all featurenames")
-
-    groupfeat.add_argument("--featureset",
-                           action="store",
-                           dest="featuresets",
-                           default=[],
-                           nargs='+',
-                           help="Use a featureset (or multiple featuresets)")
-
+    groupfeat.add_argument(
+        "-f", "--featurenames",
+        action="store",
+        dest="featurenames",
+        default=[],
+        nargs='+',
+        help="List of feature names",
+    )
+    groupfeat.add_argument(
+        "-a", "--allfeatures",
+        action="store_true",
+        dest="doallfeatures",
+        default=False,
+        help="Use all featurenames",
+    )
+    groupfeat.add_argument(
+        "--featureset",
+        action="store",
+        dest="featuresets",
+        default=[],
+        nargs='+',
+        help="Use a featureset (or multiple featuresets)",
+    )
 
     groupmodtyp = parser.add_mutually_exclusive_group(required=False)
-
-    groupmodtyp.add_argument("-m", "--modtyps",
-                             action="store",
-                             dest="modtyps",
-                             default=[],
-                             nargs='+',
-                             help="List of modifiers to use")
-
-    groupmodtyp.add_argument("--allmodtyps",
-                           action="store_true",
-                           dest="doallmodtyps",
-                           default=False,
-                           help="Use all modifiers")
-
+    groupmodtyp.add_argument(
+        "-m", "--modtyps",
+        action="store",
+        dest="modtyps",
+        default=[],
+        nargs='+',
+        help="List of modifiers to use",
+    )
+    groupmodtyp.add_argument(
+        "--allmodtyps",
+        action="store_true",
+        dest="doallmodtyps",
+        default=False,
+        help="Use all modifiers",
+    )
 
     groupclass = parser.add_mutually_exclusive_group(required=False)
+    groupclass.add_argument(
+        "-c", "--classifier",
+        action="store",
+        dest="classifiers",
+        default=["SVC"],
+        nargs='+',
+        help="List of classifiers",
+    )
+    groupclass.add_argument(
+        "--allclassifiers",
+        action="store_true",
+        dest="doallclassifiers",
+        default=False,
+        help="Use all classifiers",
+    )
 
-    groupclass.add_argument("-c", "--classifier",
-                            action="store",
-                            dest="classifiers",
-                            default=["SVC"],
-                            nargs='+',
-                            help="List of classifiers")
+    parser.add_argument(
+        "--n_estimators",
+        action="store",
+        dest="n_estimators",
+        default=[],
+        nargs='+',
+        help="List of n_estimators values to use",
+    )
+    parser.add_argument(
+        "--regularisation",
+        action="store",
+        dest="regularisation",
+        default=[],
+        nargs='+',
+        help="List of regularisation values to use",
+    )
 
-    groupclass.add_argument("--allclassifiers",
-                            action="store_true",
-                            dest="doallclassifiers",
-                            default=False,
-                            help="Use all classifiers")
-
-
-    parser.add_argument("--n_estimators",
-                        action="store",
-                        dest="n_estimators",
-                        default=[],
-                        nargs='+',
-                        help="List of n_estimators values to use")
-
-    parser.add_argument("--regularisation",
-                        action="store",
-                        dest="regularisation",
-                        default=[],
-                        nargs='+',
-                        help="List of regularisation values to use")
-
-
-    parser.add_argument("--nopseudo",
-                        action="store_true",
-                        dest="nopseudo",
-                        default=False,
-                        help="Disable using half-offset data")
-
-    parser.add_argument("--splits",
-                        action="store",
-                        dest="numdatasplits",
-                        type=int,
-                        default=[1],
-                        nargs='+',
-                        help="Number of data splits (1 or 10) to use")
-
-    parser.add_argument("-n", "--numcombined",
-                        action="store",
-                        dest="numcombined",
-                        type=int,
-                        default=1,
-                        help="Number of features to use at once. Set to -1 for all.")
-
-    parser.add_argument("--solomod",
-                        action="store_true",
-                        dest="dosinglemod",
-                        default=False,
-                        help="Whether to combine features with different modtyps")
-
-    parser.add_argument("-k", "--numcvruns",
-                        action="store",
-                        dest="numcvruns",
-                        type=int,
-                        default=10,
-                        help="Number of times to run through the cross-validator")
-
-    parser.add_argument("--pca",
-                        action="store",
-                        dest="pca_ncomp",
-                        type=float,
-                        default=0,
-                        help="n_components for PCA. If this is <1, this is "
-                             "the proportion of variance to retain. Omit or "
-                             "set to 0 to avoid applying a PCA filter.")
-
-    parser.add_argument("-s", "--selection",
-                        action="store",
-                        dest="selection",
-                        default=[],
-                        nargs='+',
-                        help="Key value pair for selection method")
-
-    parser.add_argument("-t", "--threshold",
-                        action="store",
-                        dest="threshold",
-                        default=0,
-                        help="Threshold for selection method")
-
-    parser.add_argument("--pre",
-                        action="store",
-                        dest="prestr",
-                        default='',
-                        help="String to go in front of all JSON names")
-
-    parser.add_argument("--post",
-                        action="store",
-                        dest="poststr",
-                        default='',
-                        help="String to go in at the end of all JSON names")
+    parser.add_argument(
+        "--nopseudo",
+        action="store_true",
+        dest="nopseudo",
+        default=False,
+        help="Disable using half-offset data",
+    )
+    parser.add_argument(
+        "--splits",
+        action="store",
+        dest="numdatasplits",
+        type=int,
+        default=[1],
+        nargs='+',
+        help="Number of data splits (1 or 10) to use",
+    )
+    parser.add_argument(
+        "-n", "--numcombined",
+        action="store",
+        dest="numcombined",
+        type=int,
+        default=1,
+        help="Number of features to use at once. Set to -1 for all.",
+    )
+    parser.add_argument(
+        "--solomod",
+        action="store_true",
+        dest="dosinglemod",
+        default=False,
+        help="Whether to combine features with different modtyps",
+    )
+    parser.add_argument(
+        "-k", "--numcvruns",
+        action="store",
+        dest="numcvruns",
+        type=int,
+        default=10,
+        help="Number of times to run through the cross-validator",
+    )
+    parser.add_argument(
+        "--pca",
+        action="store",
+        dest="pca_ncomp",
+        type=float,
+        default=0,
+        help="Number of components (n_components) for PCA. "
+             "If this is <1, this is the proportion of variance to "
+             "retain. "
+             "Omit or set to 0 to avoid applying a PCA filter.",
+    )
+    parser.add_argument(
+        "-s", "--selection",
+        action="store",
+        dest="selection",
+        default=[],
+        nargs='+',
+        help="Key value pair for selection method",
+    )
+    parser.add_argument(
+        "-t", "--threshold",
+        action="store",
+        dest="threshold",
+        default=0,
+        help="Threshold for selection method",
+    )
+    parser.add_argument(
+        "--pre",
+        action="store",
+        dest="prestr",
+        default='',
+        help="String to go in front of all JSON names",
+    )
+    parser.add_argument(
+        "--post",
+        action="store",
+        dest="poststr",
+        default='',
+        help="String to go in at the end of all JSON names",
+    )
 
     return parser
 
