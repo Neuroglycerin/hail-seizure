@@ -583,7 +583,7 @@ def write_settingsjson(settings, args):
                         elif len(settings["FEATURES"]) < 2:
                             ff = '_AND_'.join(myshortfeats)
                         else:
-                            ff = ''
+                            ff = shortmodtyp + '__' + str(split)
 
                         fname = '{2}{0}{4}_{1}{3}.json'.format(
                             shortclassifier,
