@@ -289,12 +289,12 @@ def get_genbatch_parser():
                         nargs='+',
                         help="List of n_estimators values to use")
 
-    parser.add_argument("--regression",
+    parser.add_argument("--regularisation",
                         action="store",
-                        dest="regression",
+                        dest="regularisation",
                         default=[],
                         nargs='+',
-                        help="List of regression level values to use")
+                        help="List of regularisation values to use")
 
     parser.add_argument("-m", "--modtyps",
                         action="store",
@@ -535,14 +535,14 @@ def write_settingsjson(settings, args):
                     
             elif classifier in CLASSIFIERS_BY_OPT['alpha']:
                 classifier_param_name = 'alpha'
-                classifier_param_values = [float(r) for r in args.regression]
+                classifier_param_values = [float(r) for r in args.regularisation]
                 if not classifier_param_values:
                     classifier_param_values = [None]
 
             elif classifier in CLASSIFIERS_BY_OPT['C']:
                 classifier_param_name = 'C'
                 classifier_param_values = [1. / float(r)
-                                           for r in args.regression]
+                                           for r in args.regularisation]
                 if not classifier_param_values:
                     classifier_param_values = [None]
 
