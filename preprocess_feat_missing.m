@@ -14,17 +14,19 @@ subjname_list = subjnames();
 % modtyps = {'cln,raw,dwn','ica,raw,dwn','cln,csp,dwn'};
 % modtyps = {'cln,raw,dwn'};
 modtyps = {
+    'cln,ica,dwn';
     'cln,csp,dwn';
+    'cln,raw,dwn';
 };
 
 % ictypes = {'preictal'; 'interictal'; 'test'};
 % ictypes = {'pseudopreictal'; 'pseudointerictal';};
 ictypes = {'preictal'; 'interictal'; 'test'; 'pseudopreictal'; 'pseudointerictal';};
 
-nSplits_list = [1];
+nSplits_list = [1 10];
 
 feature_funcs = {
-    @feat_psd;
+    @feat_gcaus;
 };
 
 matlabpool('local',12);
