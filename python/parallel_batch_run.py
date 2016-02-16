@@ -40,6 +40,13 @@ def get_batch_parser():
         default=3,
         help="Number of cores to use in batch processing",
     )
+    parser.add_option(
+        "--nopredict",
+        action="store_false",
+        dest="dopredict",
+        default=True,
+        help="Use this to run the train step without generating predictions",
+    )
 
     return parser
 
@@ -69,7 +76,7 @@ def print_verbose(string, flag=False):
         print(string)
 
 
-def batch_run_in_parallel(settings_list, cores, verbose=False):
+def batch_run_in_parallel(settings_list, cores, dopredict=True, verbose=False):
 
     processes = []
     num_to_run = len(settings_list)
@@ -79,20 +86,26 @@ def batch_run_in_parallel(settings_list, cores, verbose=False):
             settings_file = settings_list.pop()
             print_verbose("==Running {0}==".format(settings_file),
                           flag=verbose)
-            processes.append(subprocess.Popen(['./python/train_and_predict.py',
-                                               settings_file]))
+            if dopredict:
+                processes.append(subprocess.Popen(
+                    ['./python/train_and_predict.py', settings_file]))
+            else:
+                null = open(os.devnull, 'w')
+                processes.append(subprocess.Popen(
+                    ['./train.py', '-s', settings_file], stdout=null))
 
         for p in processes:
-            if p.poll() is not None:
-                if p.returncode == 0:
-                    processes.remove(p)
-                    finish_count += 1
-                    print_verbose(
-                        "**Completed {0} of {1}**".format(finish_count,
-                                                          num_to_run),
-                                  flag=verbose)
-                else:
-                    sys.exit(1)
+            if p.poll() is None:
+                continue
+            if not p.returncode == 0:
+                warnings.warn("File {0} did not complete successfully".format(
+                    settings_file))
+            processes.remove(p)
+            finish_count += 1
+            print_verbose(
+                "**Finished {0} of {1}**".format(finish_count,
+                                                  num_to_run),
+                          flag=verbose)
 
         if not processes and not settings_list:
             break
@@ -107,4 +120,7 @@ if __name__ == '__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
 
-    batch_run_in_parallel(settings_list, int(opts.cores), verbose=opts.verbose)
+    batch_run_in_parallel(
+        settings_list, int(opts.cores),
+        dopredict=args.dopredict, verbose=opts.verbose
+        )
