@@ -122,5 +122,5 @@ if __name__ == '__main__':
 
     batch_run_in_parallel(
         settings_list, int(opts.cores),
-        dopredict=args.dopredict, verbose=opts.verbose
+        dopredict=opts.dopredict, verbose=opts.verbose
         )
