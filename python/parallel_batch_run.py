@@ -93,6 +93,7 @@ def batch_run_in_parallel(settings_list, cores, dopredict=True, verbose=False):
                 null = open(os.devnull, 'w')
                 processes.append(subprocess.Popen(
                     ['./train.py', '-s', settings_file], stdout=null))
+            sys.stdout.flush()
 
         for p in processes:
             if p.poll() is None:
@@ -106,6 +107,7 @@ def batch_run_in_parallel(settings_list, cores, dopredict=True, verbose=False):
                 "**Finished {0} of {1}**".format(finish_count,
                                                   num_to_run),
                           flag=verbose)
+            sys.stdout.flush()
 
         if not processes and not settings_list:
             break
