@@ -1,5 +1,5 @@
 % cd to the repository, then run this command
-% nice -15 matlab13 -nodisplay -nosplash -r "preprocess_ica"
+% nice matlab13 -nodisplay -nosplash -r "preprocess_ica"
 
 % Recursively add all of matlab folder to matlab path
 addpath(genpath('matlab'));

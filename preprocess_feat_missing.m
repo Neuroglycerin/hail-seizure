@@ -1,4 +1,5 @@
 %% Matlab script to pre-process raw data and output serialized features
+% nice matlab13 -nodisplay -nosplash -r "preprocess_feat_missing; exit;"
 
 % Recursively add all of matlab folder to matlab path
 addpath(genpath('matlab'));
