@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import multiprocessing
+
 import optparse
 import time
 import sys
@@ -7,8 +7,11 @@ import os
 import subprocess
 import warnings
 import glob
+from multiprocessing import Process
 
 import utils
+import train
+from train_and_predict import call_train_and_predict
 
 
 def get_batch_parser():
@@ -76,43 +79,24 @@ def print_verbose(string, flag=False):
         print(string)
 
 
-def batch_run_in_parallel(settings_list, cores, dopredict=True, verbose=False):
+def batch_run(settings_file, dopredict=True, verbose=False):
 
-    processes = []
-    num_to_run = len(settings_list)
-    finish_count = 0
-    while True:
-        while settings_list and len(processes) < cores:
-            settings_file = settings_list.pop()
-            print_verbose("==Running {0}==".format(settings_file),
-                          flag=verbose)
-            if dopredict:
-                processes.append(subprocess.Popen(
-                    ['./python/train_and_predict.py', settings_file]))
-            else:
-                null = open(os.devnull, 'w')
-                processes.append(subprocess.Popen(
-                    ['./train.py', '-s', settings_file], stdout=null))
-            sys.stdout.flush()
+    print_verbose("==Running {0}==".format(settings_file), flag=verbose)
 
-        for p in processes:
-            if p.poll() is None:
-                continue
-            if not p.returncode == 0:
-                warnings.warn("File {0} did not complete successfully".format(
-                    settings_file))
-            processes.remove(p)
-            finish_count += 1
-            print_verbose(
-                "**Finished {0} of {1}**".format(finish_count,
-                                                  num_to_run),
-                          flag=verbose)
-            sys.stdout.flush()
-
-        if not processes and not settings_list:
-            break
+    try:
+        if dopredict:
+            call_train_and_predict(settings_file)
         else:
-            time.sleep(0.05)
+            train.main(settings_file)
+        print_verbose(
+            "**Finished {0}**".format(settings_file),
+            flag=verbose)
+
+    except:
+        warnings.warn("File {0} did not complete successfully".format(
+            settings_file))
+
+    sys.stdout.flush()
 
 
 if __name__ == '__main__':
@@ -122,7 +106,6 @@ if __name__ == '__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
 
-    batch_run_in_parallel(
-        settings_list, int(opts.cores),
-        dopredict=opts.dopredict, verbose=opts.verbose
-        )
+    fn = lambda x: batch_run(x, dopredict=opts.dopredict, verbose=opts.verbose)
+    with Pool(processes=int(opts.cores)) as pool:
+        pool.apply(fn, args=settings_list)
