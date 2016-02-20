@@ -107,4 +107,4 @@ if __name__ == '__main__':
     settings_list = get_settings_list(opts.setting_dir)
 
     with Pool(processes=int(opts.cores)) as pool:
-        pool.apply(batch_run, args=settings_list)
+        pool.imap(batch_run, settings_list)
