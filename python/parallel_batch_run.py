@@ -106,6 +106,6 @@ if __name__ == '__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
 
-    fn = lambda x: batch_run(x, dopredict=opts.dopredict, verbose=opts.verbose)
+    kwargs = {'dopredict': opts.dopredict, 'verbose': opts.verbose}
     with Pool(processes=int(opts.cores)) as pool:
-        pool.apply(fn, args=settings_list)
+        pool.apply(batch_run, args=settings_list, kwargs)
