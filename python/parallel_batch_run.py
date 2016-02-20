@@ -7,7 +7,7 @@ import os
 import subprocess
 import warnings
 import glob
-from multiprocessing import Process
+from multiprocessing import Pool
 
 import utils
 import train
