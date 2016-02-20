@@ -79,7 +79,7 @@ def print_verbose(string, flag=False):
         print(string)
 
 
-def batch_run(settings_file, dopredict=True, verbose=False):
+def batch_run(settings_file, dopredict=False, verbose=False):
 
     print_verbose("==Running {0}==".format(settings_file), flag=verbose)
 
@@ -106,6 +106,5 @@ if __name__ == '__main__':
 
     settings_list = get_settings_list(opts.setting_dir)
 
-    kwargs = {'dopredict': opts.dopredict, 'verbose': opts.verbose}
     with Pool(processes=int(opts.cores)) as pool:
-        pool.apply(batch_run, args=settings_list, kwds=kwargs)
+        pool.apply(batch_run, args=settings_list)
