@@ -108,4 +108,4 @@ if __name__ == '__main__':
 
     kwargs = {'dopredict': opts.dopredict, 'verbose': opts.verbose}
     with Pool(processes=int(opts.cores)) as pool:
-        pool.apply(batch_run, args=settings_list, kwargs)
+        pool.apply(batch_run, args=settings_list, kwds=kwargs)
