@@ -15,8 +15,8 @@ subjname_list = subjnames();
 % modtyps = {'cln,raw,dwn','ica,raw,dwn','cln,csp,dwn'};
 % modtyps = {'cln,raw,dwn'};
 modtyps = {
-    'cln,ica,dwn';
-    'cln,csp,dwn';
+%    'cln,ica,dwn';
+%    'cln,csp,dwn';
     'cln,raw,dwn';
 };
 
