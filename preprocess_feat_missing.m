@@ -15,16 +15,16 @@ subjname_list = subjnames();
 % modtyps = {'cln,raw,dwn','ica,raw,dwn','cln,csp,dwn'};
 % modtyps = {'cln,raw,dwn'};
 modtyps = {
-%    'cln,ica,dwn';
-%    'cln,csp,dwn';
+    'cln,ica,dwn';
     'cln,raw,dwn';
+    'cln,csp,dwn';
 };
 
 % ictypes = {'preictal'; 'interictal'; 'test'};
 % ictypes = {'pseudopreictal'; 'pseudointerictal';};
 ictypes = {'preictal'; 'interictal'; 'test'; 'pseudopreictal'; 'pseudointerictal';};
 
-nSplits_list = [1 10];
+nSplits_list = [10];
 
 feature_funcs = {
     @feat_gcaus;
