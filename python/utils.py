@@ -137,6 +137,7 @@ def get_settings(settings_file):
             sklearn.linear_model.LogisticRegression(
                 random_state=settings['R_SEED'],
                 solver='sag',
+                max_iter=5000,
                 ),
         'RidgeClassifier':
             sklearn.linear_model.RidgeClassifier(
