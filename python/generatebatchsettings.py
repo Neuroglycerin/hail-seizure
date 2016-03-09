@@ -585,6 +585,9 @@ def write_settingsjson(settings, args):
                 if not classifier_param_values:
                     classifier_param_values = [None]
 
+            else:
+                raise ValueError('Bad classifier given: {}'.format(classifier))
+
 
             for classifier_param_value in classifier_param_values:
                 if classifier_param_value is not None:
