@@ -571,7 +571,7 @@ def write_settingsjson(settings, args):
                 classifier_param_values = [int(r) for r in args.n_estimators]
                 if not classifier_param_values:
                     classifier_param_values = [None]
-                    
+
             elif classifier in CLASSIFIERS_BY_OPT['alpha']:
                 classifier_param_name = 'alpha'
                 classifier_param_values = [float(r) for r in args.regularisation]
@@ -632,7 +632,9 @@ def write_settingsjson(settings, args):
                 for iMod in range(len(fullfeatstrlst)):
 
                     # Make a combinatorial combination of features
-                    for i in itertools.combinations(range(len(fullfeatstrlst[iMod])), args.numcombined):
+                    for i in itertools.combinations(
+                            range(len(fullfeatstrlst[iMod])),
+                            args.numcombined):
 
                         myfeats = []
                         myshortfeats = []
@@ -678,7 +680,8 @@ def main():
         settings["SELECTION"] = {args.selection[0]: int(args.selection[1])}
     elif not len(args.selection) == 0:
         print(
-            'Error incorrect number of selection inputs: {0}'.format(len(args.selection)))
+            'Error incorrect number of selection inputs: {0}'
+            ''.format(len(args.selection)))
 
     settings["THRESHOLD"] = args.threshold
 
